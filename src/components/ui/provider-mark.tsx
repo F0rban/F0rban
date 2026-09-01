@@ -22,14 +22,23 @@ export function ProviderMark({
   size = "md",
   className,
   label,
+  fallbackName,
 }: {
   provider: ProviderId;
   size?: keyof typeof SIZES;
   className?: string;
   label?: string;
+  /** Used to derive a monogram when the provider is "other". */
+  fallbackName?: string;
 }) {
   const meta = PROVIDERS[provider] ?? PROVIDERS.other;
-  const color = `var(--series-${meta.series})`;
+  const monogram =
+    provider === "other" && fallbackName ? initials(fallbackName) : meta.monogram;
+  // Keep "other" tools visually distinct from each other rather than all
+  // sharing one slot in the palette.
+  const seriesIndex =
+    provider === "other" && fallbackName ? (hash(fallbackName) % 8) + 1 : meta.series;
+  const color = `var(--series-${seriesIndex})`;
 
   return (
     <span
@@ -48,9 +57,21 @@ export function ProviderMark({
         backgroundColor: `color-mix(in oklch, ${color} 12%, transparent)`,
       }}
     >
-      {meta.monogram}
+      {monogram}
     </span>
   );
+}
+
+function initials(name: string): string {
+  const words = name.replace(/[^a-zA-Z0-9 ]/g, " ").split(/\s+/).filter(Boolean);
+  if (words.length >= 2) return (words[0]![0]! + words[1]![0]!).toUpperCase();
+  return (words[0] ?? name).slice(0, 2).toUpperCase();
+}
+
+function hash(value: string): number {
+  let h = 0;
+  for (let i = 0; i < value.length; i++) h = (h * 31 + value.charCodeAt(i)) >>> 0;
+  return h;
 }
 
 /** A small colour chip used in legends and series keys. */
