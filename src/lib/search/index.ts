@@ -1,5 +1,5 @@
 import type { EntityType, Workspace } from "../data/types";
-import { fuzzyMatchFields } from "./fuzzy";
+import { fuzzyMatch } from "./fuzzy";
 
 export interface SearchRecord {
   id: string;
@@ -168,13 +168,18 @@ export function searchRecords(
 
   const hits: SearchHit[] = [];
   for (const record of pool) {
-    const match = fuzzyMatchFields(query, [
-      { text: record.title, weight: 1, primary: true },
-      { text: record.subtitle, weight: 0.35 },
-      { text: record.keywords, weight: 0.18 },
-    ]);
-    if (!match) continue;
-    hits.push({ ...record, score: match.score + record.boost, positions: match.positions });
+    // Titles match fuzzily — that is what makes a palette feel fast, and it is
+    // where the highlight lands. Everything else must contain the query as a
+    // substring: subsequence matching over a record's whole body text will
+    // happily "find" any word in any long paragraph.
+    const title = fuzzyMatch(query, record.title);
+    const body = matchesQuery(query, record.subtitle, record.keywords)
+      ? (fuzzyMatch(query, `${record.subtitle} ${record.keywords}`)?.score ?? 1)
+      : null;
+
+    if (!title && body === null) continue;
+    const score = Math.max(title ? title.score : 0, body !== null ? body * 0.3 : 0);
+    hits.push({ ...record, score: score + record.boost, positions: title?.positions ?? [] });
   }
 
   return hits.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title)).slice(0, limit);

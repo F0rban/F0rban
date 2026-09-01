@@ -96,3 +96,22 @@ describe("groupHits", () => {
     expect(typeLabel("workflow")).toBe("Workflow");
   });
 });
+
+describe("searchRecords relevance floor", () => {
+  it("does not surface records that merely contain the query as a scattered subsequence", () => {
+    // "claude" is a subsequence of many long descriptions; only records that
+    // genuinely mention it should come back.
+    const hits = searchRecords(index, "claude", { limit: 40 });
+    for (const hit of hits) {
+      const record = index.find((r) => r.id === hit.id)!;
+      const haystack = `${record.title} ${record.subtitle} ${record.keywords}`.toLowerCase();
+      const titleIsFuzzy = record.title.toLowerCase().replace(/[^a-z]/g, "").includes("claude");
+      expect(haystack.includes("claude") || titleIsFuzzy).toBe(true);
+    }
+  });
+
+  it("still matches a title by an abbreviation", () => {
+    const hits = searchRecords(index, "gpt51");
+    expect(hits[0]!.title.startsWith("GPT-5.1")).toBe(true);
+  });
+});
