@@ -37,7 +37,7 @@ const TYPE_ICON_TONE: Record<EntityType, string> = {
   project: "text-series-3",
   tool: "text-series-2",
   model: "text-series-6",
-  workflow: "text-series-5",
+  duel: "text-series-5",
   spend: "text-series-4",
 };
 

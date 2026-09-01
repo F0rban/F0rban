@@ -10,7 +10,9 @@ import {
   Play,
   SquarePen,
   TriangleAlert,
-  Workflow as WorkflowIcon,
+  Gavel,
+  Swords,
+  Trophy,
 } from "lucide-react";
 import type { ActivityEvent, ActivityKind } from "@/lib/data/types";
 import { activityBucket, formatTime } from "@/lib/utils/date";
@@ -21,7 +23,9 @@ const ICONS: Record<ActivityKind, React.ElementType> = {
   "prompt.run": Play,
   "prompt.created": SquarePen,
   "prompt.updated": SquarePen,
-  "workflow.run": WorkflowIcon,
+  "duel.started": Swords,
+  "duel.decided": Trophy,
+  "verdict.changed": Gavel,
   "tool.added": Boxes,
   "tool.status": Boxes,
   "model.scored": Cpu,
@@ -36,7 +40,7 @@ const HREFS: Record<string, (id: string) => string> = {
   project: (id) => `/projects/${id}`,
   tool: (id) => `/tools?tool=${id}`,
   model: (id) => `/models?model=${id}`,
-  workflow: (id) => `/workflows?workflow=${id}`,
+  duel: (id) => `/duels/${id}`,
   spend: () => "/spending",
 };
 

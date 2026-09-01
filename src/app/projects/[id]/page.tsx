@@ -11,7 +11,7 @@ import {
   Plus,
   Target,
   Trash2,
-  Workflow as WorkflowIcon,
+  Swords,
   X,
 } from "lucide-react";
 import { PageContainer } from "@/components/layout/page-header";
@@ -77,7 +77,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       tools: workspace.tools.filter((t) => project.toolIds.includes(t.id)),
       models: workspace.models.filter((m) => project.modelIds.includes(m.id)),
       prompts: workspace.prompts.filter((p) => project.promptIds.includes(p.id)),
-      workflows: workspace.workflows.filter((w) => w.projectId === project.id),
+      duels: workspace.duels.filter((d) => d.projectId === project.id),
     };
   }, [workspace, project, now]);
 
@@ -539,34 +539,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             )}
           </Card>
 
-          {/* Workflows */}
-          {data.workflows.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Workflows</CardTitle>
-              </CardHeader>
-              <ul className="divide-y divide-line-subtle">
-                {data.workflows.map((workflow) => (
-                  <li key={workflow.id}>
-                    <Link
-                      href={`/workflows?workflow=${workflow.id}`}
-                      className="flex items-center gap-2.5 px-4 py-2 transition-colors hover:bg-surface-2/60"
-                    >
-                      <WorkflowIcon className="size-3.5 shrink-0 text-ink-4" />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[12.5px] text-ink-2">
-                          {workflow.name}
-                        </span>
-                        <span className="block truncate text-[10.5px] text-ink-4">
-                          {workflow.nodes.length} steps · {formatNumber(workflow.runCount)} runs
-                        </span>
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          )}
         </div>
       </div>
     </PageContainer>

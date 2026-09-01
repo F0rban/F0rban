@@ -252,60 +252,6 @@ export interface SpendEntry {
 }
 
 /* ------------------------------------------------------------------ *
- * Workflows
- * ------------------------------------------------------------------ */
-
-export type WorkflowNodeKind =
-  | "input"
-  | "model"
-  | "tool"
-  | "transform"
-  | "review"
-  | "output";
-
-export interface WorkflowNode {
-  id: Id;
-  kind: WorkflowNodeKind;
-  title: string;
-  subtitle: string;
-  modelId: Id | null;
-  toolId: Id | null;
-  /** Grid coordinates, not pixels — the canvas maps them to a layout. */
-  column: number;
-  row: number;
-  /** Simulated execution characteristics. */
-  durationMs: number;
-  tokensIn: number;
-  tokensOut: number;
-  note: string;
-}
-
-export interface WorkflowEdge {
-  id: Id;
-  from: Id;
-  to: Id;
-  label: string;
-}
-
-export type WorkflowStatus = "draft" | "ready" | "scheduled";
-
-export interface Workflow {
-  id: Id;
-  name: string;
-  description: string;
-  status: WorkflowStatus;
-  nodes: WorkflowNode[];
-  edges: WorkflowEdge[];
-  projectId: Id | null;
-  tags: string[];
-  runCount: number;
-  lastRunAt: IsoDate | null;
-  createdAt: IsoDate;
-  /** What one full pass cost the last time it ran, in USD. */
-  lastRunCost: number;
-}
-
-/* ------------------------------------------------------------------ *
  * Activity
  * ------------------------------------------------------------------ */
 
@@ -313,7 +259,9 @@ export type ActivityKind =
   | "prompt.run"
   | "prompt.created"
   | "prompt.updated"
-  | "workflow.run"
+  | "duel.started"
+  | "duel.decided"
+  | "verdict.changed"
   | "tool.added"
   | "tool.status"
   | "model.scored"
@@ -358,7 +306,7 @@ export type EntityType =
   | "model"
   | "prompt"
   | "project"
-  | "workflow"
+  | "duel"
   | "spend";
 
 /** The full serialisable state of a workspace. One adapter round-trip. */
@@ -368,8 +316,78 @@ export interface Workspace {
   models: Model[];
   prompts: Prompt[];
   projects: Project[];
-  workflows: Workflow[];
+  duels: Duel[];
+  taskProfiles: TaskProfile[];
   spend: SpendEntry[];
   activity: ActivityEvent[];
   preferences: Preferences;
+}
+
+/* ------------------------------------------------------------------ *
+ * Duels — the core primitive
+ *
+ * A duel is one real task run against several models, judged blind. It is the
+ * only way evidence enters the system, and everything downstream (verdicts,
+ * routing, savings) is derived from these records.
+ * ------------------------------------------------------------------ */
+
+export type TaskType =
+  | "code-review"
+  | "code-generation"
+  | "summarisation"
+  | "classification"
+  | "long-form-writing"
+  | "research-synthesis"
+  | "brainstorming"
+  | "data-extraction";
+
+export interface DuelEntry {
+  modelId: Id;
+  /** The model's answer. Optional — a verdict can be recorded without it. */
+  output: string;
+  tokensIn: number;
+  tokensOut: number;
+  latencyMs: number;
+  /** USD, computed from the model's price at the time of the run. */
+  cost: number;
+}
+
+export type DuelStatus = "pending" | "decided";
+
+export interface Duel {
+  id: Id;
+  /** What the task actually was, in the user's words. */
+  title: string;
+  taskType: TaskType;
+  createdAt: IsoDate;
+  decidedAt: IsoDate | null;
+  status: DuelStatus;
+  promptId: Id | null;
+  projectId: Id | null;
+  entries: DuelEntry[];
+  /** Null while pending. */
+  winnerModelId: Id | null;
+  /** True when more than one entry was judged equally good. */
+  tie: boolean;
+  /** Why this one won, in the user's words. */
+  reason: string;
+  /** Whether model identity was hidden while judging. Untrusted if false. */
+  blind: boolean;
+}
+
+/**
+ * How much of each task type the user actually runs, and on what.
+ *
+ * Without volume there is no saving to compute — a verdict that says "Haiku
+ * wins classification" is only worth money once you know you run 12,000 of them
+ * a month. Estimated by the user today; read from usage APIs later.
+ */
+export interface TaskProfile {
+  taskType: TaskType;
+  /** What they currently default to for this kind of work. */
+  currentModelId: Id;
+  runsPerMonth: number;
+  /** Typical shape of one run, used to price alternatives. */
+  avgTokensIn: number;
+  avgTokensOut: number;
 }

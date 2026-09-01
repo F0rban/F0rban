@@ -173,7 +173,7 @@ export function dashboardSummary(workspace: Workspace, now: Date = new Date()) {
     [
       ...workspace.tools.filter((t) => t.status === "active").map((t) => t.primaryModelId),
       ...workspace.projects.filter((p) => p.status === "active").flatMap((p) => p.modelIds),
-      ...workspace.workflows.flatMap((w) => w.nodes.map((n) => n.modelId)),
+      ...workspace.duels.flatMap((d) => d.entries.map((e) => e.modelId)),
     ].filter((id): id is string => Boolean(id)),
   ).size;
 

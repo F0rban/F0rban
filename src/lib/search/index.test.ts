@@ -13,7 +13,7 @@ describe("buildSearchIndex", () => {
     expect(counts.get("model")).toBe(workspace.models.length);
     expect(counts.get("prompt")).toBe(workspace.prompts.length);
     expect(counts.get("project")).toBe(workspace.projects.length);
-    expect(counts.get("workflow")).toBe(workspace.workflows.length);
+    expect(counts.get("duel")).toBe(workspace.duels.length);
   });
 
   it("gives every record a navigable href", () => {
@@ -93,7 +93,7 @@ describe("groupHits", () => {
 
   it("labels each entity type", () => {
     expect(typeLabel("prompt")).toBe("Prompt");
-    expect(typeLabel("workflow")).toBe("Workflow");
+    expect(typeLabel("duel")).toBe("Duel");
   });
 });
 

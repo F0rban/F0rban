@@ -173,27 +173,6 @@ export function CommandPreview({
           </>
         );
       }
-      case "workflow": {
-        const workflow = workspace.workflows.find((w) => w.id === hit.id);
-        if (!workflow) return null;
-        return (
-          <>
-            <header>
-              <p className="text-[13px] font-medium leading-snug text-ink">{workflow.name}</p>
-              <Badge tone="outline" className="mt-1.5 capitalize">{workflow.status}</Badge>
-            </header>
-            <div className="mt-3 divide-y divide-line-subtle border-y border-line-subtle">
-              <Row_ label="Steps" value={workflow.nodes.length} />
-              <Row_ label="Runs" value={formatNumber(workflow.runCount)} />
-              <Row_ label="Last run" value={relativeTime(workflow.lastRunAt)} />
-              <Row_ label="Cost / run" value={formatCurrency(workflow.lastRunCost, { maximumFractionDigits: 3 })} />
-            </div>
-            <p className="mt-3 line-clamp-4 text-[11.5px] leading-relaxed text-ink-3">
-              {workflow.description}
-            </p>
-          </>
-        );
-      }
       default:
         return null;
     }

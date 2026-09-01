@@ -1,16 +1,9 @@
-import type {
-  Preferences,
-  Project,
-  Prompt,
-  Tool,
-  Workflow,
-  Workspace,
-} from "../types";
+import type { Preferences, Project, Prompt, Tool, Workspace } from "../types";
 import { SEED_MODELS } from "./models";
 import { SEED_PROJECTS } from "./projects";
 import { SEED_PROMPTS } from "./prompts";
 import { SEED_TOOLS } from "./tools";
-import { SEED_WORKFLOWS } from "./workflows";
+import { generateDuels, SEED_TASK_PROFILES } from "./duels";
 import { addDays, generateActivity, generateSpend, toDayKey } from "./generate";
 
 export const WORKSPACE_VERSION = 1;
@@ -73,14 +66,6 @@ function resolveProjects(now: Date): Project[] {
   );
 }
 
-function resolveWorkflows(now: Date): Workflow[] {
-  return SEED_WORKFLOWS.map(({ createdDaysAgo, lastRunDaysAgo, ...rest }) => ({
-    ...rest,
-    createdAt: isoAt(now, createdDaysAgo),
-    lastRunAt: lastRunDaysAgo === null ? null : isoAt(now, lastRunDaysAgo),
-  }));
-}
-
 /**
  * Builds a complete workspace relative to `now`, so a freshly opened app always
  * shows a live-looking 13 months of history. Deterministic for a given date.
@@ -92,7 +77,8 @@ export function createSeedWorkspace(now: Date = new Date()): Workspace {
     models: SEED_MODELS.map((m) => ({ ...m })),
     prompts: resolvePrompts(now),
     projects: resolveProjects(now),
-    workflows: resolveWorkflows(now),
+    duels: generateDuels(now),
+    taskProfiles: SEED_TASK_PROFILES.map((p) => ({ ...p })),
     spend: generateSpend(now),
     activity: generateActivity(now),
     preferences: { ...DEFAULT_PREFERENCES },

@@ -25,7 +25,7 @@ const TYPE_LABELS: Record<EntityType, string> = {
   model: "Model",
   prompt: "Prompt",
   project: "Project",
-  workflow: "Workflow",
+  duel: "Duel",
   spend: "Spend",
 };
 
@@ -110,20 +110,20 @@ export function buildSearchIndex(workspace: Workspace): SearchRecord[] {
     });
   }
 
-  for (const workflow of workspace.workflows) {
+  for (const duel of workspace.duels) {
     records.push({
-      id: workflow.id,
-      type: "workflow",
-      title: workflow.name,
-      subtitle: workflow.description,
+      id: duel.id,
+      type: "duel",
+      title: duel.title,
+      subtitle: duel.reason || `${duel.entries.length} models · awaiting a verdict`,
       keywords: [
-        workflow.status,
-        ...workflow.tags,
-        ...workflow.nodes.map((n) => `${n.title} ${n.subtitle}`),
+        duel.taskType,
+        duel.status,
+        ...duel.entries.map((e) => modelName.get(e.modelId) ?? ""),
       ].join(" "),
-      href: `/workflows?workflow=${workflow.id}`,
-      boost: workflow.status === "ready" ? 16 : 0,
-      meta: workflow.status,
+      href: `/duels/${duel.id}`,
+      boost: duel.status === "pending" ? 30 : 0,
+      meta: duel.taskType,
     });
   }
 

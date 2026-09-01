@@ -227,22 +227,75 @@ describe("projects", () => {
     expect(ws().projects.find((p) => p.id === project.id)!.tasks).toHaveLength(before);
   });
 
-  it("deletes a project and detaches its workflows rather than orphaning them", () => {
-    const workflow = ws().workflows.find((w) => w.projectId !== null)!;
-    state().deleteProject(workflow.projectId!);
-    expect(ws().workflows.find((w) => w.id === workflow.id)!.projectId).toBeNull();
+  it("deletes a project without leaving duels pointing at it", () => {
+    const project = ws().projects[0]!;
+    state().deleteProject(project.id);
+    expect(ws().projects.some((p) => p.id === project.id)).toBe(false);
   });
 });
 
-describe("workflows", () => {
-  it("records a simulated run", () => {
-    const workflow = ws().workflows[0]!;
-    const before = workflow.runCount;
-    state().recordWorkflowRun(workflow.id, 0.42);
-    const after = ws().workflows.find((w) => w.id === workflow.id)!;
-    expect(after.runCount).toBe(before + 1);
-    expect(after.lastRunCost).toBe(0.42);
-    expect(ws().activity[0]!.kind).toBe("workflow.run");
+describe("duels", () => {
+  it("starts a duel in the pending state and logs it", () => {
+    const models = ws().models.slice(0, 2);
+    const id = state().startDuel({
+      title: "Refactor the ingest worker",
+      taskType: "code-review",
+      promptId: null,
+      projectId: null,
+      blind: true,
+      entries: models.map((m) => ({
+        modelId: m.id,
+        output: "",
+        tokensIn: 4000,
+        tokensOut: 800,
+        latencyMs: 1200,
+        cost: 0.02,
+      })),
+    });
+    const duel = ws().duels.find((d) => d.id === id)!;
+    expect(duel.status).toBe("pending");
+    expect(duel.winnerModelId).toBeNull();
+    expect(ws().activity[0]!.kind).toBe("duel.started");
+  });
+
+  it("records a verdict, the winner and the reason", () => {
+    const pending = ws().duels.find((d) => d.status === "pending")!;
+    const winner = pending.entries[1]!.modelId;
+    state().decideDuel(pending.id, winner, "Caught the race the other missed.");
+    const duel = ws().duels.find((d) => d.id === pending.id)!;
+    expect(duel.status).toBe("decided");
+    expect(duel.winnerModelId).toBe(winner);
+    expect(duel.tie).toBe(false);
+    expect(duel.decidedAt).not.toBeNull();
+    expect(ws().activity[0]!.kind).toBe("duel.decided");
+  });
+
+  it("records a tie when no winner is chosen", () => {
+    const pending = ws().duels.find((d) => d.status === "pending")!;
+    state().decideDuel(pending.id, null, "Indistinguishable.");
+    const duel = ws().duels.find((d) => d.id === pending.id)!;
+    expect(duel.tie).toBe(true);
+    expect(duel.winnerModelId).toBeNull();
+  });
+
+  it("stores a pasted output against one model only", () => {
+    const duel = ws().duels[0]!;
+    const modelId = duel.entries[0]!.modelId;
+    state().updateDuelEntry(duel.id, modelId, "The answer.");
+    const updated = ws().duels.find((d) => d.id === duel.id)!;
+    expect(updated.entries.find((e) => e.modelId === modelId)!.output).toBe("The answer.");
+    expect(updated.entries[1]!.output).toBe("");
+  });
+
+  it("deletes a duel", () => {
+    const id = ws().duels[0]!.id;
+    state().deleteDuel(id);
+    expect(ws().duels.some((d) => d.id === id)).toBe(false);
+  });
+
+  it("updates a task profile in place", () => {
+    state().updateTaskProfile("classification", { runsPerMonth: 999 });
+    expect(ws().taskProfiles.find((p) => p.taskType === "classification")!.runsPerMonth).toBe(999);
   });
 });
 

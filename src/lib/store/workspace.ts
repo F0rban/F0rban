@@ -8,9 +8,11 @@ import type {
   Preferences,
   Project,
   ProjectTask,
+  Duel,
   Prompt,
+  TaskProfile,
+  TaskType,
   Tool,
-  Workflow,
   Workspace,
 } from "../data/types";
 import { LocalStorageAdapter } from "../data/local-adapter";
@@ -72,9 +74,12 @@ interface WorkspaceState {
   addTask: (projectId: string, title: string) => void;
   removeTask: (projectId: string, taskId: string) => void;
 
-  // Workflows
-  updateWorkflow: (id: string, patch: Partial<Workflow>) => void;
-  recordWorkflowRun: (id: string, cost: number) => void;
+  // Duels
+  startDuel: (draft: Omit<Duel, "id" | "createdAt" | "decidedAt" | "status" | "winnerModelId" | "tie" | "reason">) => string;
+  decideDuel: (id: string, winnerModelId: string | null, reason: string) => void;
+  updateDuelEntry: (duelId: string, modelId: string, output: string) => void;
+  deleteDuel: (id: string) => void;
+  updateTaskProfile: (taskType: TaskType, patch: Partial<TaskProfile>) => void;
 }
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
@@ -502,7 +507,8 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => {
       mutate((ws) => ({
         ...ws,
         projects: ws.projects.filter((p) => p.id !== id),
-        workflows: ws.workflows.map((w) => (w.projectId === id ? { ...w, projectId: null } : w)),
+        // Duels keep their evidence but lose the dangling reference.
+        duels: ws.duels.map((d) => (d.projectId === id ? { ...d, projectId: null } : d)),
       })),
 
     toggleTask: (projectId, taskId) => {
@@ -555,37 +561,89 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => {
 
     /* ---------------------------------------------------------- */
 
-    updateWorkflow: (id, patch) =>
-      mutate((ws) => ({
-        ...ws,
-        workflows: ws.workflows.map((w) => (w.id === id ? { ...w, ...patch } : w)),
-      })),
+    startDuel: (draft) => {
+      const id = createId("d");
+      const duel: Duel = {
+        ...draft,
+        id,
+        createdAt: new Date().toISOString(),
+        decidedAt: null,
+        status: "pending",
+        winnerModelId: null,
+        tie: false,
+        reason: "",
+      };
+      mutate((ws) => ({ ...ws, duels: [duel, ...ws.duels] }), {
+        kind: "duel.started",
+        title: `Started: ${duel.title}`,
+        detail: `${duel.entries.length} models · ${duel.taskType.replace(/-/g, " ")}`,
+        entityType: "duel",
+        entityId: id,
+      });
+      return id;
+    },
 
-    recordWorkflowRun: (id, cost) => {
-      const workflow = get().workspace?.workflows.find((w) => w.id === id);
-      if (!workflow) return;
+    decideDuel: (id, winnerModelId, reason) => {
+      const duel = get().workspace?.duels.find((d) => d.id === id);
+      const models = get().workspace?.models ?? [];
+      if (!duel) return;
+      const winner = models.find((m) => m.id === winnerModelId);
       mutate(
         (ws) => ({
           ...ws,
-          workflows: ws.workflows.map((w) =>
-            w.id === id
+          duels: ws.duels.map((d) =>
+            d.id === id
               ? {
-                  ...w,
-                  runCount: w.runCount + 1,
-                  lastRunAt: new Date().toISOString(),
-                  lastRunCost: cost,
+                  ...d,
+                  status: "decided" as const,
+                  decidedAt: new Date().toISOString(),
+                  winnerModelId,
+                  tie: winnerModelId === null,
+                  reason,
                 }
-              : w,
+              : d,
           ),
         }),
         {
-          kind: "workflow.run",
-          title: `${workflow.name} simulated`,
-          detail: `${workflow.nodes.length} steps · estimated $${cost.toFixed(4)}`,
-          entityType: "workflow",
+          kind: "duel.decided",
+          title: winner ? `${winner.name} won: ${duel.title}` : `Tie: ${duel.title}`,
+          detail: reason || `${duel.taskType.replace(/-/g, " ")} · judged blind`,
+          entityType: "duel",
           entityId: id,
         },
       );
     },
+
+    updateDuelEntry: (duelId, modelId, output) =>
+      mutate((ws) => ({
+        ...ws,
+        duels: ws.duels.map((d) =>
+          d.id === duelId
+            ? {
+                ...d,
+                entries: d.entries.map((e) => (e.modelId === modelId ? { ...e, output } : e)),
+              }
+            : d,
+        ),
+      })),
+
+    deleteDuel: (id) => mutate((ws) => ({ ...ws, duels: ws.duels.filter((d) => d.id !== id) })),
+
+    updateTaskProfile: (taskType, patch) =>
+      mutate((ws) => ({
+        ...ws,
+        taskProfiles: ws.taskProfiles.some((p) => p.taskType === taskType)
+          ? ws.taskProfiles.map((p) => (p.taskType === taskType ? { ...p, ...patch } : p))
+          : [
+              ...ws.taskProfiles,
+              {
+                taskType,
+                currentModelId: patch.currentModelId ?? "",
+                runsPerMonth: patch.runsPerMonth ?? 0,
+                avgTokensIn: patch.avgTokensIn ?? 0,
+                avgTokensOut: patch.avgTokensOut ?? 0,
+              },
+            ],
+      })),
   };
 });
