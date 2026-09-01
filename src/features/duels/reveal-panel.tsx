@@ -6,7 +6,7 @@ import type { Duel, Model } from "@/lib/data/types";
 import { Button } from "@/components/ui/button";
 import { RecordScore } from "@/components/ui/record";
 import { ModelSwap } from "@/features/verdicts/verdict-parts";
-import { CONFIDENCE_LABEL, MIN_SAMPLE, isActionable } from "@/lib/analytics/verdicts";
+import { MIN_SAMPLE, confidenceLabel, isActionable } from "@/lib/analytics/verdicts";
 import { TASK_LABEL } from "@/lib/data/seed/duels";
 import { formatCurrency, formatDuration } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
@@ -217,12 +217,14 @@ export function RevealPanel({
           <dd className="mt-1 flex flex-wrap items-center gap-1.5 text-[12.5px] text-ink">
             {confidenceMoved && (
               <>
-                <span className="text-ink-4">{CONFIDENCE_LABEL[before.confidence]}</span>
+                <span className="text-ink-4">
+                  {confidenceLabel(before.confidence, before.sampleSize)}
+                </span>
                 <ArrowRight className="size-3 text-ink-4" />
               </>
             )}
             <span className={cn("font-medium", confidenceMoved && "text-accent")}>
-              {CONFIDENCE_LABEL[after.confidence]}
+              {confidenceLabel(after.confidence, after.sampleSize)}
             </span>
             <span className="text-[11px] text-ink-4">· {after.sampleSize} judged</span>
           </dd>

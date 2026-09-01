@@ -4,13 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import type { Duel, Model } from "@/lib/data/types";
-import type { Verdict } from "@/lib/analytics/verdicts";
+import { explainVerdict, type Verdict } from "@/lib/analytics/verdicts";
 import { TASK_DESCRIPTION, TASK_LABEL } from "@/lib/data/seed/duels";
 import { FormStrip, RecordBar, RecordScore, TallyMarks } from "@/components/ui/record";
 import { formatCurrency, formatNumber } from "@/lib/utils/format";
 import { relativeTime } from "@/lib/utils/date";
 import { cn } from "@/lib/utils/cn";
-import { ConfidenceChip, ModelSwap, ReversalNote, chanceSentence } from "./verdict-parts";
+import { ConfidenceChip, ModelSwap, ReversalNote } from "./verdict-parts";
 
 /**
  * One line of the routing table, expandable to the duels behind it.
@@ -104,7 +104,11 @@ export function VerdictRow({
           )}
         </span>
 
-        <ConfidenceChip confidence={verdict.confidence} className="hidden lg:inline-flex" />
+        <ConfidenceChip
+          confidence={verdict.confidence}
+          sampleSize={verdict.sampleSize}
+          className="hidden lg:inline-flex"
+        />
 
         {/* Money */}
         <span className="shrink-0 text-right">
@@ -129,7 +133,7 @@ export function VerdictRow({
 
       {/* Mobile summary, since the row's middle columns are desktop-only. */}
       <div className="flex flex-wrap items-center gap-2 px-4 pb-3 lg:hidden">
-        <ConfidenceChip confidence={verdict.confidence} />
+        <ConfidenceChip confidence={verdict.confidence} sampleSize={verdict.sampleSize} />
         {leader && <RecordScore wins={leader.wins} losses={leader.losses} ties={verdict.ties} size="sm" />}
         <ModelSwap from={current} to={recommended} className="basis-full" />
       </div>
@@ -181,11 +185,13 @@ export function VerdictRow({
                 })}
               </ul>
 
-              <p className="mt-3 border-t border-line-subtle pt-2.5 text-[11.5px] leading-relaxed text-ink-3">
-                {leader && chanceSentence(leader.wins, leader.losses, verdict.pValue)}{" "}
-                {verdict.ties > 0 && `${verdict.ties} were judged indistinguishable. `}
-                {verdict.confidence === "insufficient" &&
-                  `Run ${Math.max(1, 5 - verdict.sampleSize)} more to get past a guess.`}
+              {/* Why this row says what it says. The recommendation above is
+                  only worth following because this sentence sits under it. */}
+              <p className="mt-3 border-t border-line-subtle pt-2.5 text-[11.5px] leading-relaxed text-ink-2">
+                {explainVerdict(verdict, models)}
+                {verdict.ties > 0 &&
+                  verdict.confidence !== "too-close" &&
+                  ` ${verdict.ties} ${verdict.ties === 1 ? "was" : "were"} judged indistinguishable.`}
               </p>
 
               {verdict.runsPerMonth > 0 && recommended && current && (

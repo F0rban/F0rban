@@ -33,12 +33,23 @@ export function coinFlipProbability(wins: number, n: number): number {
 
 export type Confidence = "insufficient" | "emerging" | "clear-winner" | "too-close";
 
+/**
+ * Labels scale with the evidence, so the word on the chip is itself a claim
+ * about how much to trust the row: a signal, a lean, strong evidence, or the
+ * equally real finding that there is no difference to find.
+ */
 export const CONFIDENCE_LABEL: Record<Confidence, string> = {
-  insufficient: "Not enough yet",
+  insufficient: "Early signal",
   emerging: "Leaning",
-  "clear-winner": "Settled",
+  "clear-winner": "Strong evidence",
   "too-close": "No difference",
 };
+
+/** The label, except that zero results is not a signal of anything. */
+export function confidenceLabel(confidence: Confidence, sampleSize: number): string {
+  if (confidence === "insufficient" && sampleSize === 0) return "No evidence yet";
+  return CONFIDENCE_LABEL[confidence];
+}
 
 /** Below this many results, the record is an anecdote. */
 export const MIN_SAMPLE = 5;
@@ -290,6 +301,52 @@ export function verdictFor(
       recommended && current ? round(currentMonthlyCost - recommendedMonthlyCost) : 0,
     reversal: detectReversal(relevant, standings),
   };
+}
+
+/**
+ * The p-value in words.
+ *
+ * "p = 0.033" tells almost nobody anything. "A record like this would come up
+ * about 3 times in 100 by chance" is the same number and an actual sentence.
+ */
+export function chanceSentence(wins: number, losses: number, pValue: number): string {
+  if (wins + losses === 0) return "No decisive results yet.";
+  const inHundred = Math.round(pValue * 100);
+  if (inHundred >= 45) {
+    return `A ${wins}–${losses} record is what you would expect from a coin flip.`;
+  }
+  if (inHundred < 1) {
+    return `A ${wins}–${losses} record would come up by chance less than once in 100 tries.`;
+  }
+  return `A ${wins}–${losses} record would come up by chance about ${inHundred} time${inHundred === 1 ? "" : "s"} in 100.`;
+}
+
+/**
+ * Why the verdict says what it says, in one sentence a person could repeat to
+ * a colleague. A recommendation is only worth following when the reason is on
+ * the table beside it: who is ahead, by how much, how likely that is to be
+ * luck — and, for an equivalence, that price made the call.
+ */
+export function explainVerdict(verdict: Verdict, models: Map<string, Model> | Model[]): string {
+  const byId = models instanceof Map ? models : new Map(models.map((m) => [m.id, m]));
+  const name = (id: string | null) => (id ? (byId.get(id)?.name ?? id) : "the leader");
+  const leader = verdict.standings[0];
+
+  if (!leader || verdict.sampleSize === 0) return "No duels for this kind of work yet.";
+
+  switch (verdict.confidence) {
+    case "clear-winner":
+      return `${name(leader.modelId)} won ${leader.wins} of ${verdict.decisive} decisive duels. ${chanceSentence(leader.wins, leader.losses, verdict.pValue)}`;
+    case "too-close": {
+      const record = `${leader.wins}–${leader.losses}${verdict.ties ? `–${verdict.ties}` : ""}`;
+      const cheapest = verdict.standings.length > 2 ? "the cheapest of them" : "the cheaper of the two";
+      return `Level across ${verdict.sampleSize} duels (${record}), so price decides: ${name(verdict.recommendedModelId)} is ${cheapest}.`;
+    }
+    case "emerging":
+      return `${name(leader.modelId)} is ahead ${leader.wins}–${leader.losses}. ${chanceSentence(leader.wins, leader.losses, verdict.pValue)} Not a rule yet — keep running these.`;
+    case "insufficient":
+      return `${verdict.sampleSize} of ${MIN_SAMPLE} results so far — a guess, not a verdict.`;
+  }
 }
 
 export function allVerdicts(

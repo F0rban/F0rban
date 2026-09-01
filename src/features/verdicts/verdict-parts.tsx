@@ -3,7 +3,7 @@
 import { ArrowRight, Repeat2 } from "lucide-react";
 import type { Model } from "@/lib/data/types";
 import type { Confidence, Verdict } from "@/lib/analytics/verdicts";
-import { CONFIDENCE_LABEL } from "@/lib/analytics/verdicts";
+import { MIN_SAMPLE, confidenceLabel } from "@/lib/analytics/verdicts";
 import { ProviderMark } from "@/components/ui/provider-mark";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils/cn";
@@ -25,9 +25,12 @@ const CONFIDENCE_EXPLAINER: Record<Confidence, string> = {
 
 export function ConfidenceChip({
   confidence,
+  sampleSize,
   className,
 }: {
   confidence: Confidence;
+  /** Lets zero results read as "no evidence" rather than as an early signal. */
+  sampleSize?: number;
   className?: string;
 }) {
   return (
@@ -40,28 +43,10 @@ export function ConfidenceChip({
           className,
         )}
       >
-        {CONFIDENCE_LABEL[confidence]}
+        {confidenceLabel(confidence, sampleSize ?? MIN_SAMPLE)}
       </span>
     </Tooltip>
   );
-}
-
-/**
- * The p-value in words.
- *
- * "p = 0.033" tells almost nobody anything. "A record like this would come up
- * about 3 times in 100 by chance" is the same number and an actual sentence.
- */
-export function chanceSentence(wins: number, losses: number, pValue: number): string {
-  if (wins + losses === 0) return "No decisive results yet.";
-  const inHundred = Math.round(pValue * 100);
-  if (inHundred >= 45) {
-    return `A ${wins}–${losses} record is what you would expect from a coin flip.`;
-  }
-  if (inHundred < 1) {
-    return `A ${wins}–${losses} record would come up by chance less than once in 100 tries.`;
-  }
-  return `A ${wins}–${losses} record would come up by chance about ${inHundred} time${inHundred === 1 ? "" : "s"} in 100.`;
 }
 
 export function ModelChip({

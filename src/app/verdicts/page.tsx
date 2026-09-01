@@ -70,7 +70,7 @@ export default function VerdictsPage() {
     {
       key: "judgement",
       title: "Your call",
-      caption: "A different model wins, but it costs more. Only you can price that.",
+      caption: "A different model is ahead, but it costs more. Only you can price that.",
       icon: Scale,
       rows: summary.qualityUpgrades,
       open: false,

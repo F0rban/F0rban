@@ -59,8 +59,10 @@ left in place as secondary (not removed, not prioritised).
 2. Reveal + loop closure on judging screen; `d` hotkey (Today moved to `g t`). — **done**
 3. Calm Today; remove sidebar budget meter. — **done** (a11y/responsive sweep
    was still running at commit time; result recorded in the next commit)
-4. Confidence labels + "why this" line. — **in progress**
-5. Branding/stale-text sweep.
+4. Confidence labels + "why this" line. — **done** (`confidenceLabel`,
+   `explainVerdict`, `chanceSentence` moved to the lib; a11y + responsive after
+   cycle 3 were both clean)
+5. Branding/stale-text sweep. — **in progress**
 6. Provider seam (`DuelRunner`, registry, `priceRun`).
 7. Quality gate, screenshots, docs, push.
 
@@ -92,21 +94,25 @@ and the `formatTime` / `activityBucket` date helpers that only it used.
 
 ## Next action
 
-Cycle 4, all in `src/lib/analytics/verdicts.ts` + `src/features/verdicts/`:
-1. Relabel `CONFIDENCE_LABEL`: insufficient → "Early signal", emerging →
-   "Leaning", clear-winner → "Strong evidence", too-close → "No difference".
-   Only consumers are `ConfidenceChip` and `RevealPanel`; tests check
-   truthiness only.
-2. Add `explainVerdict(verdict, models): string` in `verdicts.ts` — one
-   sentence: "Sonnet won 9 of 11 decisive duels; a record like that comes up
-   by chance about 3 times in 100." / "Level across 12 duels, so the cheaper
-   model is recommended." / "N of 5 results so far." Show it as the first
-   line of the expanded `VerdictRow`, and use it in the Verdicts "Your call"
-   caption so a lean says "is ahead" rather than "wins". Unit-test it.
-3. Cycle 5 inventory (branding) and cycle 6 inventory (six copies of the
-   cost-per-run arithmetic) are already listed in this file's audit; the
-   exact locations: topbar fallback, palette export filename + description,
-   use-page-title suffix, globals.css header, settings (filename, import
-   error, About), layout metadata + "workflows" keyword, seed/prompts.ts
-   default value, types.ts header, package.json name; cost maths in
-   duels/new (×2), task-volumes, seed/duels, verdicts.ts, spend.ts.
+Cycle 5 — branding and stale text, exact locations:
+- `src/components/layout/topbar.tsx:75` fallback "Command Center" → "Bench"
+- `src/components/command/command-palette.tsx:228` export filename;
+  `:300` description mentions workflows
+- `src/hooks/use-page-title.ts:15` document.title suffix
+- `src/app/globals.css:6` header comment; `:364` "workflow canvas" comment
+- `src/app/settings/page.tsx:75` filename, `:101` import error, `:223`
+  "workflow run animation", `:304` About paragraph
+- `src/app/layout.tsx` metadata (title, template, applicationName, authors,
+  openGraph, keywords "workflows")
+- `src/lib/data/seed/prompts.ts:267` default value describing the old product
+- `src/lib/data/types.ts:2` header comment; `package.json` name
+- Wire `?status=pending` on `/duels` (Today's "more waiting" link and
+  attention.ts already emit it): read `useSearchParams` inside a Suspense
+  boundary like `duels/new/page.tsx` does.
+
+Cycle 6 — provider seam: `src/lib/providers/pricing.ts` with
+`priceRun(model, tokensIn, tokensOut)` replacing the six copies (duels/new ×2,
+task-volumes, seed/duels `entryFor`, verdicts.ts `costPerRun`, spend.ts
+`estimateCost`); `src/lib/providers/runner.ts` with the `DuelRunner` interface,
+`ManualRunner`, and a registry keyed by `ProviderId` (`available: false` for
+anthropic/openai/google until keys exist). No network calls.

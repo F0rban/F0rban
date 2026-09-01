@@ -55,13 +55,16 @@ states, each with a different action:
 
 | State | Means | Do |
 |---|---|---|
-| **Settled** | The record beats chance | Route to the winner |
+| **Strong evidence** | The record beats chance | Route to the winner |
 | **No difference** | Enough tries to have found a gap, and none showed | Route to the cheapest of equals |
 | **Leaning** | One is ahead, not by enough | Run a few more |
-| **Not enough yet** | Fewer than five results | It is a guess, not a verdict |
+| **Early signal** | Fewer than five results | It is a guess, not a verdict |
 
 The second row is where most of the money is: a cheap model does not have to be
-*better*, only *not worse*.
+*better*, only *not worse*. Every row also carries its reason in one sentence —
+*"Sonnet won 9 of 11 decisive duels"*, *"Level across 12 duels, so price
+decides"* — because a recommendation you cannot repeat to a colleague is not one
+you will act on.
 
 ### Duels — where evidence is made
 

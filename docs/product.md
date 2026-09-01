@@ -88,9 +88,11 @@ is not final, and reversal detection surfaces the moment the record turns.
 
 The temptation in a product like this is to overclaim. Nine results is not proof.
 So confidence is an exact binomial against a coin flip, and there are four
-states, one of which is "not enough yet". A verdict that has not settled is kept
-out of the routing table entirely, and the UI says why in a sentence rather than
-a p-value.
+states — *early signal*, *leaning*, *strong evidence*, *no difference* — with
+"no evidence yet" for a kind of work nobody has judged. A verdict that has not
+settled is kept out of the routing table entirely, and every row explains itself
+in a sentence rather than a p-value: who is ahead, by how much, how likely that
+is to be luck, and whether price made the call.
 
 The most valuable state is the least intuitive one: **no difference**. Enough
 attempts to have found a gap, and none appeared. That is a result, and it is
