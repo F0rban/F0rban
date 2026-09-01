@@ -37,6 +37,21 @@ describe("Today", () => {
     expect(screen.queryByText(/\$0\b/)).not.toBeInTheDocument();
   });
 
+  it("asks for volumes when verdicts exist but nothing is priced, instead of claiming agreement", async () => {
+    seedStore((ws) => {
+      ws.preferences.usingSampleData = false;
+      ws.duels = ws.duels.map((d) => ({ ...d, sample: false }));
+      ws.taskProfiles = ws.taskProfiles.map((p) => ({ ...p, currentModelId: "", runsPerMonth: 0 }));
+    });
+    renderApp(<TodayPage />);
+    const headline = await screen.findByText(/settled — add your volumes/);
+    expect(headline.closest("a")).toHaveAttribute("href", "/settings");
+    expect(screen.queryByText(/agrees with your habits/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/overpaying/)).not.toBeInTheDocument();
+    // The settled verdicts still show, as recommendations waiting to be priced.
+    expect(screen.getAllByText("not priced yet").length).toBeGreaterThan(0);
+  });
+
   it("puts the open duels and the one action first", async () => {
     seedStore();
     renderApp(<TodayPage />);

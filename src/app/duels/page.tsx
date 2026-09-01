@@ -1,8 +1,7 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { EqualApproximately, Gavel, Swords, Trophy } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProviderMark } from "@/components/ui/provider-mark";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { useInitialSearchParam } from "@/hooks/use-initial-search-param";
 import { matchesQuery } from "@/lib/search";
 import { TASK_LABEL, TASK_TYPES } from "@/lib/data/seed/duels";
 import { costSpread } from "@/features/duels/duel-meta";
@@ -23,13 +23,17 @@ import { cn } from "@/lib/utils/cn";
 
 type View = "all" | "pending" | "decided";
 
-function DuelsInner() {
+export default function DuelsPage() {
   const { workspace, ready } = useWorkspace();
-  const params = useSearchParams();
   const [query, setQuery] = useState("");
+  const [view, setView] = useState<View>("all");
   // `?status=pending` is what Today and the attention list link to: land on
-  // the queue, not on everything.
-  const [view, setView] = useState<View>(params.get("status") === "pending" ? "pending" : "all");
+  // the queue, not on everything. Read after mount so the route still
+  // prerenders — see useInitialSearchParam.
+  const status = useInitialSearchParam("status");
+  useEffect(() => {
+    if (status === "pending") setView("pending");
+  }, [status]);
   const [taskFilter, setTaskFilter] = useState<string[]>([]);
 
   const now = useMemo(() => new Date(), []);
@@ -248,13 +252,5 @@ function DuelsInner() {
         </ul>
       )}
     </PageContainer>
-  );
-}
-
-export default function DuelsPage() {
-  return (
-    <Suspense fallback={null}>
-      <DuelsInner />
-    </Suspense>
   );
 }

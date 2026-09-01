@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { ArrowRight, CircleCheck, Gavel, Scale, Swords, TrendingUp } from "lucide-react";
+import { ArrowRight, CircleCheck, Gavel, Route, Scale, Swords, TrendingUp } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/layout/page-header";
 import { SampleBanner } from "@/components/layout/sample-banner";
 import { Button } from "@/components/ui/button";
@@ -66,6 +66,15 @@ export default function VerdictsPage() {
       icon: TrendingUp,
       rows: summary.actionable,
       open: true,
+    },
+    {
+      key: "unpriced",
+      title: "Use these",
+      caption:
+        "Settled — but nothing says what you run this on today. Add your volumes in Settings and the saving appears.",
+      icon: Route,
+      rows: summary.unpriced,
+      open: summary.actionable.length === 0,
     },
     {
       key: "judgement",
@@ -200,6 +209,7 @@ export default function VerdictsPage() {
                   className={cn(
                     "mt-0.5 size-4 shrink-0",
                     section.key === "actionable" && "text-positive",
+                    section.key === "unpriced" && "text-accent",
                     section.key === "judgement" && "text-warning",
                     section.key === "confirmed" && "text-ink-4",
                     section.key === "pending" && "text-ink-4",
@@ -222,7 +232,7 @@ export default function VerdictsPage() {
                     verdict={verdict}
                     models={models}
                     duels={workspace!.duels}
-                    defaultOpen={section.open && summary.actionable[0] === verdict}
+                    defaultOpen={section.open && section.rows[0] === verdict}
                   />
                 ))}
               </div>

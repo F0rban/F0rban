@@ -3,13 +3,70 @@
 Checkpoint file for unattended work. If you are a new session: read this, then
 `git log --oneline -15`, then continue from **Next action**. Do not redo the audit.
 
+## Morning report (overnight session, 2026-09-01 → 02)
+
+Seven commits on `claude/ai-command-center-gelf0i`, each one green on
+typecheck, lint and the full suite before push. GitHub Pages redeploys on every
+push: https://f0rban.github.io/F0rban/.
+
+**What is different when you open it**
+
+1. *Honest evidence.* Every duel carries `sample`. The app says "worked example"
+   everywhere until your first own duel, which replaces the example (announced
+   on the form and in the toast). Judging the two open sample duels is practice
+   and is labelled as such. A fresh record inherits none of the example's
+   habits: untouched volume profiles reset to "not set".
+2. *The reveal.* After a verdict the judging screen says what the click meant:
+   what you picked and what it cost against what it beat, what it did to this
+   kind of work's record (8–2 → 9–2, Leaning → Strong evidence), what it means
+   for routing, then the way out — judge the next open duel, run another of the
+   same kind, read the verdicts. `d` starts a duel from anywhere.
+3. *Today is calm.* Three cards instead of seven: the queue, what the evidence
+   learned, one line on how settled the record is with the kinds of work
+   closest to a verdict. No activity feed, no spend tile, no sidebar budget
+   gauge. It never says "$0": a record that has not started, one with nothing
+   to change, and one waiting on volumes are three different sentences.
+4. *Routing explains itself.* Labels scale with evidence (Early signal ·
+   Leaning · Strong evidence · No difference; "No evidence yet" for zero).
+   Every row carries a one-sentence reason: who is ahead, by how much, how
+   likely that is luck, whether price decided.
+5. *Verdicts without volumes stay on the table* under "Use these" instead of
+   silently disappearing — the state a real user's first settled verdict lands
+   in.
+6. *Provider seam.* `lib/providers/{pricing,runner,registry}.ts`: one place a
+   run is priced (was six copies), a `DuelRunner` interface with the manual
+   runner as the only implementation, a registry that hands out an API runner
+   once one is registered. Entries record `source`; manual costs are labelled
+   "est.". No network calls.
+7. *Branding.* Everything says Bench; workflow-era text is gone; `?status=
+   pending` lands on the queue.
+
+**Numbers**: 313 → 357 tests (26 files). Typecheck, lint, knip clean. Normal
+build and static export build both pass.
+
+**Final gate** (against the exported site served the way GitHub Pages serves
+it, `trailingSlash: true`, `/F0rban` base path): axe — 0 WCAG 2.1 AA
+violations across 12 routes × 2 themes; responsive — 0 horizontal overflow
+across 8 widths × 12 routes; browser console clean and no failed requests on
+`/`, `/verdicts/`, `/duels/`, `/duels/d-pending-0/`, `/models/`,
+`/duels/new/?task=…` (including the root-route prefetch that used to 404).
+
+**Not done / deliberately left**: Projects, Tools and Spend analytics are
+untouched secondary pages (out of the loop, not removed). No real provider
+calls. The two flaky-under-load test timeouts were fixed by cheaper queries,
+not by raising timeouts.
+
+**Recommended next**: (1) a first real `DuelRunner` behind a key in Settings;
+(2) usage ingestion so volumes stop being typed; (3) then, and only then,
+watch whether anyone runs a fifth duel.
+
 ## Current state
 
 - Branch: `claude/ai-command-center-gelf0i` (deploys to GitHub Pages on push:
   https://f0rban.github.io/F0rban/ — Pages source = GitHub Actions, env
   `github-pages` has no branch restriction).
 - Last commit at audit time: `a0cdea9 chore(deploy): drop Pages auto-enablement`.
-- Tests 313 green, typecheck/lint clean, a11y 0 violations, responsive 0 overflow.
+- Baseline at audit: 313 tests, typecheck/lint clean, a11y 0, responsive 0.
 
 ## Objective in progress
 
@@ -85,6 +142,27 @@ left in place as secondary (not removed, not prioritised).
 
 - Sandbox cannot reach `f0rban.github.io` (egress). Verify Pages via the
   Actions run status, not by fetching the site.
+- **Static export + `useSearchParams`.** Calling `useSearchParams` during the
+  static prerender bails the whole route out to client rendering: the exported
+  HTML has an empty `<div id="main">` with `BAILOUT_TO_CLIENT_SIDE_RENDERING`,
+  so the first paint is emptier. Fixed for `/duels` and `/duels/new` with
+  `useInitialSearchParam` (reads the query after mount): their HTML carries the
+  page header again. **The bailout marker is still present on `/models` and
+  `/prompts`**, which use search params more deeply (`?model=`, `?prompt=`
+  selection sync); the same recipe applies — read on mount, write with
+  `router.replace` — but they are secondary pages and were left for daylight.
+  The export's console is clean on every route checked. Node/Vercel-style
+  hosting is unaffected.
+- **Static export + `basePath` needs `trailingSlash: true`.** Without it the
+  client prefetches the root route as `/F0rban.txt` (a 404 on every page load
+  and a hard navigation when clicking Today), and a folder of dynamic pages such
+  as `duels/` can shadow its sibling `duels.html` on a naive static server. The
+  export branch of `next.config.ts` now sets `trailingSlash: true`, so every
+  route is `x/index.html` + `x/index.txt`. A local test server for the export
+  must serve `dir/index.html` and 301 a directory URL without its slash, the
+  way GitHub Pages does. An earlier local sweep used a resolver that served the
+  404 page for `/duels` and `/projects`; those results were discarded and the
+  sweeps re-run.
 
 ## Tests / build status
 

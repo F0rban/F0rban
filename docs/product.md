@@ -143,4 +143,7 @@ exactly the number on the Verdicts page. In the seeded example it is $69/month.
    Blindness helps; it does not make it science.
 3. **The savings number depends on volumes the user estimates.** Until usage
    ingestion lands, the headline figure is only as good as a number typed into
-   Settings.
+   Settings. The product now says so out loud: a fresh record inherits none of
+   the example's habits, settled verdicts without a volume sit in "Use these"
+   as recommendations rather than savings, and Today asks for the volumes
+   instead of claiming the record agrees with a habit it has never seen.

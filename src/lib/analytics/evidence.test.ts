@@ -26,4 +26,22 @@ describe("evidence mode", () => {
     // The example's usage history is not the user's either.
     expect(cleared.prompts.every((p) => p.useCount === 0 && p.lastUsedAt === null)).toBe(true);
   });
+
+  it("forgets the example's habits, but keeps any the user already set", () => {
+    const ws = createSeedWorkspace(REF);
+    const edited = ws.taskProfiles.map((p) =>
+      p.taskType === "classification" ? { ...p, runsPerMonth: 500 } : p,
+    );
+    const cleared = withoutSampleEvidence({ ...ws, taskProfiles: edited });
+
+    const classification = cleared.taskProfiles.find((p) => p.taskType === "classification")!;
+    expect(classification.runsPerMonth).toBe(500);
+    expect(classification.currentModelId).toBe("m-claude-sonnet-45");
+
+    const untouched = cleared.taskProfiles.filter((p) => p.taskType !== "classification");
+    expect(untouched.length).toBeGreaterThan(0);
+    expect(untouched.every((p) => p.runsPerMonth === 0 && p.currentModelId === "")).toBe(true);
+    // Token shapes are neutral defaults and stay, so alternatives can still be priced.
+    expect(untouched.every((p) => p.avgTokensIn > 0)).toBe(true);
+  });
 });

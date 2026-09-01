@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RecordScore, TallyMarks } from "@/components/ui/record";
-import { ModelSwap } from "@/features/verdicts/verdict-parts";
+import { ModelChip, ModelSwap } from "@/features/verdicts/verdict-parts";
 import { useWorkspace } from "@/hooks/use-workspace";
 import {
   MIN_SAMPLE,
@@ -218,6 +218,14 @@ function Headline({
     icon = Gavel;
     title = `${pluralize(coverage.totalDuels, "duel")} judged, nothing settled yet.`;
     detail = `Verdicts settle at ${MIN_SAMPLE} results per kind of work. Keep judging — the routing table builds itself.`;
+  } else if (summary.unpriced.length > 0) {
+    // Verdicts exist but nothing says what this work runs on today, so there is
+    // no dollar figure yet. That is a Settings problem, and the page says so
+    // rather than pretending the record agrees with a habit it has never seen.
+    href = "/settings";
+    title = `${pluralize(summary.unpriced.length, "kind")} of work settled — add your volumes to price the routing.`;
+    detail = "The verdicts are in, but nothing says what you run these on today or how often. A minute in Settings turns them into a monthly figure.";
+    cta = "Set your volumes";
   } else {
     title = example ? "The example record agrees with its habits." : "Your record agrees with your habits.";
     detail = `${coverage.covered} of ${coverage.total} kinds of work settled, and none of them say to switch models.`;
@@ -341,7 +349,8 @@ function Learned({
   models: Map<string, Model>;
 }) {
   const changes = summary.actionable.slice(0, CHANGES_LIMIT);
-  const hasNews = changes.length > 0 || reversals.length > 0;
+  const unpriced = summary.unpriced.slice(0, CHANGES_LIMIT);
+  const hasNews = changes.length > 0 || reversals.length > 0 || unpriced.length > 0;
 
   return (
     <Card>
@@ -355,9 +364,11 @@ function Learned({
               : "Where the next result lands"}
           </CardTitle>
           <p className="mt-0.5 text-xs text-ink-3">
-            {hasNews
+            {changes.length > 0
               ? "The routing changes with the biggest gap between habit and record"
-              : "Nothing to change yet — these kinds of work are closest to a verdict"}
+              : unpriced.length > 0
+                ? "Settled verdicts, waiting on your volumes to be priced"
+                : "Nothing to change yet — these kinds of work are closest to a verdict"}
           </p>
         </div>
         <Button variant="ghost" size="xs" asChild>
@@ -398,6 +409,37 @@ function Learned({
                     +{formatCurrency(verdict.monthlyDelta, { maximumFractionDigits: 0 })}
                   </span>
                   <span className="block text-[10px] text-ink-4">saved / mo</span>
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+
+        {unpriced.map((verdict) => {
+          const leader = verdict.standings[0]!;
+          return (
+            <li key={`unpriced-${verdict.taskType}`}>
+              <Link
+                href="/verdicts"
+                className="grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-2/60"
+              >
+                <span className="min-w-0">
+                  <span className="flex items-center gap-2">
+                    <span className="truncate text-[12.5px] font-medium text-ink">
+                      {TASK_LABEL[verdict.taskType]}
+                    </span>
+                    <TallyMarks count={leader.wins} label={`${leader.wins} wins`} />
+                    <RecordScore wins={leader.wins} losses={leader.losses} ties={verdict.ties} size="sm" />
+                  </span>
+                  <span className="mt-1 flex max-w-full items-center gap-1.5 text-[12px] text-ink-3">
+                    Use
+                    <ModelChip
+                      model={verdict.recommendedModelId ? models.get(verdict.recommendedModelId) : undefined}
+                    />
+                  </span>
+                </span>
+                <span className="w-14 shrink-0 text-right text-[10.5px] leading-snug text-ink-4">
+                  not priced yet
                 </span>
               </Link>
             </li>

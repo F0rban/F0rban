@@ -19,6 +19,12 @@ let pathname = "/";
 export function setRoute(next: string, params: Record<string, string> = {}) {
   pathname = next;
   searchParams = new URLSearchParams(params);
+  // Pages that read a parameter after mount go through window.location, so the
+  // jsdom URL has to agree with the double.
+  if (typeof window !== "undefined") {
+    const query = searchParams.toString();
+    window.history.replaceState(null, "", query ? `${next}?${query}` : next);
+  }
 }
 
 export function resetRouter() {

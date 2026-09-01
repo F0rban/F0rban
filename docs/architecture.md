@@ -50,6 +50,21 @@ pure transform, appends an activity event, and schedules a debounced persist.
 That is why the dashboard's timeline shows real user actions in the same shape
 as seeded history — there is no second code path that could diverge.
 
+## Evidence mode: the example and the record never mix
+
+Every duel carries `sample: boolean`. The seed corpus is marked; anything the
+user starts is not. `evidenceMode()` in `lib/analytics/evidence.ts` reads the
+workspace's `usingSampleData` flag and is the single switch behind every
+sentence that says "your" — Today, Verdicts, Spend, the banner and onboarding
+all say "worked example" until the record is actually the user's.
+
+The transition is one-way and deliberate: the first duel a user *starts*
+removes every sample row (`withoutSampleEvidence`), announced on the form and
+in the toast. Judging the two open sample duels does not — that is practice,
+and the judging screen labels it. `clearSampleEvidence` drops only sample rows,
+so an imported mix is handled too. `WORKSPACE_VERSION` went to 2 for this;
+older prototype workspaces are dropped rather than migrated.
+
 ## The provider seam
 
 Bench does not call any provider yet, and the code is arranged so that adding
@@ -154,6 +169,16 @@ off real hydration, not a simulated delay.
 
 Detail routes set the top-bar breadcrumb and document title through the UI store,
 since a client route cannot use Next's static `metadata`.
+
+A page that only needs a query parameter for its *initial* state (`/duels?status=
+pending`, `/duels/new?task=…`) reads it after mount through
+`useInitialSearchParam` rather than `useSearchParams`. Calling the latter during
+the static prerender bails the whole route out to client-side rendering — the
+exported HTML then holds an empty shell for the page body and React logs a
+recoverable hydration error on load. Reading on mount costs one extra render and
+keeps the header and skeleton in the HTML. Models and Prompts still use
+`useSearchParams` for their selection sync and carry that bailout; the same
+recipe applies when they are next touched.
 
 ## Theming
 

@@ -21,6 +21,11 @@ const nextConfig: NextConfig = {
     output: "export",
     basePath: "/F0rban",
     images: { unoptimized: true },
+    // Every route becomes `x/index.html` + `x/index.txt`, which is what a
+    // directory-serving host expects. Without it the client asks for
+    // `/F0rban.txt` for the root route (a 404 on every page load) and a folder
+    // of dynamic pages such as `duels/` can shadow its sibling `duels.html`.
+    trailingSlash: true,
   }),
 };
 

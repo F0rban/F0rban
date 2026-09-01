@@ -380,6 +380,12 @@ export interface RoutingSummary {
   actionable: Verdict[];
   confirmed: Verdict[];
   needsEvidence: Verdict[];
+  /**
+   * Settled verdicts with nothing to price against: no current model or no
+   * volume recorded for the task. A recommendation, not yet a saving — and it
+   * must stay on the table, because a fresh record has exactly these.
+   */
+  unpriced: Verdict[];
   /** Total spend across all profiled task types at current routing. */
   currentMonthlyCost: number;
 }
@@ -405,6 +411,13 @@ export function routingSummary(verdicts: Verdict[]): RoutingSummary {
   const needsEvidence = verdicts.filter(
     (v) => v.confidence === "insufficient" || v.confidence === "emerging",
   );
+  const unpriced = verdicts.filter(
+    (v) =>
+      (v.confidence === "clear-winner" || v.confidence === "too-close") &&
+      v.recommendedModelId !== null &&
+      v.recommendedModelId !== v.currentModelId &&
+      (!v.currentModelId || v.runsPerMonth === 0),
+  );
 
   return {
     actionableSaving: round(actionable.reduce((sum, v) => sum + v.monthlyDelta, 0)),
@@ -417,6 +430,7 @@ export function routingSummary(verdicts: Verdict[]): RoutingSummary {
     actionable,
     confirmed,
     needsEvidence,
+    unpriced,
     currentMonthlyCost: round(verdicts.reduce((sum, v) => sum + v.currentMonthlyCost, 0)),
   };
 }

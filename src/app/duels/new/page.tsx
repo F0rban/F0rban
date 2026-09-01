@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Check, Info, Swords } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { ProviderMark } from "@/components/ui/provider-mark";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TallyMarks } from "@/components/ui/record";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { useInitialSearchParam } from "@/hooks/use-initial-search-param";
 import { useWorkspaceStore } from "@/lib/store/workspace";
 import { useUiStore } from "@/lib/store/ui";
 import { TASK_DESCRIPTION, TASK_LABEL, TASK_TYPES } from "@/lib/data/seed/duels";
@@ -25,20 +26,30 @@ import type { TaskType } from "@/lib/data/types";
 
 const MAX_MODELS = 4;
 
-function NewDuelInner() {
+export default function NewDuelPage() {
   const router = useRouter();
-  const params = useSearchParams();
   const { workspace, ready } = useWorkspace();
   const startDuel = useWorkspaceStore((s) => s.startDuel);
   const toast = useUiStore((s) => s.toast);
 
   const [title, setTitle] = useState("");
-  const [taskType, setTaskType] = useState<TaskType>(
-    (params.get("task") as TaskType) ?? "code-review",
-  );
-  const [promptId, setPromptId] = useState(params.get("prompt") ?? "");
+  const [taskType, setTaskType] = useState<TaskType>("code-review");
+  const [promptId, setPromptId] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
   const [seeded, setSeeded] = useState(false);
+
+  // `?task=` and `?prompt=` prefill the form — from Today, from a reveal, from
+  // a prompt. Read after mount so the route still prerenders.
+  const taskParam = useInitialSearchParam("task");
+  const promptParam = useInitialSearchParam("prompt");
+  useEffect(() => {
+    if (taskParam && (TASK_TYPES as string[]).includes(taskParam)) {
+      setTaskType(taskParam as TaskType);
+    }
+  }, [taskParam]);
+  useEffect(() => {
+    if (promptParam) setPromptId(promptParam);
+  }, [promptParam]);
 
   const models = useMemo(() => workspace?.models ?? [], [workspace]);
   const profile = workspace?.taskProfiles.find((p) => p.taskType === taskType);
@@ -54,7 +65,9 @@ function NewDuelInner() {
     return [...new Set([...fromEvidence, ...favourites])].slice(0, 2);
   }, [workspace, taskType, profile]);
 
-  if (ready && !seeded) {
+  // Seed the model selection once, after the task parameter (if any) has been
+  // applied, so the suggestion is for the kind of work the link asked for.
+  if (ready && !seeded && taskParam !== undefined) {
     setSeeded(true);
     setSelected(suggested);
   }
@@ -290,13 +303,5 @@ function NewDuelInner() {
         </div>
       </div>
     </PageContainer>
-  );
-}
-
-export default function NewDuelPage() {
-  return (
-    <Suspense fallback={null}>
-      <NewDuelInner />
-    </Suspense>
   );
 }

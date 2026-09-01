@@ -40,6 +40,18 @@ describe("verdicts", () => {
     expect(within(section).getByText("Classification")).toBeInTheDocument();
   });
 
+  it("keeps settled verdicts on the table when nothing is priced yet", async () => {
+    seedStore((ws) => {
+      ws.taskProfiles = ws.taskProfiles.map((p) => ({ ...p, currentModelId: "", runsPerMonth: 0 }));
+    });
+    renderApp(<VerdictsPage />);
+    const heading = await screen.findByText("Use these");
+    const section = heading.closest("section")!;
+    expect(within(section).getByText("Code review")).toBeInTheDocument();
+    expect(within(section).getByText("Classification")).toBeInTheDocument();
+    expect(screen.queryByText("Change these")).not.toBeInTheDocument();
+  });
+
   it("expands a row to the duels behind it", async () => {
     const { user } = renderApp(<VerdictsPage />);
     const row = await screen.findByRole("button", { name: /Code generation/ });

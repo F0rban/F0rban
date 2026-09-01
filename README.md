@@ -12,8 +12,9 @@ guessing is costing you.
 > **Prototype.** Everything runs locally in the browser. No account, no server,
 > and no provider API is ever called — you run the prompt in whichever apps you
 > already use and record the verdict. Model prices are illustrative snapshot
-> values, and the workspace opens on a labelled sample corpus so the routing
-> table is not empty on day one.
+> values, and the workspace opens on a labelled worked example so the routing
+> table is not empty on day one. The first duel you run yourself replaces it
+> with your own record — the two are never mixed.
 
 ---
 
@@ -75,14 +76,25 @@ which answer came from which — presentation order is shuffled by a hash of the
 duel id, so "A" is never reliably the one you added first. Paste the answers back
 or judge from memory; the verdict is the part that compounds.
 
-Cost, latency and names are revealed together, after the verdict.
+![The reveal](screenshots/reveal.png)
+
+Cost, latency and names are revealed together, after the verdict — and the
+reveal says what the click meant: what you picked and what it cost against what
+it beat (*"1.4× less than Claude Opus 4.5"*), what it did to this kind of work's
+record (*8–2 → 9–2, Leaning → Strong evidence*), what it means for routing, and
+then the way out: judge the next open duel, run another of the same kind, or
+read the verdicts. The whole screen exists so that gets clicked.
 
 ### Today
 
 ![Today](screenshots/today.png)
 
-Not a dashboard of everything: one question and one answer. What needs judging,
-what the evidence changed, and how settled the record is.
+Three questions and nothing else. *What can I do now* — the open duels, one
+click each. *What has the evidence learned* — the routing changes it supports,
+and any reversal. *Does it change how I work* — how settled the record is, and
+which kinds of work are one result away from a verdict. No activity feed, no
+spend gauge; those live on their own pages. Until your first own duel, every
+sentence says "worked example" rather than "your record".
 
 ### Models, Prompts, Spend
 
@@ -149,7 +161,8 @@ src/
 ├── features/             duels · verdicts · models · prompts · spending · projects
 ├── lib/
 │   ├── data/             Domain types, adapter interface, seeded corpus
-│   ├── analytics/        verdicts.ts (routing) · spend.ts (money) · attention.ts
+│   ├── analytics/        verdicts.ts (routing) · evidence.ts (example vs own) · spend.ts
+│   ├── providers/        pricing.ts (one place a run is priced) · DuelRunner seam · registry
 │   ├── search/           Fuzzy matcher, index, list-filter predicate
 │   ├── prompts/          Template engine and line diff
 │   └── store/            Zustand stores
@@ -168,7 +181,8 @@ WorkspaceAdapter ──→ Zustand store ──→ selectors ──→ component
 — with no component changes.
 
 See [`docs/architecture.md`](docs/architecture.md) for the statistics, the
-forecast model and why search uses two different algorithms.
+evidence mode, the provider seam, the forecast model and why search uses two
+different algorithms.
 [`docs/design.md`](docs/design.md) covers the visual system.
 [`docs/product.md`](docs/product.md) is the strategy: the critique that produced
 this pivot, the loop, the ICP and the pricing hypothesis.
@@ -183,8 +197,10 @@ npm run dev            # http://localhost:3000
 ```
 
 First run is a real blind comparison — pick the better of two answers before you
-know what produced them. Then the workspace loads a labelled sample corpus of 72
-duels so the routing table has something in it; one click clears it.
+know what produced them. Then the workspace loads a labelled worked example of 72
+duels so the routing table has something in it. The first duel you run yourself
+replaces it with your own record; a button clears it sooner. Press `d` anywhere
+to start one.
 
 ### Scripts
 
@@ -204,14 +220,19 @@ duels so the routing table has something in it; one click clears it.
 
 ## Tests
 
-306 tests across 18 files. The verdict engine is tested hardest, because it is
+357 tests across 26 files. The verdict engine is tested hardest, because it is
 the product: exact binomial probabilities, each confidence state and the
 boundaries between them, the equivalence rule that stops "not significant" from
-swallowing a real signal, reversal detection, and the money maths.
+swallowing a real signal, reversal detection, the money maths, and the sentence
+each verdict gives as its reason.
 
 The judging screen has an explicit test that **no model name and no price
 appears while a verdict is pending** — that guarantee is the reason the data is
-worth anything, so it is asserted rather than assumed.
+worth anything, so it is asserted rather than assumed. The reveal is tested for
+the record delta and the next-step links; Today for saying "worked example"
+until the record is the user's and for never claiming a saving before there is
+evidence; the store for the one-way switch from example to own record; the
+provider seam for pricing and runner dispatch.
 
 Writing the suite has surfaced eight real defects across both phases, each fixed
 with a regression test. See the git log.
@@ -223,7 +244,10 @@ with a regression test. See the git log.
 In rough order of value:
 
 - **Provider-connected duels.** Run the comparison from inside Bench instead of
-  copy-paste. Cuts the friction that is the whole risk of the product.
+  copy-paste. Cuts the friction that is the whole risk of the product. The seam
+  is in place (`lib/providers`): a provider is a `DuelRunner` plus one
+  `registerRunner` call, and entries already record whether their numbers were
+  estimated or measured.
 - **Usage ingestion.** Read real volumes from provider APIs, so the savings
   number stops depending on an estimate the user typed.
 - **Routing export.** Emit the verdict table as a config a gateway can consume,

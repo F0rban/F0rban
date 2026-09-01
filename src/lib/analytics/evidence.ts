@@ -1,4 +1,5 @@
-import type { Duel, Workspace } from "../data/types";
+import type { Duel, TaskProfile, Workspace } from "../data/types";
+import { SEED_TASK_PROFILES } from "../data/seed/duels";
 
 /**
  * Whose evidence is on screen.
@@ -23,18 +24,37 @@ export function ownDuels(duels: Duel[]): Duel[] {
   return duels.filter((duel) => !duel.sample);
 }
 
+/** True while a task profile still holds exactly the example's numbers. */
+function isSeedProfile(profile: TaskProfile): boolean {
+  const seed = SEED_TASK_PROFILES.find((p) => p.taskType === profile.taskType);
+  return (
+    !!seed &&
+    seed.currentModelId === profile.currentModelId &&
+    seed.runsPerMonth === profile.runsPerMonth &&
+    seed.avgTokensIn === profile.avgTokensIn &&
+    seed.avgTokensOut === profile.avgTokensOut
+  );
+}
+
 /**
  * Drops the worked example from a workspace, keeping the library.
  *
  * Prompts, models and tools are reference material, not evidence — they stay.
  * Usage counters and the activity feed describe the example's history, so they
- * go with it. Pure, so the store can call it from more than one action.
+ * go with it. So do the example's habits: a volume profile the user never
+ * touched is reset to "not set" (token shapes stay as neutral defaults), so a
+ * fresh record is never priced against someone else's 12,000 classifications a
+ * month. A profile the user already edited is theirs, and survives. Pure, so
+ * the store can call it from more than one action.
  */
 export function withoutSampleEvidence(workspace: Workspace): Workspace {
   return {
     ...workspace,
     duels: ownDuels(workspace.duels),
     prompts: workspace.prompts.map((prompt) => ({ ...prompt, useCount: 0, lastUsedAt: null })),
+    taskProfiles: workspace.taskProfiles.map((profile) =>
+      isSeedProfile(profile) ? { ...profile, currentModelId: "", runsPerMonth: 0 } : profile,
+    ),
     activity: [],
     preferences: { ...workspace.preferences, usingSampleData: false },
   };
