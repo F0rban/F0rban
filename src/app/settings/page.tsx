@@ -19,6 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { TaskVolumes } from "@/features/spending/task-volumes";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useWorkspaceStore } from "@/lib/store/workspace";
 import { useUiStore } from "@/lib/store/ui";
@@ -40,7 +41,7 @@ export default function SettingsPage() {
 
   if (!ready || !workspace) {
     return (
-      <PageContainer width="narrow">
+      <PageContainer>
         <Skeleton className="h-8 w-40" />
         <div className="mt-6 space-y-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -104,13 +105,15 @@ export default function SettingsPage() {
   };
 
   return (
-    <PageContainer width="narrow">
+    <PageContainer>
       <PageHeader
         title="Settings"
-        description="Everything here is stored in this browser. Nothing leaves the device."
+        description="Your volumes drive every number on the Verdicts page. Everything here is stored in this browser."
       />
 
       <div className="mt-6 space-y-4">
+        <TaskVolumes />
+
         <Card>
           <CardHeader>
             <div>
