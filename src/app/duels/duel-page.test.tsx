@@ -71,7 +71,7 @@ describe("judging a duel", () => {
       expect(screen.queryByText(model.name)).not.toBeInTheDocument();
     }
     // Cost is the strongest bias of all, so it is hidden too.
-    expect(screen.queryByText("Cost")).not.toBeInTheDocument();
+    expect(screen.queryByText(/^Cost/)).not.toBeInTheDocument();
   });
 
   it("will not record a verdict until a winner is picked", async () => {
@@ -97,7 +97,9 @@ describe("judging a duel", () => {
     const winnerId = currentWorkspace().duels.find((d) => d.id === id)!.winnerModelId!;
     const model = currentWorkspace().models.find((m) => m.id === winnerId)!;
     expect(await screen.findByText(/You picked/)).toHaveTextContent(model.name);
-    expect(screen.getAllByText("Cost").length).toBeGreaterThan(0);
+    // Manual entries are estimates, and the label says so.
+    const entries = currentWorkspace().duels.find((d) => d.id === id)!.entries.length;
+    expect(screen.getAllByText("Cost (est.)")).toHaveLength(entries);
   });
 
   it("the reveal says what the verdict did to the record and offers the next duel", async () => {

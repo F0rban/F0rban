@@ -50,6 +50,30 @@ pure transform, appends an activity event, and schedules a debounced persist.
 That is why the dashboard's timeline shows real user actions in the same shape
 as seeded history — there is no second code path that could diverge.
 
+## The provider seam
+
+Bench does not call any provider yet, and the code is arranged so that adding
+one is an implementation, not a rewrite.
+
+- `lib/providers/pricing.ts` is the one place a run is priced (`priceRun`,
+  `priceRunRounded`, `estimateLatency`). The duel form, the seed corpus, the
+  routing table, the settings total and the model calculator all go through
+  it — there used to be six copies of the same arithmetic.
+- `lib/providers/runner.ts` defines `DuelRunner`: given a model, a prompt and
+  an expected token shape, produce one duel entry (output, tokens, latency,
+  cost, and where those numbers came from). `ManualRunner` is the only
+  implementation and returns a priced estimate the user completes by hand.
+- `lib/providers/registry.ts` maps a provider to its runner. `runnerFor()`
+  returns a connected API runner when one is registered for that provider and
+  the manual runner otherwise; `CONNECTABLE` lists the three providers Bench
+  intends to drive directly, all `available: false` today.
+
+The duel form asks the registry for each model's runner and stores whatever it
+returns, so an Anthropic, OpenAI or Gemini runner is a class that implements
+two methods plus a call to `registerRunner`. Entries carry `source`, which is
+why the judging screen labels a manual entry's cost "est." — the number is a
+catalogue estimate until a provider measures it.
+
 ## Why the seed corpus is a story spec
 
 The duel corpus is not 72 literal records. Each task type declares its matchup

@@ -1,4 +1,5 @@
 import type { Duel, DuelEntry, TaskProfile, TaskType } from "../types";
+import { estimateLatency, priceRunRounded } from "../../providers/pricing";
 import { SEED_MODELS } from "./models";
 
 /**
@@ -253,12 +254,9 @@ function entryFor(modelId: string, spec: StorySpec, seed: number): DuelEntry {
     output: "",
     tokensIn,
     tokensOut,
-    latencyMs: Math.round(model.latencyMs + (tokensOut / model.throughput) * 1000),
-    cost:
-      Math.round(
-        ((tokensIn / 1_000_000) * model.inputPrice + (tokensOut / 1_000_000) * model.outputPrice) *
-          1_000_000,
-      ) / 1_000_000,
+    latencyMs: estimateLatency(model, tokensOut),
+    cost: priceRunRounded(model, tokensIn, tokensOut),
+    source: "manual",
   };
 }
 

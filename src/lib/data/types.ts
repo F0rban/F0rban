@@ -347,6 +347,13 @@ export type TaskType =
   | "brainstorming"
   | "data-extraction";
 
+/**
+ * Where an entry's numbers came from. "manual": the user ran the prompt
+ * elsewhere, so tokens, latency and cost are catalogue estimates. "api":
+ * measured from a provider response.
+ */
+export type EntrySource = "manual" | "api";
+
 export interface DuelEntry {
   modelId: Id;
   /** The model's answer. Optional — a verdict can be recorded without it. */
@@ -356,6 +363,8 @@ export interface DuelEntry {
   latencyMs: number;
   /** USD, computed from the model's price at the time of the run. */
   cost: number;
+  /** Absent on rows written before the field existed; treated as manual. */
+  source?: EntrySource;
 }
 
 export type DuelStatus = "pending" | "decided";

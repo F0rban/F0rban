@@ -65,8 +65,11 @@ left in place as secondary (not removed, not prioritised).
 5. Branding/stale-text sweep. — **done** (metadata, palette, settings, seed
    prompt, package.json → Bench 0.2.0; `/duels?status=pending` wired; reveal
    rises in; docs de-workflowed)
-6. Provider seam (`DuelRunner`, registry, `priceRun`). — **in progress**
-7. Quality gate, screenshots, docs, push.
+6. Provider seam (`DuelRunner`, registry, `priceRun`). — **done**
+   (`src/lib/providers/{pricing,runner,registry}.ts`; six copies of the cost
+   arithmetic collapsed into `priceRun`; entries carry `source`, judging screen
+   labels manual costs "est."; documented in docs/architecture.md)
+7. Quality gate, screenshots, docs, push. — **in progress**
 
 ## Decisions taken
 
@@ -95,6 +98,17 @@ Cycle 3 removed `features/dashboard/activity-feed.tsx` (no longer imported)
 and the `formatTime` / `activityBucket` date helpers that only it used.
 
 ## Next action
+
+Cycle 7 — final gate: `npm run typecheck && npm run lint && npm run test`,
+`npm run build` (normal) and `STATIC_EXPORT=1 NEXT_PUBLIC_BASE_PATH=/F0rban
+npm run build` (Pages), `npm run a11y`, `npm run responsive`, `npx knip`
+(remove anything dead), refresh `screenshots/` via `scripts/screenshot.mjs`,
+update README (Today/reveal/provider seam), add an "Evidence mode" section to
+docs/architecture.md, write the morning report in this file, push. Then, if
+time remains, Phase 8 user walkthroughs (USER 1–5) against the dev server and
+fix any friction found.
+
+(Cycles 5 and 6 below are kept for reference — both done.)
 
 Cycle 5 — branding and stale text, exact locations:
 - `src/components/layout/topbar.tsx:75` fallback "Command Center" → "Bench"

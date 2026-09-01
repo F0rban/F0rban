@@ -1,5 +1,6 @@
 import type { Model, Project, SpendCategory, SpendEntry, SpendKind, ProviderId } from "../data/types";
 import { addDays, daysInMonth, monthKey, parseDay, startOfMonth, toDayKey } from "../utils/date";
+import { estimateLatency, priceRun } from "../providers/pricing";
 
 export type RangeKey = "7d" | "30d" | "3m" | "12m";
 
@@ -366,9 +367,8 @@ export interface CostEstimate {
 }
 
 export function estimateCost(model: Model, inputs: CostInputs): CostEstimate {
-  const inputCost = (inputs.tokensIn / 1_000_000) * model.inputPrice;
-  const outputCost = (inputs.tokensOut / 1_000_000) * model.outputPrice;
-  const perRequest = inputCost + outputCost;
+  const inputCost = priceRun(model, inputs.tokensIn, 0);
+  const perRequest = priceRun(model, inputs.tokensIn, inputs.tokensOut);
   const perDay = perRequest * inputs.requestsPerDay;
   return {
     perRequest: round(perRequest, 6),
@@ -383,7 +383,5 @@ export function blendedRate(model: Model, outputRatio = 0.25): number {
   return round(model.inputPrice * (1 - outputRatio) + model.outputPrice * outputRatio, 3);
 }
 
-/** Wall-clock estimate for generating `tokens` output, including first-token wait. */
-export function estimateLatency(model: Model, tokens: number): number {
-  return Math.round(model.latencyMs + (tokens / model.throughput) * 1000);
-}
+/** Wall-clock estimate for generating `tokens` output. Lives with the pricing; re-exported for the calculator. */
+export { estimateLatency };

@@ -6,6 +6,7 @@ import { Input, Select } from "@/components/ui/input";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useWorkspaceStore } from "@/lib/store/workspace";
 import { TASK_LABEL, TASK_TYPES } from "@/lib/data/seed/duels";
+import { priceRun } from "@/lib/providers/pricing";
 import { formatCurrency } from "@/lib/utils/format";
 
 /**
@@ -30,10 +31,7 @@ export function TaskVolumes() {
   const total = [...byType.values()].reduce((sum, profile) => {
     const model = models.find((m) => m.id === profile.currentModelId);
     if (!model) return sum;
-    const perRun =
-      (profile.avgTokensIn / 1e6) * model.inputPrice +
-      (profile.avgTokensOut / 1e6) * model.outputPrice;
-    return sum + perRun * profile.runsPerMonth;
+    return sum + priceRun(model, profile.avgTokensIn, profile.avgTokensOut) * profile.runsPerMonth;
   }, 0);
 
   return (

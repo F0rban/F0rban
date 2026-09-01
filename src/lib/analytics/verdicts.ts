@@ -1,4 +1,5 @@
 import type { Duel, Model, TaskProfile, TaskType } from "../data/types";
+import { priceRun } from "../providers/pricing";
 import { round } from "./spend";
 
 /**
@@ -174,9 +175,8 @@ export interface Verdict {
   reversal: { leaderId: string; previousLeaderId: string; recentWins: number; recentOf: number } | null;
 }
 
-function costPerRun(model: Model, tokensIn: number, tokensOut: number): number {
-  return (tokensIn / 1_000_000) * model.inputPrice + (tokensOut / 1_000_000) * model.outputPrice;
-}
+/** One place prices a run; this is only the local name for it. */
+const costPerRun = priceRun;
 
 /**
  * Detects a leadership change: the model leading over the whole record is not

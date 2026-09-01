@@ -16,6 +16,8 @@ import { useUiStore } from "@/lib/store/ui";
 import { TASK_DESCRIPTION, TASK_LABEL, TASK_TYPES } from "@/lib/data/seed/duels";
 import { modelRecord, verdictFor } from "@/lib/analytics/verdicts";
 import { evidenceMode } from "@/lib/analytics/evidence";
+import { priceRun } from "@/lib/providers/pricing";
+import { runnerFor } from "@/lib/providers/registry";
 import { estimateTokens } from "@/lib/prompts/template";
 import { formatCurrency } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
@@ -74,35 +76,36 @@ function NewDuelInner() {
 
   const estimate = selected.reduce((sum, id) => {
     const model = models.find((m) => m.id === id);
-    if (!model) return sum;
-    return sum + (tokensIn / 1e6) * model.inputPrice + (tokensOut / 1e6) * model.outputPrice;
+    return model ? sum + priceRun(model, tokensIn, tokensOut) : sum;
   }, 0);
 
   const canStart = title.trim().length > 0 && selected.length >= 2;
   const firstOwn = workspace ? evidenceMode(workspace) === "example" : false;
 
-  const submit = () => {
+  const submit = async () => {
     if (!canStart) return;
+    // Each entry comes from whichever runner can drive that model. Today that
+    // is always the manual runner — a priced estimate the user completes by
+    // hand — and a connected provider slots in here without touching the form.
+    const entries = await Promise.all(
+      selected.map(async (modelId) => {
+        const model = models.find((m) => m.id === modelId)!;
+        const result = await runnerFor(model.provider).run({
+          model,
+          prompt: prompt?.body ?? "",
+          expectedTokensIn: tokensIn,
+          expectedTokensOut: tokensOut,
+        });
+        return { modelId, ...result };
+      }),
+    );
     const id = startDuel({
       title: title.trim(),
       taskType,
       promptId: promptId || null,
       projectId: null,
       blind: true,
-      entries: selected.map((modelId) => {
-        const model = models.find((m) => m.id === modelId)!;
-        return {
-          modelId,
-          output: "",
-          tokensIn,
-          tokensOut,
-          latencyMs: Math.round(model.latencyMs + (tokensOut / model.throughput) * 1000),
-          cost:
-            Math.round(
-              ((tokensIn / 1e6) * model.inputPrice + (tokensOut / 1e6) * model.outputPrice) * 1e6,
-            ) / 1e6,
-        };
-      }),
+      entries,
     });
     toast({
       title: firstOwn ? "Your record starts here" : "Duel started",
@@ -146,7 +149,9 @@ function NewDuelInner() {
               value={title}
               placeholder="Review the payment webhook signature check"
               onChange={(event) => setTitle(event.target.value)}
-              onKeyDown={(event) => event.key === "Enter" && submit()}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") void submit();
+              }}
             />
           </Field>
 
@@ -278,7 +283,7 @@ function NewDuelInner() {
           <Button variant="ghost" size="md" asChild>
             <Link href="/duels">Cancel</Link>
           </Button>
-          <Button variant="primary" size="md" disabled={!canStart} onClick={submit}>
+          <Button variant="primary" size="md" disabled={!canStart} onClick={() => void submit()}>
             <Swords className="size-3.5" />
             Start duel
           </Button>

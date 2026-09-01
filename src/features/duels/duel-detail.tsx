@@ -296,8 +296,13 @@ export function DuelDetail({ id }: { id: string }) {
                     is exactly the bias the blind test is there to remove. */}
                 {decided && (
                   <dl className="mt-3 grid grid-cols-3 gap-2 border-t border-line-subtle pt-2.5">
+                    {/* A manual entry's figures are catalogue estimates, and say so;
+                        a connected provider's are measured. */}
                     {[
-                      ["Cost", formatCurrency(entry.cost, { maximumFractionDigits: 4 })],
+                      [
+                        entry.source === "api" ? "Cost" : "Cost (est.)",
+                        formatCurrency(entry.cost, { maximumFractionDigits: 4 }),
+                      ],
                       ["Tokens", formatCompact(entry.tokensIn + entry.tokensOut)],
                       ["Latency", formatDuration(entry.latencyMs)],
                     ].map(([label, value]) => (
