@@ -13,9 +13,7 @@ import type {
   ProviderId,
   SpendCategory,
   SpendEntry,
-  SpendKind,
 } from "../types";
-import { SEED_TOOLS } from "./tools";
 
 /** mulberry32 — small, fast, good enough for plausible-looking noise. */
 export function makeRng(seed: number): () => number {
