@@ -74,7 +74,10 @@ function initialise(svg) {
 
     if (reel.visible) {
       // Jour : l'ombre à sa vraie place. L'ombre ne ment pas.
-      ombre.style.transform = `rotate(${reel.stylePolaire.angle.toFixed(3)}deg)`;
+      // Convention moteur : angle positif = à droite de la ligne de midi (+x).
+      // CSS rotate() positif est horaire à l'écran (y vers le bas) et enverrait
+      // une ligne descendante vers la GAUCHE : on inverse le signe.
+      ombre.style.transform = `rotate(${(-reel.stylePolaire.angle).toFixed(3)}deg)`;
       if (eHeure) eHeure.textContent = `HEURE VRAIE — ${formatHeure(reel.soleil.heureSolaire)}`;
       if (eEtat) eEtat.textContent = "OMBRE RÉELLE — CALCULÉE POUR CET INSTANT";
       if (basculeNuit) basculeNuit.hidden = true;
@@ -85,7 +88,7 @@ function initialise(svg) {
     const midi = midiVraiDuJour(maintenant);
     const simule = ombreStyle(midi, lieu.lat, lieu.lon, declMur);
     if (simule.visible) {
-      ombre.style.transform = `rotate(${simule.stylePolaire.angle.toFixed(3)}deg)`;
+      ombre.style.transform = `rotate(${(-simule.stylePolaire.angle).toFixed(3)}deg)`;
     } else {
       ombre.style.transform = "rotate(0deg)";
     }
