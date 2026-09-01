@@ -93,6 +93,25 @@ list. Dashboard KPI tiles become a 2×2 grid with supporting detail dropped. The
 model comparison moves into a sheet behind a floating selection bar rather than
 being squeezed into a column.
 
+## The signature device
+
+A screenshot should be recognisable without the logo, and the thing that does
+that here is the **record marks**.
+
+- **Tally marks** for small samples. A count of nine reads as a statistic;
+  four strokes and a slash, twice, reads as what it actually is — a handful of
+  results somebody counted. Above sixteen it falls back to a number, because
+  counting strokes stops being legible.
+- **A win/loss/tie split bar**, which reads as a shape before it reads as data,
+  so a column of them is scannable.
+- **A form strip** — the last six results, newest first, the way a league table
+  prints it.
+
+They appear wherever a model, a prompt or a kind of work appears. The product
+mark is the same idea: a tally, four strokes and a slash. The oldest way of
+recording that something happened, repeatedly, and counting it up afterwards.
+Not a spark, a brain or a hexagon.
+
 ## Details worth noticing
 
 - The command palette highlights the characters it matched, and previews the

@@ -1,122 +1,118 @@
-# AI Command Center
+# Bench
 
-A personal cockpit for AI work: every tool you pay for, every model you compare,
-every prompt you reuse, every project they serve, and what the whole thing
-costs — in one place.
+**Which model actually wins your work.**
 
-Most people running on AI have their prompts in a notes app, their spend
-invisible until the card statement, and no memory of which model was best for
-what. This is the instrument panel for that.
+Every model decision you make is a guess against a benchmark of somebody else's
+tasks. Bench turns the work you are already doing into blind head-to-heads,
+records who won, and compounds that into a routing table — plus the number your
+guessing is costing you.
 
-![Dashboard](screenshots/dashboard.png)
+![Verdicts](screenshots/verdicts.png)
 
-> **Prototype.** Everything runs locally in the browser. There is no account, no
-> server, and no provider API is ever called. Model prices, capability scores and
-> spend history are illustrative seed data, generated from a fixed seed. The
-> storage layer is a single adapter interface, so pointing it at a real backend
-> is a file, not a rewrite.
+> **Prototype.** Everything runs locally in the browser. No account, no server,
+> and no provider API is ever called — you run the prompt in whichever apps you
+> already use and record the verdict. Model prices are illustrative snapshot
+> values, and the workspace opens on a labelled sample corpus so the routing
+> table is not empty on day one.
 
 ---
 
+## The loop
+
+```
+You have a task that matters      →   run it as a duel, not a guess
+        ↓
+You get the answer you needed     →   and you saw the alternatives
+        ↓
+One click picks the winner        →   blind: no names, no prices
+        ↓
+The record thickens               →   task type, winner, cost delta, your reason
+        ↓
+A verdict settles                 →   "Sonnet beats Opus on code review, 9–2"
+        ↓
+You change the routing            →   and Bench keeps testing whether it still holds
+```
+
+The mechanic that makes it work is that **model identity and price stay hidden
+until you have chosen**. If you can see that column B is the expensive one, you
+will pick it, and the record it produces is worth nothing.
+
 ## What it does
 
-### Dashboard — answers three questions before you click anything
+### Verdicts — the routing table
 
-What am I spending, what needs a decision today, and what just happened.
+For each kind of work: what your own head-to-heads say to use, the record behind
+it, honest confidence, and the monthly delta. Grouped by what you should *do*
+about it — **change these** / **your call** / **already right** / **not settled**
+— because a table sorted alphabetically is a spreadsheet, not a recommendation.
 
-The **Needs attention** panel is derived, not decorative: trials with a date on
-them, subscriptions nobody has opened, projects past 80% of their budget, overdue
-tasks, renewals inside five days — each computed from real state and sorted by
-urgency. The month-end forecast accounts for subscription renewal dates rather
-than naively extrapolating spend-per-day, and the month-to-date delta compares
-day 1..N against day 1..N of the previous month, so it stays honest on the 3rd.
+Every row expands to the duels behind it. A recommendation you cannot audit is
+just another opinion, and the whole pitch is that this one is yours.
 
-### Command palette — `⌘K`
+Confidence is an exact binomial against a coin flip, stated in words rather than
+notation: *"A 9–2 record would come up by chance about 3 times in 100."* Four
+states, each with a different action:
 
-![Command palette](screenshots/command-palette.png)
+| State | Means | Do |
+|---|---|---|
+| **Settled** | The record beats chance | Route to the winner |
+| **No difference** | Enough tries to have found a gap, and none showed | Route to the cheapest of equals |
+| **Leaning** | One is ahead, not by enough | Run a few more |
+| **Not enough yet** | Fewer than five results | It is a guess, not a verdict |
 
-One field searches every prompt, project, tool, model and workflow, plus every
-action the app can perform. Type `>` for commands only.
+The second row is where most of the money is: a cheap model does not have to be
+*better*, only *not worse*.
 
-Matched characters are highlighted, not just ranked. The right-hand pane previews
-whatever is selected — a model's pricing and context window, a tool's status and
-last use, a prompt's body — so the palette answers questions without navigating
-anywhere. Empty state shows genuinely recent items, derived from the activity log.
+### Duels — where evidence is made
 
-### Prompt Vault
+![Judging a duel](screenshots/judge.png)
 
-![Prompt Vault](screenshots/prompt-vault.png)
+Pick a task and two to four models. Bench shows you the prompt to run and hides
+which answer came from which — presentation order is shuffled by a hash of the
+duel id, so "A" is never reliably the one you added first. Paste the answers back
+or judge from memory; the verdict is the part that compounds.
 
-A prompt library is only worth having if you can run what is in it, so
-**Compose** is the default tab: typed variables (text, long text, select,
-number), a live preview that marks filled values green and unfilled placeholders
-amber, a token estimate, and copy-to-clipboard that records a real run.
+Cost, latency and names are revealed together, after the verdict.
 
-**Edit** reconciles variable definitions from the body as you type, flagging
-which placeholders are new and which will be dropped. **History** keeps every
-previous body with a note and shows a real line diff against the current one —
-two bodies side by side tell you nothing about a prompt where one rule changed.
+### Today
 
-![Prompt history diff](screenshots/prompt-history.png)
+![Today](screenshots/today.png)
 
-### Model Lab
+Not a dashboard of everything: one question and one answer. What needs judging,
+what the evidence changed, and how settled the record is.
 
-![Model Lab](screenshots/model-lab.png)
+### Models, Prompts, Spend
 
-Select up to four models — capped there because a fifth overlaid radar stops
-being readable — and compare capability profiles, a spec table that highlights
-the winner in each row, and a **workload cost calculator**: chat / summarise /
-review / classify presets or your own token counts, showing what each model would
-cost per month and how long it would take. The spread between the cheapest and
-most expensive option is usually the whole argument.
+- **Models** — your win–loss record and recent form sit *ahead* of the vendor's
+  specs, and the default sort is by that record.
+- **Prompts** — each carries which model wins *it*, computed from the duels that
+  used it. "Run as a duel" is the primary action.
+- **Spend** — budget, forecast, provider and project breakdowns, the transaction
+  ledger and subscriptions, with a card bridging to how much of the bill your own
+  evidence says is avoidable.
 
-### Spending
+---
 
-![Spending](screenshots/spending.png)
+## Who this is for
 
-Budget with a month-end forecast marked on the bar, the daily rate that lands
-exactly on the ceiling, spend stacked by type or provider over 7D/30D/3M/12M,
-breakdowns by provider, project and category — including how much spend is
-actually attributed — and a searchable transaction ledger with token counts.
+**ICP.** Someone who puts AI *into* something — an indie developer shipping AI
+features, a consultant billing for AI output, a technical founder. They spend
+$150–600/month across four or more providers, and model choice is a recurring
+engineering decision with a cost line attached. A casual ChatGPT user makes that
+decision once; this person makes it monthly.
 
-### Projects
+**The pain.** They pick models by vibes and vendor benchmarks that do not
+reflect their work, over-provision "to be safe", and cannot justify the choice to
+anyone. At volume that is real money and no argument.
 
-![Projects](screenshots/projects.png)
+**The alternative today.** Two browser tabs, an eyeball comparison, and the
+result forgotten by Thursday. Or a public leaderboard measuring someone else's
+tasks. Or nothing.
 
-What the tools are actually for. Objectives, checkable tasks with overdue states,
-a spend trend attributed to the project alone, its own budget, and the prompts,
-tools, models and workflows it uses.
-
-### Workflows
-
-![Workflows](screenshots/workflows.png)
-
-Multi-step pipelines on an SVG canvas that fits itself to the viewport. **Simulate
-run** steps through the graph — completed edges turn accent, the active edge
-animates, pending steps dim — while cost, tokens, compute time and step count
-count up against the estimate.
-
-Costs are computed from current model list prices and each step's token counts,
-so the estimate is real even though nothing is executed. Compute time is the
-critical path through the graph, not the sum of every step, so parallel branches
-are not double-counted.
-
-### Tools
-
-![Tools](screenshots/tools.png)
-
-Grid or table, with cost-per-use computed for every subscription and flagged
-above $1.50. The insight strip at the top sums the money sitting in
-barely-used tools, names the worst offender, and folds in trials about to
-convert — and only appears when there is something to say.
-
-### Onboarding
-
-![Onboarding](screenshots/onboarding.png)
-
-Five steps, and every choice has a consequence: unpicked tools drop to
-*evaluating*, chosen models get starred so the Model Lab opens on them, and the
-budget drives the sidebar meter from the first screen.
+**Why not Notion / ChatGPT Projects / Claude Projects.** Those are places to keep
+things, and one of them cannot compare itself against a competitor. Bench is
+structurally cross-provider: no vendor will ever build a tool whose main output
+is "use the other one for this".
 
 ---
 
@@ -127,18 +123,14 @@ budget drives the sidebar meter from the first screen.
 | Framework | Next.js 15 (App Router) · React 19 |
 | Language | TypeScript, strict |
 | Styling | Tailwind CSS v4, CSS-first tokens (no `tailwind.config.js`) |
-| Components | Radix primitives where accessibility is genuinely hard; hand-built otherwise |
+| Components | Radix where accessibility is genuinely hard; hand-built otherwise |
 | Charts | Hand-written SVG — no charting dependency |
 | State | Zustand, one store, one write path |
 | Storage | `localStorage` behind a swappable adapter interface |
-| Fonts | Geist Sans + Geist Mono, self-hosted |
 | Tests | Vitest + Testing Library + jsdom |
 | Accessibility | axe-core via Playwright, every route, both themes |
 
-No animation library, no chart library, no UI kit. 103 kB of shared JS; pages
-land between 150 and 190 kB first load.
-
----
+No animation library, no chart library, no UI kit. 103 kB of shared JS.
 
 ## Architecture
 
@@ -146,22 +138,22 @@ land between 150 and 190 kB first load.
 src/
 ├── app/                  Routes. Shell is static; data views are client components.
 ├── components/
-│   ├── ui/               Primitives — Button, Card, Dialog, Segmented, …
+│   ├── ui/               Primitives, including the record/tally marks
 │   ├── charts/           Hand-written SVG charts
 │   ├── layout/           Sidebar, top bar, mobile nav, theme, shell
 │   ├── command/          Command palette and its preview pane
-│   └── onboarding/       First-run flow
-├── features/             Feature-scoped components (tools, models, prompts, …)
+│   └── onboarding/       First run, which opens on a real blind comparison
+├── features/             duels · verdicts · models · prompts · spending · projects
 ├── lib/
-│   ├── data/             Domain types, adapter interface, seeded workspace
-│   ├── analytics/        Pure functions: spend, budgets, forecasting, attention
-│   ├── search/           Fuzzy matcher, search index, list-filter predicate
-│   ├── prompts/          Template engine: variables, rendering, reconciliation
+│   ├── data/             Domain types, adapter interface, seeded corpus
+│   ├── analytics/        verdicts.ts (routing) · spend.ts (money) · attention.ts
+│   ├── search/           Fuzzy matcher, index, list-filter predicate
+│   ├── prompts/          Template engine and line diff
 │   └── store/            Zustand stores
 └── hooks/
 ```
 
-**Data never lives in components.** Everything goes through one seam:
+**Data never lives in components.** One seam:
 
 ```
 WorkspaceAdapter ──→ Zustand store ──→ selectors ──→ components
@@ -169,13 +161,14 @@ WorkspaceAdapter ──→ Zustand store ──→ selectors ──→ component
  load/save/clear      mutate → log activity → debounced persist
 ```
 
-`LocalStorageAdapter` today, `MemoryAdapter` in tests, a Supabase or Postgres
-implementation later — with no component changes, because no component knows
-where a workspace comes from.
+`LocalStorageAdapter` today, `MemoryAdapter` in tests, Supabase or Postgres later
+— with no component changes.
 
-See [`docs/architecture.md`](docs/architecture.md) for the decisions behind the
-forecast model, the two different search algorithms, and why the charts are
-hand-written. [`docs/design.md`](docs/design.md) covers the visual system.
+See [`docs/architecture.md`](docs/architecture.md) for the statistics, the
+forecast model and why search uses two different algorithms.
+[`docs/design.md`](docs/design.md) covers the visual system.
+[`docs/product.md`](docs/product.md) is the strategy: the critique that produced
+this pivot, the loop, the ICP and the pricing hypothesis.
 
 ---
 
@@ -186,9 +179,9 @@ npm install
 npm run dev            # http://localhost:3000
 ```
 
-First run walks through a short setup, then loads a workspace with ~13 months of
-plausible history so nothing is empty. Everything is stored in your browser;
-Settings can export it as JSON, import it back, or reset to the sample data.
+First run is a real blind comparison — pick the better of two answers before you
+know what produced them. Then the workspace loads a labelled sample corpus of 72
+duels so the routing table has something in it; one click clears it.
 
 ### Scripts
 
@@ -198,60 +191,45 @@ Settings can export it as JSON, import it back, or reset to the sample data.
 | `npm run build` | Production build |
 | `npm start` | Serve the production build |
 | `npm test` | Run the test suite |
-| `npm run test:watch` | Watch mode |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
 | `npm run check` | typecheck → tests → build |
-| `npm run a11y` | axe scan over every route, both themes (needs `npm run dev`) |
-| `npm run responsive` | Horizontal-overflow sweep, 8 widths × 9 routes (needs `npm run dev`) |
+| `npm run a11y` | axe scan, every route, both themes (needs a server) |
+| `npm run responsive` | Overflow sweep, 8 widths × 12 routes (needs a server) |
 | `npm run deadcode` | knip scan for unused files, exports and dependencies |
 | `npm run screenshots` | Regenerate the captures in `screenshots/` |
 
----
-
 ## Tests
 
-220 tests across 12 files. Pure logic is tested directly and heavily; UI tests
-cover behaviour a user would notice.
+306 tests across 18 files. The verdict engine is tested hardest, because it is
+the product: exact binomial probabilities, each confidence state and the
+boundaries between them, the equivalence rule that stops "not significant" from
+swallowing a real signal, reversal detection, and the money maths.
 
-```
-Analytics    range windows, bucketed series, breakdowns, month-end forecast
-             including renewal dates, budget state, safe daily rate, model
-             cost and latency estimation, formatters
-Search       fuzzy scoring and highlight segments, index building, the
-             list-filter predicate, grouping and relevance ordering
-Templates    variable extraction, rendering, segment rendering, reconciliation
-Store        every mutation: versioning, restore, duplication, cascading
-             deletes, activity logging, onboarding, reset
-Attention    each derived signal and its severity ordering
-UI           command palette keyboard model and grouping, prompt composer
-             fill-and-copy, tools filtering and editing, model comparison and
-             its cost calculator, navigation state
-```
+The judging screen has an explicit test that **no model name and no price
+appears while a verdict is pending** — that guarantee is the reason the data is
+worth anything, so it is asserted rather than assumed.
 
-Writing them surfaced five real defects — a rounding error that lost a cent, the
-palette activating the wrong result on Enter, list filters that excluded nothing,
-and two accessibility bugs. All are fixed, and each has a regression test.
+Writing the suite has surfaced eight real defects across both phases, each fixed
+with a regression test. See the git log.
 
 ---
 
 ## Roadmap
 
-Deliberately out of scope for a prototype, in rough order of value:
+In rough order of value:
 
-- **A real backend.** Write a `SupabaseAdapter` against the existing interface;
-  multi-device sync and sharing follow from it.
-- **Live usage ingestion.** Pull actual spend from provider usage APIs instead of
-  seeded figures, and reconcile against invoices.
-- **Prompt runs against real models.** The Compose tab currently copies; sending
-  it and storing the response would make version history far more useful.
-- **Team workspaces.** Shared prompt libraries, per-seat attribution, roles.
-- **Workflow execution.** The canvas already models steps, costs and gates; an
-  execution engine behind it is the natural next step.
-- **Evaluation runs.** Score a prompt across several models on a fixed rubric and
-  keep the history — the Model Lab's personal scores are a manual stand-in.
-
----
+- **Provider-connected duels.** Run the comparison from inside Bench instead of
+  copy-paste. Cuts the friction that is the whole risk of the product.
+- **Usage ingestion.** Read real volumes from provider APIs, so the savings
+  number stops depending on an estimate the user typed.
+- **Routing export.** Emit the verdict table as a config a gateway can consume,
+  so the recommendation becomes the behaviour.
+- **Team ledgers.** Shared evidence, per-project verdicts, and an audit trail for
+  "why are we on this model".
+- **Judge assistance.** A model proposing the verdict for you to confirm, which
+  raises throughput but has to be kept clearly separate from human verdicts in
+  the record.
 
 ## Licence
 

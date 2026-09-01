@@ -2,6 +2,32 @@
 
 Short notes on the decisions that shaped this codebase, and why.
 
+## The verdict engine
+
+`lib/analytics/verdicts.ts` is the product. It turns duel records into routing
+decisions, and the hard part is not counting wins — it is being honest about how
+much a count of nine proves.
+
+Confidence comes from an exact binomial: the probability of the leader's record
+arising from two equal models. Exact rather than approximate because n is small
+enough that the table is free, and there are no heuristics to explain when they
+produce something odd.
+
+Two rules are worth calling out because the obvious implementation is wrong:
+
+**Equivalence is a finding, not a failure.** When there have been enough tries to
+find a difference and none appeared, that is a result: take the cheaper model.
+Most of the money lives here, because the cheap one only has to be *not worse*.
+
+**But "not significant" must not swallow real signal.** A 7–3 record with a
+six-win streak is a lean, not a tie. So an equivalence also requires the leader
+to hold at most 60% of decisive results. Without that guard, the engine routed
+work to the model that was losing.
+
+Reversal detection compares the recent six results against everything before
+them, so a leader that has quietly been overtaken surfaces even while its
+lifetime record still looks fine.
+
 ## The one rule: data never lives in components
 
 Everything flows through a single seam:
@@ -24,7 +50,20 @@ pure transform, appends an activity event, and schedules a debounced persist.
 That is why the dashboard's timeline shows real user actions in the same shape
 as seeded history — there is no second code path that could diverge.
 
-## Why the seed data is generated, not written
+## Why the seed corpus is a story spec
+
+The duel corpus is not 72 literal records. Each task type declares its matchup
+and an ordered list of outcomes, and the duels are generated from that. Ordering
+carries meaning: it is what lets the corpus contain a reversal, which is the
+behaviour that proves the ledger is live rather than a static benchmark.
+
+The corpus deliberately contains every shape the product must handle — an
+expensive default losing, an equivalence on the highest-volume task, a
+confirmation that the expensive model is right, a recommendation that costs more
+than it saves, a lean short of confidence, and an honest "two results is not
+evidence".
+
+## Why the rest of the seed data is generated, not written
 
 The hand-written content (16 tools, 14 models, 12 prompts, 6 projects, 4
 workflows) is real prose, because "Lorem ipsum" makes a product demo feel like a
