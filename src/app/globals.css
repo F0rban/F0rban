@@ -1,0 +1,332 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------------ *
+ *  AI COMMAND CENTER — DESIGN TOKENS
+ *
+ *  Direction: instrument panel. Graphite surfaces, hairline borders,
+ *  one warm signal colour (amber) reserved for intent, a cool teal for
+ *  confirmation. No gradients-as-decoration, no purple.
+ * ------------------------------------------------------------------ */
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces — a strict 4-step elevation ladder. */
+  --canvas: oklch(0.976 0.003 95);
+  --surface-1: oklch(1 0 0);
+  --surface-2: oklch(0.968 0.004 95);
+  --surface-3: oklch(0.945 0.005 95);
+  --overlay: oklch(1 0 0);
+  --scrim: oklch(0.28 0.01 265 / 0.42);
+
+  /* Hairlines. Borders carry the structure, not shadows. */
+  --line-subtle: oklch(0.928 0.004 95);
+  --line: oklch(0.892 0.005 95);
+  --line-strong: oklch(0.828 0.007 95);
+
+  /* Text ramp */
+  --ink: oklch(0.235 0.009 265);
+  --ink-2: oklch(0.445 0.011 265);
+  --ink-3: oklch(0.568 0.011 265);
+  --ink-4: oklch(0.688 0.010 265);
+
+  /* Signal */
+  --accent: oklch(0.596 0.135 55);
+  --accent-hover: oklch(0.548 0.138 52);
+  --accent-ink: oklch(0.995 0.004 95);
+  --accent-soft: oklch(0.949 0.037 72);
+  --accent-line: oklch(0.842 0.079 66);
+
+  /* Semantic */
+  --positive: oklch(0.541 0.104 178);
+  --positive-soft: oklch(0.944 0.033 178);
+  --warning: oklch(0.638 0.132 72);
+  --warning-soft: oklch(0.955 0.042 78);
+  --negative: oklch(0.564 0.176 22);
+  --negative-soft: oklch(0.951 0.031 22);
+  --info: oklch(0.548 0.126 250);
+  --info-soft: oklch(0.949 0.033 250);
+
+  /* Categorical series — tuned for adjacent legibility, not rainbow. */
+  --series-1: oklch(0.606 0.135 55);
+  --series-2: oklch(0.552 0.098 195);
+  --series-3: oklch(0.520 0.128 268);
+  --series-4: oklch(0.588 0.152 18);
+  --series-5: oklch(0.596 0.115 145);
+  --series-6: oklch(0.560 0.108 232);
+  --series-7: oklch(0.560 0.128 318);
+  --series-8: oklch(0.606 0.052 85);
+
+  --grid: oklch(0.905 0.004 95);
+
+  /* Elevation — light mode gets real, soft shadows. */
+  --shadow-xs: 0 1px 2px oklch(0.28 0.01 265 / 0.05);
+  --shadow-sm: 0 1px 2px oklch(0.28 0.01 265 / 0.05), 0 2px 6px oklch(0.28 0.01 265 / 0.045);
+  --shadow-md: 0 2px 4px oklch(0.28 0.01 265 / 0.05), 0 8px 20px -4px oklch(0.28 0.01 265 / 0.09);
+  --shadow-lg: 0 4px 8px oklch(0.28 0.01 265 / 0.05), 0 20px 48px -8px oklch(0.28 0.01 265 / 0.16);
+  --inset-hi: inset 0 1px 0 oklch(1 0 0 / 0.6);
+}
+
+.dark {
+  color-scheme: dark;
+
+  --canvas: oklch(0.168 0.007 265);
+  --surface-1: oklch(0.203 0.008 265);
+  --surface-2: oklch(0.238 0.009 265);
+  --surface-3: oklch(0.272 0.010 265);
+  --overlay: oklch(0.228 0.009 265);
+  --scrim: oklch(0.10 0.008 265 / 0.66);
+
+  --line-subtle: oklch(0.263 0.009 265);
+  --line: oklch(0.308 0.011 265);
+  --line-strong: oklch(0.378 0.013 265);
+
+  --ink: oklch(0.962 0.003 265);
+  --ink-2: oklch(0.762 0.008 265);
+  --ink-3: oklch(0.638 0.010 265);
+  --ink-4: oklch(0.520 0.011 265);
+
+  --accent: oklch(0.788 0.135 68);
+  --accent-hover: oklch(0.836 0.128 70);
+  --accent-ink: oklch(0.205 0.030 60);
+  --accent-soft: oklch(0.298 0.048 62);
+  --accent-line: oklch(0.408 0.072 64);
+
+  --positive: oklch(0.762 0.110 178);
+  --positive-soft: oklch(0.288 0.042 180);
+  --warning: oklch(0.808 0.126 78);
+  --warning-soft: oklch(0.302 0.048 76);
+  --negative: oklch(0.706 0.152 20);
+  --negative-soft: oklch(0.302 0.058 20);
+  --info: oklch(0.732 0.112 248);
+  --info-soft: oklch(0.292 0.052 250);
+
+  --series-1: oklch(0.788 0.135 68);
+  --series-2: oklch(0.742 0.098 195);
+  --series-3: oklch(0.688 0.122 268);
+  --series-4: oklch(0.716 0.148 18);
+  --series-5: oklch(0.772 0.118 148);
+  --series-6: oklch(0.728 0.108 232);
+  --series-7: oklch(0.722 0.118 318);
+  --series-8: oklch(0.748 0.048 85);
+
+  --grid: oklch(0.268 0.009 265);
+
+  /* Elevation — dark mode leans on hairlines + a faint top highlight. */
+  --shadow-xs: 0 1px 2px oklch(0 0 0 / 0.30);
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.36), 0 2px 6px oklch(0 0 0 / 0.24);
+  --shadow-md: 0 2px 4px oklch(0 0 0 / 0.34), 0 8px 20px -4px oklch(0 0 0 / 0.44);
+  --shadow-lg: 0 4px 8px oklch(0 0 0 / 0.36), 0 24px 56px -10px oklch(0 0 0 / 0.62);
+  --inset-hi: inset 0 1px 0 oklch(1 0 0 / 0.045);
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-overlay: var(--overlay);
+  --color-scrim: var(--scrim);
+
+  --color-line-subtle: var(--line-subtle);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+
+  --color-positive: var(--positive);
+  --color-positive-soft: var(--positive-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-negative: var(--negative);
+  --color-negative-soft: var(--negative-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
+  --color-series-3: var(--series-3);
+  --color-series-4: var(--series-4);
+  --color-series-5: var(--series-5);
+  --color-series-6: var(--series-6);
+  --color-series-7: var(--series-7);
+  --color-series-8: var(--series-8);
+  --color-grid: var(--grid);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.125rem;
+
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  --animate-fade-in: fade-in 0.18s var(--ease-out-quint) both;
+  --animate-rise: rise 0.28s var(--ease-out-quint) both;
+  --animate-pop: pop 0.16s var(--ease-spring) both;
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+  --animate-flow: flow 1.4s linear infinite;
+  --animate-pulse-ring: pulse-ring 2s var(--ease-out-quint) infinite;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.97) translateY(4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes shimmer {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.85; }
+}
+@keyframes flow {
+  to { stroke-dashoffset: -12; }
+}
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 var(--accent); opacity: 0.6; }
+  70% { box-shadow: 0 0 0 8px transparent; opacity: 0; }
+  100% { box-shadow: 0 0 0 0 transparent; opacity: 0; }
+}
+
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    background-color: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    font-variant-ligatures: contextual;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Numbers must never reflow while they animate or update. */
+  .tnum,
+  th,
+  td,
+  input[type="number"] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background-color: var(--accent-soft);
+    color: var(--ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+
+  /* One consistent scrollbar across the app. */
+  ::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--line-strong);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--ink-4);
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Hairline that survives the light/dark flip without a second class. */
+  .hairline {
+    box-shadow: 0 0 0 1px var(--line);
+  }
+
+  .surface-raised {
+    background-color: var(--surface-1);
+    box-shadow: var(--shadow-sm), var(--inset-hi);
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Fades the far edge of a horizontally scrolling strip. */
+  .mask-fade-r {
+    mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent 100%);
+  }
+
+  .stack-in > * {
+    animation: rise 0.34s var(--ease-out-quint) both;
+  }
+  .stack-in > *:nth-child(1) { animation-delay: 0ms; }
+  .stack-in > *:nth-child(2) { animation-delay: 35ms; }
+  .stack-in > *:nth-child(3) { animation-delay: 70ms; }
+  .stack-in > *:nth-child(4) { animation-delay: 105ms; }
+  .stack-in > *:nth-child(5) { animation-delay: 140ms; }
+  .stack-in > *:nth-child(6) { animation-delay: 175ms; }
+  .stack-in > *:nth-child(7) { animation-delay: 210ms; }
+  .stack-in > *:nth-child(8) { animation-delay: 245ms; }
+
+  /* The faint dotted field behind the workflow canvas + empty states. */
+  .dot-field {
+    background-image: radial-gradient(var(--line) 1px, transparent 1px);
+    background-size: 16px 16px;
+    background-position: -1px -1px;
+  }
+}
