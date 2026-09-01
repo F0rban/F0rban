@@ -272,7 +272,9 @@ export function OnboardingFlow() {
                               ? "Usage-based"
                               : tool.monthlyCost > 0
                                 ? `${formatCurrency(tool.monthlyCost)}/mo`
-                                : "Free"}
+                                : tool.status === "paused"
+                                  ? "Paused — no charge"
+                                  : "Free"}
                           </span>
                         </span>
                       </SelectCard>

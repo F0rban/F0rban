@@ -88,3 +88,27 @@ describe("mobile tab bar", () => {
     expect(screen.getByRole("link", { name: "Model Lab" })).toHaveAttribute("aria-current", "page");
   });
 });
+
+describe("top bar", () => {
+  it("is a breadcrumb landmark, not a second page heading", async () => {
+    setRoute("/spending");
+    const { Topbar } = await import("./topbar");
+    renderApp(<Topbar />);
+    const crumb = screen.getByRole("navigation", { name: "Breadcrumb" });
+    expect(within(crumb).getByText("Spending")).toHaveAttribute("aria-current", "page");
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+  });
+
+  it("shows the section and the record name on a detail route", async () => {
+    setRoute("/projects/pr-atlas");
+    useUiStore.setState({ pageTitle: "Atlas — knowledge base search" });
+    const { Topbar } = await import("./topbar");
+    renderApp(<Topbar />);
+    const crumb = screen.getByRole("navigation", { name: "Breadcrumb" });
+    expect(within(crumb).getByRole("link", { name: "Projects" })).toBeInTheDocument();
+    expect(within(crumb).getByText("Atlas — knowledge base search")).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+  });
+});

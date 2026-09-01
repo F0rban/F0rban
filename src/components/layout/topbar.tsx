@@ -40,26 +40,44 @@ export function Topbar() {
         <Logo size={20} />
       </Link>
 
-      <div className="hidden min-w-0 items-baseline gap-2 md:flex">
-        {isDetail && item ? (
-          <>
-            <Link
-              href={item.href}
-              className="shrink-0 text-[13px] text-ink-3 transition-colors hover:text-ink"
-            >
-              {item.label}
-            </Link>
-            <span className="shrink-0 text-ink-4">/</span>
-            <h1 className="truncate text-[13px] font-semibold tracking-[-0.005em] text-ink">
-              {pageTitle ?? "Detail"}
-            </h1>
-          </>
-        ) : (
-          <h1 className="truncate text-[13px] font-semibold tracking-[-0.005em] text-ink">
-            {item?.label ?? "Command Center"}
-          </h1>
-        )}
-      </div>
+      {/* Chrome, not content: the page's own <h1> is the heading. This is a
+          breadcrumb, so it is a nav landmark rather than a second heading. */}
+      <nav aria-label="Breadcrumb" className="hidden min-w-0 md:block">
+        <ol className="flex min-w-0 items-baseline gap-2">
+          {isDetail && item ? (
+            <>
+              <li className="shrink-0">
+                <Link
+                  href={item.href}
+                  className="text-[13px] text-ink-3 transition-colors hover:text-ink"
+                >
+                  {item.label}
+                </Link>
+              </li>
+              <li aria-hidden className="shrink-0 text-ink-4">
+                /
+              </li>
+              <li className="min-w-0">
+                <span
+                  aria-current="page"
+                  className="block truncate text-[13px] font-semibold tracking-[-0.005em] text-ink"
+                >
+                  {pageTitle ?? "Detail"}
+                </span>
+              </li>
+            </>
+          ) : (
+            <li className="min-w-0">
+              <span
+                aria-current="page"
+                className="block truncate text-[13px] font-semibold tracking-[-0.005em] text-ink"
+              >
+                {item?.label ?? "Command Center"}
+              </span>
+            </li>
+          )}
+        </ol>
+      </nav>
 
       <div className="flex-1" />
 
