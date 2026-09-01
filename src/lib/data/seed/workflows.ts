@@ -15,7 +15,7 @@ export const SEED_WORKFLOWS: SeedWorkflow[] = [
     projectId: "pr-signal",
     tags: ["content", "weekly", "automated"],
     runCount: 21,
-    lastRunCost: 3.42,
+    lastRunCost: 0.2995,
     createdDaysAgo: 145,
     lastRunDaysAgo: 3,
     nodes: [
@@ -46,7 +46,7 @@ export const SEED_WORKFLOWS: SeedWorkflow[] = [
     projectId: "pr-atlas",
     tags: ["rag", "production", "latency-critical"],
     runCount: 41_882,
-    lastRunCost: 0.014,
+    lastRunCost: 0.0373,
     createdDaysAgo: 88,
     lastRunDaysAgo: 0,
     nodes: [
@@ -76,7 +76,7 @@ export const SEED_WORKFLOWS: SeedWorkflow[] = [
     projectId: "pr-northstar",
     tags: ["design", "image", "manual-gate"],
     runCount: 6,
-    lastRunCost: 8.9,
+    lastRunCost: 0.0194,
     createdDaysAgo: 64,
     lastRunDaysAgo: 19,
     nodes: [
@@ -107,7 +107,7 @@ export const SEED_WORKFLOWS: SeedWorkflow[] = [
     projectId: "pr-harbor",
     tags: ["support", "agent", "production"],
     runCount: 12_408,
-    lastRunCost: 0.006,
+    lastRunCost: 0.0209,
     createdDaysAgo: 196,
     lastRunDaysAgo: 0,
     nodes: [
