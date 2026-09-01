@@ -204,7 +204,7 @@ Piémont est une piste d'évolution, pas un livrable).
 Éthique respectée : **aucun `aggregateRating`, aucun `review`**, aucun prix gonflé,
 aucun label. Le téléphone utilise la tranche `04 65 71 XX XX` **réservée par l'ARCEP aux
 œuvres de fiction** (zone sud-est) : aucun risque de collision avec un vrai numéro.
-Les coordonnées géo sont celles du village (44°58′N 6°51′E, cohérentes avec la DA),
+Les coordonnées géo sont celles du village (44°41′N 6°51′E, cohérentes avec la DA),
 pas d'adresse postale précise inventée.
 
 ### 3.1 `LocalBusiness` — sur l'Accueil et la page Contact
@@ -219,8 +219,8 @@ pas d'adresse postale précise inventée.
   "slogan": "Nous peignons l'heure vraie.",
   "description": "Atelier de gnomonique et de fresque : conception, calcul, peinture a fresco et restauration de cadrans solaires muraux. L'un des derniers ateliers réunissant le relevé de géomètre et le geste de fresquiste.",
   "url": "https://atelier-meridienne.fr/",
-  "email": "bonjour@atelier-meridienne.fr",
-  "telephone": "+33 4 65 71 20 14",
+  "email": "contact@atelier-meridienne.fr",
+  "telephone": "+33 4 65 71 05 44",
   "foundingDate": "2014",
   "founder": [
     { "@type": "Person", "name": "Élise Bérard", "jobTitle": "Géomètre-topographe" },
@@ -233,7 +233,7 @@ pas d'adresse postale précise inventée.
     "addressRegion": "Hautes-Alpes",
     "addressCountry": "FR"
   },
-  "geo": { "@type": "GeoCoordinates", "latitude": 44.9667, "longitude": 6.85 },
+  "geo": { "@type": "GeoCoordinates", "latitude": 44.6885, "longitude": 6.8503 },
   "areaServed": [
     { "@type": "Country", "name": "France" },
     { "@type": "AdministrativeArea", "name": "Suisse romande" },
@@ -548,7 +548,7 @@ aucune image raster lourde. Traduction CWV page par page :
   runtime) : supprime une connexion tierce entière du chemin critique du LCP —
   le LCP probable étant le H1 en Fraunces, la police EST le chemin critique.
 - **Sous-ensembles stricts** : latin + ponctuation française (« » ’ — …),
-  primes ′ ″ (U+2032/2033 pour 44°58′N), degré °, €. Vérifier que le subset
+  primes ′ ″ (U+2032/2033 pour 44°41′N), degré °, €. Vérifier que le subset
   **conserve les petites capitales** (feature `smcp`) : les chiffres romains d'heures
   en petites caps sont une signature DA — un subset agressif les détruit.
 - **Deux fichiers Fraunces maximum** (texte opsz bas / display opsz 144), axes limités
@@ -622,3 +622,27 @@ T5:  59 / <60   OK    D5: 134 / <155  OK   (Méthode & tarifs)
 T6:  50 / <60   OK    D6: 135 / <155  OK   (Contact)
 T7:  37 / <60   OK    D7: 120 / <155  OK   (404)
 ```
+
+
+---
+
+## Addendum — écarts arbitrés à l'intégration (décisions DC, journal)
+
+1. **Coordonnées** : l'implémentation utilise les coordonnées réelles de
+   Molines-en-Queyras (44,6885 N / 6,8503 E — 44°41′N, alt. 1 750 m). La
+   valeur 44°58′N du brief initial était erronée ; ce document a été corrigé.
+   La dérive du récit fondateur, recalculée à cette latitude, reste 6–16 min.
+2. **Email / téléphone** : contact@atelier-meridienne.fr et 04 65 71 05 44
+   (tranche ARCEP fiction), partout — pages et JSON-LD.
+3. **H1 éditoriaux** : le compromis « H1 = phrase de marque, descripteur
+   à mots-clés dans la lede visible » est étendu de la home à toutes les
+   pages (décision de direction artistique : les title/meta portent la
+   requête, le H1 porte la voix). Assumé, cohérent avec le noindex du site.
+4. **404** : H1 « Cette heure n'est pas tracée. » conservé (plus juste que
+   la métaphore « plein nord », déjà utilisée par la ligne d'honnêteté) ;
+   meta et og alignées sur ce choix.
+5. **FAQPage** : 8 questions, texte strictement identique au visible,
+   apostrophes typographiques comprises.
+6. **CTA persistant** : « Demander une étude — dès 900 € », conforme §1.4.
+7. **Gloses** : implémentées en liens réels vers les ancres du glossaire
+   (`/savoir-faire/#…`) hors de la page Savoir-faire, avec infobulle.

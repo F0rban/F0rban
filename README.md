@@ -26,9 +26,11 @@ npm test           # 27 tests du moteur gnomonique (node --test)
 ```
 
 Aucune étape de build : le site est du HTML/CSS/JS statique servi tel quel.
-Les seules dépendances runtime (GSAP, ScrollTrigger, Lenis) sont vendorisées
-dans `assets/vendor/`, les fontes (Fraunces variable, Spline Sans Mono) sont
-auto-hébergées dans `assets/fonts/`.
+La seule dépendance runtime (Lenis, pour le scroll lissé) est vendorisée
+dans `assets/vendor/` ; les fontes variables (Fraunces, Spline Sans Mono)
+sont auto-hébergées et instanciées aux seuls axes utilisés (fonttools).
+Pour servir compressé : `npm run compress` génère les `.gz` (non versionnés),
+servis par `npm run dev` (`http-server -g`).
 
 ## Structure
 
@@ -59,6 +61,7 @@ auto-hébergées dans `assets/fonts/`.
 | `grain-tile.mjs` | régénère la tuile de grain d'enduit (reproductible, seed 1841) |
 | `derive-calc.mjs` | le calcul du récit fondateur : 4° d'erreur → dérive de 6,4 à 16,2 min |
 | `shoot.mjs` | captures d'écran desktop + mobile de toutes les pages |
+| `regression.mjs` | suite de non-régression navigateur (instrument, formulaires, débordements, a11y) |
 
 Chaîne de régénération après modification du moteur ou des planches :
 

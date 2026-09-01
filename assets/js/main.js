@@ -9,8 +9,9 @@
  * comme une ombre. prefers-reduced-motion : scroll natif, ombres figées à +31°,
  * les instruments restent fonctionnels.
  *
- * Dépendances globales (vendorisées, chargées avant ce module) :
- * window.gsap, window.ScrollTrigger, window.Lenis.
+ * Dépendance globale (vendorisée, chargée avant ce module) : window.Lenis.
+ * (GSAP a été retiré : Lenis seul suffit à lisser le scroll et à écrire
+ * --sun-angle — 46 Ko gzip économisés par page.)
  */
 
 const reduitLeMouvement = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -18,32 +19,33 @@ const reduitLeMouvement = window.matchMedia("(prefers-reduced-motion: reduce)").
 /* ------------------------------------------------------------------ */
 /* Scroll lissé + ombre solaire globale                                */
 /* ------------------------------------------------------------------ */
-if (!reduitLeMouvement && window.gsap && window.ScrollTrigger && window.Lenis) {
-  const { gsap, ScrollTrigger, Lenis } = window;
-  gsap.registerPlugin(ScrollTrigger);
-
-  const lenis = new Lenis({ lerp: 0.095 });
-  lenis.on("scroll", ScrollTrigger.update);
-  gsap.ticker.add((t) => lenis.raf(t * 1000));
-  gsap.ticker.lagSmoothing(0);
-
-  // Le scroll EST la journée : -52° en haut de page (matin), +52° au footer
-  // (couchant). Une seule écriture par frame, sur :root, jamais par élément.
-  const poseAngle = gsap.quickSetter(document.documentElement, "--sun-angle");
-  ScrollTrigger.create({
-    start: 0,
-    end: () => document.documentElement.scrollHeight - window.innerHeight,
-    scrub: true,
-    onUpdate: (st) => poseAngle(-52 + 104 * st.progress),
+if (!reduitLeMouvement && window.Lenis) {
+  const lenis = new window.Lenis({ lerp: 0.095 });
+  requestAnimationFrame(function raf(t) {
+    lenis.raf(t);
+    requestAnimationFrame(raf);
   });
 
-  // Liens d'ancre internes : Lenis prend la main pour garder le lissage.
+  // Le scroll EST la journée : -52° en haut de page (matin), +52° au footer
+  // (couchant). Le lissage vient de Lenis lui-même (e.scroll est la valeur
+  // interpolée) : une seule écriture par frame de scroll, sur :root.
+  const racine = document.documentElement;
+  lenis.on("scroll", (e) => {
+    const limite = e.limit || 1;
+    racine.style.setProperty("--sun-angle", String(-52 + 104 * Math.min(1, e.scroll / limite)));
+  });
+
+  // Liens d'ancre internes : Lenis garde le lissage, mais on préserve le
+  // contrat natif — le hash change et le focus suit (skip-link compris).
   document.querySelectorAll('a[href^="#"]').forEach((a) => {
     a.addEventListener("click", (e) => {
       const cible = document.querySelector(a.getAttribute("href"));
       if (!cible) return;
       e.preventDefault();
       lenis.scrollTo(cible, { offset: -80 });
+      if (!cible.hasAttribute("tabindex")) cible.setAttribute("tabindex", "-1");
+      cible.focus({ preventScroll: true });
+      history.pushState(null, "", a.getAttribute("href"));
     });
   });
 }
@@ -92,8 +94,10 @@ if (gloses.length) {
   bulle.setAttribute("role", "tooltip");
   document.body.appendChild(bulle);
   let cibleCourante = null;
+  let timerFermeture = null;
 
   const montre = (el) => {
+    clearTimeout(timerFermeture);
     cibleCourante = el;
     const terme = el.getAttribute("data-terme") || el.textContent.trim();
     bulle.innerHTML = "";
@@ -119,14 +123,33 @@ if (gloses.length) {
     cibleCourante?.removeAttribute("aria-describedby");
     cibleCourante = null;
   };
+  // WCAG 1.4.13 : la bulle doit être survolable — fermeture différée,
+  // annulée si le pointeur entre dans la bulle.
+  const cacheDoucement = () => {
+    clearTimeout(timerFermeture);
+    timerFermeture = setTimeout(cache, 180);
+  };
+  bulle.addEventListener("mouseenter", () => clearTimeout(timerFermeture));
+  bulle.addEventListener("mouseleave", cacheDoucement);
 
+  const tactile = window.matchMedia("(hover: none)").matches;
   gloses.forEach((el) => {
     if (el.tagName !== "A" && el.tabIndex < 0) el.tabIndex = 0;
     el.classList.add("glose");
     el.addEventListener("mouseenter", () => montre(el));
-    el.addEventListener("mouseleave", cache);
+    el.addEventListener("mouseleave", cacheDoucement);
     el.addEventListener("focus", () => montre(el));
-    el.addEventListener("blur", cache);
+    el.addEventListener("blur", cacheDoucement);
+    if (tactile) {
+      // Écran tactile : premier tap = glose (on retient la navigation),
+      // second tap = suivre le lien éventuel.
+      el.addEventListener("click", (e) => {
+        if (cibleCourante !== el) {
+          e.preventDefault();
+          montre(el);
+        }
+      });
+    }
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") cache();
@@ -150,6 +173,8 @@ if (form) {
     const bloc = champ.closest(".champ");
     if (!bloc) return true;
     let ok = champ.checkValidity();
+    // required accepte des espaces : un champ texte requis vide de sens est invalide.
+    if (ok && champ.required && typeof champ.value === "string" && champ.value.trim() === "") ok = false;
     if (champ.id === "champ-message" && champ.value.trim().length > 0 && champ.value.trim().length < 2) ok = false;
     bloc.classList.toggle("est-invalide", !ok);
     champ.setAttribute("aria-invalid", ok ? "false" : "true");

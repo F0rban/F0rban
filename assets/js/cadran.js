@@ -45,6 +45,11 @@ function initialise(svg) {
 
   let vueNuit = false;
 
+  /* Écritures DOM gardées : pas de mutation si le texte n'a pas changé. */
+  const ecrit = (el, s) => {
+    if (el && el.textContent !== s) el.textContent = s;
+  };
+
   const formatHeure = (h) => {
     const H = Math.floor(h);
     const M = Math.floor((h - H) * 60);
@@ -62,29 +67,50 @@ function initialise(svg) {
     return d;
   };
 
+  /* Sortie de la vue nocturne — appelée à la bascule ET quand le jour
+     revient (lever de soleil, changement de lieu) pour ne jamais rester
+     coincé sur une analemme de nuit en plein jour. */
+  function quitteVueNuit() {
+    if (!vueNuit) return;
+    vueNuit = false;
+    cadre?.classList.remove("est-nuit");
+    svg.classList.remove("vue-nuit");
+    pointNuit?.setAttribute("opacity", "0");
+    const eAnalemme = document.querySelector("[data-live='analemme']");
+    if (eAnalemme) eAnalemme.hidden = true;
+    if (basculeNuit) basculeNuit.textContent = "Voir le ciel de cette nuit";
+  }
+
   function metAJour() {
+    if (document.hidden) return; // onglet caché : l'instrument attend.
     const maintenant = new Date();
     const reel = ombreStyle(maintenant, lieu.lat, lieu.lon, declMur);
     const eqt = reel.soleil.equationTemps;
     const signe = eqt >= 0 ? "+" : "−";
-    const eqtAbs = Math.abs(eqt);
-    const eqtMin = Math.floor(eqtAbs);
-    const eqtSec = Math.round((eqtAbs - eqtMin) * 60);
-    if (eEqt) eEqt.textContent = `ÉQUATION DU TEMPS — ${signe}${eqtMin} MIN ${String(eqtSec).padStart(2, "0")} S`;
+    // Arrondi en secondes totales d'abord — jamais de « 3 MIN 60 S ».
+    const totalSec = Math.round(Math.abs(eqt) * 60);
+    const eqtMin = Math.floor(totalSec / 60);
+    const eqtSec = totalSec % 60;
+    ecrit(eEqt, `ÉQUATION DU TEMPS — ${signe}${eqtMin} MIN ${String(eqtSec).padStart(2, "0")} S`);
 
     if (reel.visible) {
       // Jour : l'ombre à sa vraie place. L'ombre ne ment pas.
       // Convention moteur : angle positif = à droite de la ligne de midi (+x).
       // CSS rotate() positif est horaire à l'écran (y vers le bas) et enverrait
       // une ligne descendante vers la GAUCHE : on inverse le signe.
+      quitteVueNuit();
       ombre.style.transform = `rotate(${(-reel.stylePolaire.angle).toFixed(3)}deg)`;
-      if (eHeure) eHeure.textContent = `HEURE VRAIE — ${formatHeure(reel.soleil.heureSolaire)}`;
-      if (eEtat) eEtat.textContent = "OMBRE RÉELLE — CALCULÉE POUR CET INSTANT";
+      ecrit(eHeure, `HEURE VRAIE — ${formatHeure(reel.soleil.heureSolaire)}`);
+      ecrit(eEtat, "OMBRE RÉELLE — CALCULÉE POUR CET INSTANT");
       if (basculeNuit) basculeNuit.hidden = true;
       return "jour";
     }
 
-    // Nuit (ou soleil derrière le mur) : midi vrai simulé, étiqueté comme tel.
+    // Le soleil est levé mais derrière le mur, OU il fait vraiment nuit :
+    // dans les deux cas, midi vrai simulé — mais on ne propose « le ciel de
+    // cette nuit » qu'à la vraie nuit.
+    const vraieNuit = reel.soleil.hauteur <= 0;
+    if (!vraieNuit) quitteVueNuit();
     const midi = midiVraiDuJour(maintenant);
     const simule = ombreStyle(midi, lieu.lat, lieu.lon, declMur);
     if (simule.visible) {
@@ -93,13 +119,11 @@ function initialise(svg) {
       ombre.style.transform = "rotate(0deg)";
     }
     const hv = heureSolaireVraie(maintenant, lieu.lon);
-    if (eHeure) eHeure.textContent = `HEURE VRAIE — ${formatHeure(hv)} (SANS SOLEIL SUR CE MUR)`;
-    if (eEtat) {
-      const jour = midi.soleil ? midi : null;
-      const dateStr = maintenant.toLocaleDateString("fr-FR", { day: "numeric", month: "long" }).toUpperCase();
-      eEtat.textContent = `MIDI VRAI SIMULÉ — ${dateStr}`;
-    }
-    if (basculeNuit) basculeNuit.hidden = false;
+    const motif = vraieNuit ? "IL FAIT NUIT" : "SOLEIL DERRIÈRE LE MUR";
+    ecrit(eHeure, `HEURE VRAIE — ${formatHeure(hv)} (${motif})`);
+    const dateStr = maintenant.toLocaleDateString("fr-FR", { day: "numeric", month: "long" }).toUpperCase();
+    ecrit(eEtat, `MIDI VRAI SIMULÉ — ${dateStr}`);
+    if (basculeNuit) basculeNuit.hidden = !vraieNuit && !vueNuit;
     return "nuit";
   }
 
@@ -126,22 +150,20 @@ function initialise(svg) {
   if (basculeNuit && cadre) {
     const eAnalemme = document.querySelector("[data-live='analemme']");
     basculeNuit.addEventListener("click", () => {
-      vueNuit = !vueNuit;
-      cadre.classList.toggle("est-nuit", vueNuit);
-      svg.classList.toggle("vue-nuit", vueNuit);
       if (vueNuit) {
-        metAJourPointNuit();
-        const dateStr = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long" }).toUpperCase();
-        if (eAnalemme) {
-          eAnalemme.hidden = false;
-          eAnalemme.textContent = `ANALEMME — POSITION DU ${dateStr} · HEURE D'HIVER`;
-        }
-        basculeNuit.textContent = "Revenir au midi vrai";
-      } else {
-        pointNuit?.setAttribute("opacity", "0");
-        if (eAnalemme) eAnalemme.hidden = true;
-        basculeNuit.textContent = "Voir le ciel de cette nuit";
+        quitteVueNuit();
+        return;
       }
+      vueNuit = true;
+      cadre.classList.add("est-nuit");
+      svg.classList.add("vue-nuit");
+      metAJourPointNuit();
+      const dateStr = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long" }).toUpperCase();
+      if (eAnalemme) {
+        eAnalemme.hidden = false;
+        eAnalemme.textContent = `ANALEMME — POSITION DU ${dateStr} · HEURE D'HIVER`;
+      }
+      basculeNuit.textContent = "Revenir au midi vrai";
     });
   }
 
@@ -190,7 +212,12 @@ function initialise(svg) {
   }
 
   if (champLieu) {
-    champLieu.closest("form")?.addEventListener("submit", (e) => {
+    const formRepli = champLieu.closest("form");
+    // Toute la validation est faite ici : la validation native ne doit pas
+    // bloquer une re-soumission après une saisie corrigée.
+    formRepli?.setAttribute("novalidate", "");
+    champLieu.addEventListener("input", () => champLieu.setCustomValidity(""));
+    formRepli?.addEventListener("submit", (e) => {
       e.preventDefault();
       const m = champLieu.value.match(/(-?\d+(?:[.,]\d+)?)\s*[,;\s]\s*(-?\d+(?:[.,]\d+)?)/);
       if (!m) {

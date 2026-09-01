@@ -56,7 +56,7 @@ scripts, ni SVG (sauf attributs `data-glose`).
 
 ### 6. Motion : la doctrine de l'ombre
 Voir `docs/brand/visual-bible.md` §4 et §8. Points non négociables :
-- une seule écriture de `--sun-angle` par frame (quickSetter sur `:root`) ;
+- une seule écriture de `--sun-angle` par frame (listener scroll Lenis sur `:root`) ;
 - pivots limités (inventaire commenté `/* PIVOTS */` par page dans
   `styles.css` §7) ; transforms uniquement ;
 - interdits : box-shadow animé, filter animé, feTurbulence live ;
@@ -74,8 +74,12 @@ Voir `docs/brand/visual-bible.md` §4 et §8. Points non négociables :
 
 | Paquet | Version | Rôle | Mise à jour |
 |---|---|---|---|
-| gsap + ScrollTrigger | 3.15.0 | scrub de `--sun-angle`, ticker | copier `dist/*.min.js` depuis npm dans `assets/vendor/` |
-| lenis | 1.3.26 | scroll lissé (lerp 0.095) | idem |
+| lenis | 1.3.26 | scroll lissé (lerp 0.095) **et** écriture de `--sun-angle` (la valeur `e.scroll` est déjà interpolée) | copier `dist/lenis.min.js` depuis npm dans `assets/vendor/` |
+
+> GSAP/ScrollTrigger ont été retirés après audit de performance : une seule
+> variable scrubée ne justifiait pas 46 Ko gzip par page. La doctrine
+> « une écriture par frame » de la visual bible est tenue par le listener
+> scroll de Lenis (une écriture par frame de scroll, aucune en dehors).
 | Fraunces variable | v38 | tout le verbe (axes opsz/SOFT/WONK) | re-télécharger via l'API css2 de Google Fonts, régénérer `fonts.css` |
 | Spline Sans Mono | v13 | tout le chiffré | idem |
 
@@ -86,3 +90,6 @@ Voir `docs/brand/visual-bible.md` §4 et §8. Points non négociables :
 3. `node tools/typographie.mjs` — idempotent (aucun diff attendu si déjà appliqué).
 4. `node tools/shoot.mjs http://127.0.0.1:4200 <dossier> "" savoir-faire/ creations/ atelier/ methode-tarifs/ contact/ 404.html`
    — zéro erreur console, contrôle visuel desktop + mobile.
+5. `node tools/regression.mjs` — la suite de non-régression navigateur
+   (instrument jour/nuit, repli lat/lon, skip-link, formulaire, débordements,
+   nom accessible des h1) doit afficher « TOUT PASSE ».

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Demander une étude gnomonique | Atelier Méridienne</title>
-  <meta name="description" content="Décrivez votre mur : orientation estimée, localisation, projet. Étude gnomonique à partir de 900 €, réponse sous quelques jours ouvrés.">
+  <meta name="description" content="Décrivez votre mur : orientation estimée, localisation, projet. Étude gnomonique à partir de 900 €, réponse sous trois jours ouvrés.">
   <!-- SITE FICTIF — projet d'étude : voir le commentaire complet dans /index.html. -->
   <meta name="robots" content="noindex">
   <link rel="canonical" href="https://atelier-meridienne.fr/contact/">
@@ -19,7 +19,6 @@
   <meta name="theme-color" content="#F5F0E6">
   <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
   <link rel="preload" as="font" type="font/woff2" href="../assets/fonts/fraunces-v38-6NUV8FyLNQOQZAnv9ZwIlOk.woff2" crossorigin>
-  <link rel="preload" as="font" type="font/woff2" href="../assets/fonts/fraunces-v38-6NUT8FyLNQOQZAnv9ZwNpOskzA.woff2" crossorigin>
   <link rel="preload" as="font" type="font/woff2" href="../assets/fonts/splinesansmono-v13-R70BjzAei_CDNLfgZxrW6wrZOF2WX5KZmA.woff2" crossorigin>
   <link rel="preload" as="image" href="../assets/textures/grain-256.png">
   <link rel="stylesheet" href="../assets/css/fonts.css">
@@ -33,6 +32,65 @@
       { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://atelier-meridienne.fr/" },
       { "@type": "ListItem", "position": 2, "name": "Demander une étude", "item": "https://atelier-meridienne.fr/contact/" }
     ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "@id": "https://atelier-meridienne.fr/#atelier",
+    "name": "Atelier Méridienne",
+    "slogan": "Nous peignons l’heure vraie.",
+    "description": "Atelier de gnomonique et de fresque : conception, calcul, peinture a fresco et restauration de cadrans solaires muraux. L’un des derniers ateliers réunissant le relevé de géomètre et le geste de fresquiste.",
+    "url": "https://atelier-meridienne.fr/",
+    "email": "contact@atelier-meridienne.fr",
+    "telephone": "+33 4 65 71 05 44",
+    "foundingDate": "2014",
+    "founder": [
+      { "@type": "Person", "name": "Élise Bérard", "jobTitle": "Géomètre-topographe" },
+      { "@type": "Person", "name": "Marco Vayr", "jobTitle": "Fresquiste" }
+    ],
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Molines-en-Queyras",
+      "postalCode": "05350",
+      "addressRegion": "Hautes-Alpes",
+      "addressCountry": "FR"
+    },
+    "geo": { "@type": "GeoCoordinates", "latitude": 44.6885, "longitude": 6.8503 },
+    "areaServed": [
+      { "@type": "Country", "name": "France" },
+      { "@type": "AdministrativeArea", "name": "Suisse romande" },
+      { "@type": "AdministrativeArea", "name": "Piémont" }
+    ],
+    "priceRange": "900 € – 28 000 €",
+    "currenciesAccepted": "EUR",
+    "knowsAbout": [
+      "gnomonique", "cadran solaire vertical déclinant", "fresque a fresco",
+      "déclinaison gnomonique", "restauration de cadrans solaires",
+      "heure solaire vraie", "équation du temps"
+    ],
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Prestations",
+      "itemListElement": [
+        {
+          "@type": "Offer",
+          "itemOffered": { "@type": "Service", "@id": "https://atelier-meridienne.fr/methode-tarifs/#etude-gnomonique" },
+          "priceSpecification": { "@type": "PriceSpecification", "minPrice": 900, "priceCurrency": "EUR" }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": { "@type": "Service", "name": "Création complète a fresco", "serviceType": "Création de cadran solaire mural peint a fresco" },
+          "priceSpecification": { "@type": "PriceSpecification", "minPrice": 6500, "maxPrice": 28000, "priceCurrency": "EUR", "valueAddedTaxIncluded": true }
+        },
+        {
+          "@type": "Offer",
+          "itemOffered": { "@type": "Service", "name": "Restauration de cadran ancien", "serviceType": "Restauration de cadran solaire et de fresque après sondages stratigraphiques" }
+        }
+      ]
+    },
+    "image": "https://atelier-meridienne.fr/assets/og/og-accueil.png"
   }
   </script>
 </head>
@@ -54,7 +112,7 @@
           <li><a href="./" aria-current="page">Contact</a></li>
         </ul>
       </nav>
-      <a class="btn btn-plein" href="./" title="Relevé · Tracé · Planche signée">Demander une étude — 900 €</a>
+      <a class="btn btn-plein" href="./" title="Relevé · Tracé · Planche signée">Demander une étude — dès 900 €</a>
       <button class="bouton-menu" aria-label="Ouvrir le menu">Menu</button>
     </div>
   </header>
@@ -75,7 +133,7 @@
           <li><a href="./" aria-current="page">Contact</a></li>
         </ul>
       </nav>
-      <a class="btn btn-plein" href="./">Demander une étude — 900 €</a>
+      <a class="btn btn-plein" href="./">Demander une étude — dès 900 €</a>
     </div>
   </dialog>
 
@@ -83,7 +141,7 @@
 
     <section class="hero">
       <div class="conteneur">
-        <nav class="ariane" aria-label="Fil d'Ariane">
+        <nav class="ariane" aria-label="Fil d’Ariane">
           <ol>
             <li><a href="../">Accueil</a></li>
             <li aria-current="page">Demander une étude</li>
@@ -107,7 +165,7 @@
 
             <div class="champ">
               <label for="champ-nom">Votre nom</label>
-              <input id="champ-nom" name="nom" type="text" placeholder="Jeanne Arnaud" autocomplete="name" required>
+              <input id="champ-nom" name="nom" type="text" placeholder="Jeanne Arnaud" autocomplete="name" required aria-describedby="err-nom">
               <span class="champ-erreur" id="err-nom">Il nous faut un nom pour vous répondre.</span>
             </div>
 
@@ -119,24 +177,24 @@
 
             <div class="champ">
               <label for="champ-telephone">Téléphone — facultatif</label>
-              <input id="champ-telephone" name="telephone" type="tel" placeholder="Si vous préférez qu'on vous appelle" autocomplete="tel">
+              <input id="champ-telephone" name="telephone" type="tel" placeholder="Si vous préférez qu’on vous appelle" autocomplete="tel">
             </div>
 
             <div class="champ">
               <label for="champ-projet">Votre projet</label>
-              <select id="champ-projet" name="projet" required>
+              <select id="champ-projet" name="projet" required aria-describedby="err-projet">
                 <option value="creation">Création d’un cadran</option>
                 <option value="restauration">Restauration d’un cadran existant</option>
                 <option value="etude">Étude gnomonique seule</option>
                 <option value="indecis" selected>Je ne sais pas encore</option>
               </select>
-              <span class="champ-erreur">Choisissez l’option la plus proche — « je ne sais pas encore » est une vraie réponse.</span>
+              <span class="champ-erreur" id="err-projet">Choisissez l’option la plus proche — « je ne sais pas encore » est une vraie réponse.</span>
             </div>
 
             <div class="champ">
               <label for="champ-localisation">Où est le mur ?</label>
-              <input id="champ-localisation" name="localisation" type="text" placeholder="Commune, hameau — l'adresse exacte attendra" required>
-              <span class="champ-erreur">Indiquez au moins la commune : la latitude commande tout le calcul.</span>
+              <input id="champ-localisation" name="localisation" type="text" placeholder="Commune, hameau — l’adresse exacte attendra" required aria-describedby="err-localisation">
+              <span class="champ-erreur" id="err-localisation">Indiquez au moins la commune : la latitude commande tout le calcul.</span>
             </div>
 
             <div class="champ">
@@ -156,16 +214,16 @@
 
             <div class="champ">
               <label for="champ-message">Votre mur, votre envie</label>
-              <textarea id="champ-message" name="message" rows="5" placeholder="L'état de l'enduit, une devise en tête, une date espérée…" required></textarea>
-              <span class="champ-erreur">Dites-nous au moins deux mots — même courts.</span>
+              <textarea id="champ-message" name="message" rows="5" placeholder="L’état de l’enduit, une devise en tête, une date espérée…" required aria-describedby="err-message"></textarea>
+              <span class="champ-erreur" id="err-message">Dites-nous au moins deux mots — même courts.</span>
             </div>
 
             <div class="champ">
               <div class="champ-consentement">
-                <input id="champ-consentement" name="consentement" type="checkbox" required>
+                <input id="champ-consentement" name="consentement" type="checkbox" required aria-describedby="err-consentement">
                 <label for="champ-consentement">J’accepte que ces informations servent uniquement à me répondre.</label>
               </div>
-              <span class="champ-erreur">Cette case est nécessaire pour vous écrire en retour.</span>
+              <span class="champ-erreur" id="err-consentement">Cette case est nécessaire pour vous écrire en retour.</span>
             </div>
 
             <button class="btn btn-plein" type="submit">Envoyer la demande</button>
@@ -225,7 +283,7 @@
           </ul>
         </nav>
         <div>
-          <p><a class="btn btn-plein" href="./">Demander une étude — 900 €</a></p>
+          <p><a class="btn btn-plein" href="./">Demander une étude — dès 900 €</a></p>
           <p class="mono-label">Relevé · Tracé · Planche signée</p>
         </div>
       </div>
@@ -235,9 +293,6 @@
       </div>
     </div>
   </footer>
-
-  <script src="../assets/vendor/gsap.min.js" defer></script>
-  <script src="../assets/vendor/ScrollTrigger.min.js" defer></script>
   <script src="../assets/vendor/lenis.min.js" defer></script>
   <script type="module" src="../assets/js/main.js"></script>
 </body>

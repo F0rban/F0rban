@@ -25,7 +25,9 @@ if (eMidi) {
   d.setUTCHours(12, 0, 0, 0);
   const minutesUTC = 720 - 4 * LON - equationDuTemps(d);
   d.setUTCHours(0, Math.round(minutesUTC), 0, 0);
-  const h = d.toLocaleTimeString("fr-FR", { hour: "numeric", minute: "2-digit" }).replace(":", " H ");
+  // timeZone explicite : le midi vrai de Molines s'affiche en heure de
+  // Molines, pas dans le fuseau du visiteur.
+  const h = d.toLocaleTimeString("fr-FR", { hour: "numeric", minute: "2-digit", timeZone: "Europe/Paris" }).replace(":", " H ");
   eMidi.textContent = `MIDI VRAI — ${h} (HEURE LÉGALE) CE JOUR À MOLINES`;
 }
 
@@ -134,11 +136,27 @@ function initialise(bloc) {
       `Dérive de lecture pour ${e.toFixed(1)} degré d'erreur de déclinaison : ` +
       `jusqu'à ${maxAnnee.toFixed(1)} minutes selon la saison, sur la plage de 8 à 17 heures solaires.`
     );
+    // Le lecteur d'écran entend la conséquence, pas seulement le réglage.
+    curseur.setAttribute(
+      "aria-valuetext",
+      `${e.toFixed(1).replace(".", ",")} degré d'erreur — dérive maximale ${maxAnnee.toFixed(1).replace(".", ",")} minutes sur l'année`
+    );
   }
 
-  /* Survol : la valeur au jour pointé. */
+  /* Survol : la valeur au jour pointé. Le rect est mis en cache à l'entrée
+     du pointeur (les écritures d'attributs qui suivent invalideraient le
+     layout : un getBoundingClientRect par événement forcerait un reflow),
+     et le traitement est throttlé au rythme des frames. */
+  let rectCache = null;
+  let survolAttente = false;
+  svg.addEventListener("pointerenter", () => { rectCache = svg.getBoundingClientRect(); });
+  window.addEventListener("resize", () => { rectCache = null; }, { passive: true });
+  window.addEventListener("scroll", () => { rectCache = null; }, { passive: true });
   svg.addEventListener("pointermove", (ev) => {
-    const r = svg.getBoundingClientRect();
+    if (survolAttente) return;
+    survolAttente = true;
+    requestAnimationFrame(() => { survolAttente = false; });
+    const r = rectCache || (rectCache = svg.getBoundingClientRect());
     const px = ((ev.clientX - r.left) / r.width) * W;
     if (px < X0 || px > X1 || !donnees.length) return;
     const jour = 1 + ((px - X0) / (X1 - X0)) * 364;

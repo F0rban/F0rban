@@ -357,3 +357,12 @@ Tests : `node --test gnomonique.test.mjs` — 27 tests, tous verts.
 Les dérivations vectorielles (§8–9) sont autoportantes : elles ne dépendent
 d'aucune formule apprise et **redémontrent** les formes classiques de Savoie et
 Rohr, ce que la suite de tests vérifie numériquement à 10⁻¹² près.
+
+
+## Note d'intégration — latitude de référence
+
+Les validations de ce document ont été menées à φ = 44,9667° (valeur du
+brief). Le site utilise la latitude réelle de Molines-en-Queyras,
+φ = 44,6885°. Contrôle refait au moteur à cette latitude : la dérive du
+récit fondateur (erreur de 4°) vaut 6,3 → 16,2 min — identique à l'arrondi
+affiché (« environ six minutes au midi d'été, seize au midi d'hiver »).

@@ -86,6 +86,10 @@ html {
   text-size-adjust: 100%;
 }
 
+/* Les ombres skewées des h1 débordent par construction : on les rogne sans
+   créer de conteneur de défilement (clip, jamais hidden). */
+html, body { overflow-x: clip; }
+
 body {
   margin: 0;
   font-family: var(--f-serif);
@@ -122,6 +126,8 @@ body::after {
   outline: 2px solid var(--bleu-charrette);
   outline-offset: 3px;
 }
+/* Sur le mur nocturne, le bleu-charrette tombe à 2,32:1 : focus en bleu-nuit. */
+.pied :focus-visible { outline-color: var(--bleu-nuit); }
 
 .skip-link {
   position: absolute;
@@ -278,12 +284,16 @@ p { max-width: var(--mesure); margin: 0 0 var(--esp-3); }
 .porte-ombre { position: relative; }
 .porte-ombre::after {
   content: attr(data-ombre);
+  /* Syntaxe de texte alternatif vide : l'ombre est décorative, elle ne doit
+     pas entrer dans le nom accessible du titre (sinon lu deux fois). */
+  content: attr(data-ombre) / "";
   position: absolute;
   inset: 0;
   z-index: -1;
   color: var(--ocre-lumiere);
   opacity: 0.32;
-  transform: translate(0.035em, 0.05em) skewX(calc(var(--sun-angle) * -0.5deg));
+  /* Skew borné : au-delà de ±8° le fantôme d'un titre haut se détache du texte. */
+  transform: translate(0.035em, 0.05em) skewX(clamp(-8deg, calc(var(--sun-angle) * -0.5deg), 8deg));
   transform-origin: bottom left;
   pointer-events: none;
   will-change: transform;
@@ -589,8 +599,10 @@ a.carte-planche:hover { transform: translate(2px, -2px); }
 }
 
 /* --- Glossaire inline (dfn + tooltip accessible) ---------------------- */
-.glose {
+.glose, .glose-lien, dfn[data-glose] {
   font-style: normal;
+  text-decoration: underline dotted 1px;
+  text-underline-offset: 3px;
   color: var(--ocre-encre);
   text-decoration: underline dotted 1px;
   text-underline-offset: 3px;
@@ -951,6 +963,14 @@ html.a-js [data-reveal="4"].est-revele { transition-delay: 270ms; }
 @media (max-width: 900px) {
   body { background-attachment: scroll; }
   .section { padding-block: var(--esp-6) 0; }
+}
+
+@media (max-width: 639px) {
+  /* Un CTA long ne doit ni déborder ni se tronquer sur petit écran. */
+  .btn { white-space: normal; text-align: center; }
+  /* Le graphe du simulateur garde une taille d'instrument : défilement interne. */
+  .simulateur-defile { overflow-x: auto; }
+  .simulateur-defile svg { min-width: 480px; }
 }
 
 /* Impression : le grain et les ombres ne s'impriment pas. */

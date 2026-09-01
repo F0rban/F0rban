@@ -13,13 +13,12 @@
   <meta property="og:site_name" content="Atelier Méridienne">
   <meta property="og:url" content="https://atelier-meridienne.fr/savoir-faire/">
   <meta property="og:title" content="Relever, tracer, peindre, régler">
-  <meta property="og:description" content="Comment un cadran juste naît d'un mur : déclinaison relevée au degré près, tracé calculé, fresque sur enduit frais, réglage au soleil.">
+  <meta property="og:description" content="Comment un cadran juste naît d’un mur : déclinaison relevée au degré près, tracé calculé, fresque sur enduit frais, réglage au soleil.">
   <meta property="og:image" content="https://atelier-meridienne.fr/assets/og/og-savoir-faire.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#F5F0E6">
   <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
   <link rel="preload" as="font" type="font/woff2" href="../assets/fonts/fraunces-v38-6NUV8FyLNQOQZAnv9ZwIlOk.woff2" crossorigin>
-  <link rel="preload" as="font" type="font/woff2" href="../assets/fonts/fraunces-v38-6NUT8FyLNQOQZAnv9ZwNpOskzA.woff2" crossorigin>
   <link rel="preload" as="font" type="font/woff2" href="../assets/fonts/splinesansmono-v13-R70BjzAei_CDNLfgZxrW6wrZOF2WX5KZmA.woff2" crossorigin>
   <link rel="preload" as="image" href="../assets/textures/grain-256.png">
   <link rel="stylesheet" href="../assets/css/fonts.css">
@@ -54,7 +53,7 @@
           <li><a href="../contact/">Contact</a></li>
         </ul>
       </nav>
-      <a class="btn btn-plein" href="../contact/" title="Relevé · Tracé · Planche signée">Demander une étude — 900 €</a>
+      <a class="btn btn-plein" href="../contact/" title="Relevé · Tracé · Planche signée">Demander une étude — dès 900 €</a>
       <button class="bouton-menu" aria-label="Ouvrir le menu">Menu</button>
     </div>
   </header>
@@ -75,7 +74,7 @@
           <li><a href="../contact/">Contact</a></li>
         </ul>
       </nav>
-      <a class="btn btn-plein" href="../contact/">Demander une étude — 900 €</a>
+      <a class="btn btn-plein" href="../contact/">Demander une étude — dès 900 €</a>
     </div>
   </dialog>
 
@@ -84,7 +83,7 @@
     <!-- ============ 2.1 INTRODUCTION ============ -->
     <section class="hero">
       <div class="conteneur">
-        <nav class="ariane" aria-label="Fil d'Ariane">
+        <nav class="ariane" aria-label="Fil d’Ariane">
           <ol>
             <li><a href="../">Accueil</a></li>
             <li aria-current="page">Savoir-faire</li>
@@ -218,8 +217,8 @@
         </div>
         <div class="simulateur" id="simulateur" data-reveal="2">
           <div class="simulateur-grille">
-            <div>
-              <svg id="simulateur-svg" viewBox="0 0 560 300" role="img" aria-label="Dérive de lecture au fil de l'année selon l'erreur de déclinaison choisie."></svg>
+            <div class="simulateur-defile">
+              <svg id="simulateur-svg" viewBox="0 0 560 300" role="img" aria-label="Dérive de lecture au fil de l’année selon l’erreur de déclinaison choisie."></svg>
               <span class="mono-label t-seconde">AXE X : JANV → DÉC · AXE Y : MINUTES D’ÉCART · BANDE : PLAGE 8 H–17 H SOLAIRES</span>
             </div>
             <div>
@@ -230,7 +229,7 @@
               </div>
               <div class="simulateur-lectures mono-data">
                 <span data-live="derive">DÉRIVE DE LECTURE — SURVOLEZ LA COURBE</span>
-                <span class="valeur" data-live="derive-max">DÉRIVE MAXIMALE SUR L’ANNÉE — 16,2 MIN</span>
+                <span class="valeur" data-live="derive-max" role="status">DÉRIVE MAXIMALE SUR L’ANNÉE — 16,2 MIN</span>
               </div>
             </div>
           </div>
@@ -285,7 +284,7 @@
 
     <section class="section section-pied">
       <div class="conteneur" data-reveal>
-        <p>Ce relevé est la première étape de toute commande — création comme restauration.</p>
+        <p>Ce relevé est <a href="../methode-tarifs/">la première étape de toute commande</a> — création comme restauration. Quatre gestes, <a href="../creations/">cinq murs qui les racontent</a>.</p>
         <a class="btn btn-plein" href="../contact/">Faire mesurer mon mur — Demander une étude</a>
       </div>
     </section>
@@ -318,7 +317,7 @@
           </ul>
         </nav>
         <div>
-          <p><a class="btn btn-plein" href="../contact/">Demander une étude — 900 €</a></p>
+          <p><a class="btn btn-plein" href="../contact/">Demander une étude — dès 900 €</a></p>
           <p class="mono-label">Relevé · Tracé · Planche signée</p>
         </div>
       </div>
@@ -328,9 +327,6 @@
       </div>
     </div>
   </footer>
-
-  <script src="../assets/vendor/gsap.min.js" defer></script>
-  <script src="../assets/vendor/ScrollTrigger.min.js" defer></script>
   <script src="../assets/vendor/lenis.min.js" defer></script>
   <script type="module" src="../assets/js/main.js"></script>
   <script type="module" src="../assets/js/simulateur.js"></script>

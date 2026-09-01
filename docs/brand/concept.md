@@ -35,7 +35,7 @@ Exact, lent, solaire-laconique, savant sans surplomb. Première personne du plur
 
 ## Typographies (Google Fonts uniquement)
 - **Fraunces** (variable, opsz 9–144, axes SOFT/WONK) : tout le verbe. Titres monumentaux opsz 144 WONK on ; texte courant opsz réglé bas. Chiffres romains d'heures en petites capitales.
-- **Spline Sans Mono** : tout le chiffré — coordonnées (44°58′N 6°51′E), azimuts, déclinaisons, heures, prix, légendes techniques, labels d'interface.
+- **Spline Sans Mono** : tout le chiffré — coordonnées (44°41′N 6°51′E), azimuts, déclinaisons, heures, prix, légendes techniques, labels d'interface.
 - Contraste signature : devise peinte en Fraunces / relevé calculé en Spline Sans Mono, côte à côte.
 
 ## Motion (contraintes de perf NON NÉGOCIABLES)

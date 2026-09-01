@@ -38,6 +38,7 @@ const C = {
   bleu: "#35566B",
   gris: "#7A756B",
   chauxCreuse: "#EDE6D6",
+  encreSeconde: "#5C5648",
 };
 
 /* ------------------------------------------------------------------ */
@@ -107,11 +108,11 @@ function dentsDeLoup(x0, x1, y, h = 7, pas = 14, couleur = C.sang) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Cœur : dessin d'un cadran (héros ou planche) depuis le moteur       */
+/* Cœur : dessin d’un cadran (héros ou planche) depuis le moteur       */
 /* ------------------------------------------------------------------ */
 
 /**
- * Construit les tracés gnomoniques d'un cadran dans une boîte donnée.
+ * Construit les tracés gnomoniques d’un cadran dans une boîte donnée.
  * Toutes les géométries sortent du moteur ; ici on ne fait que projeter/cliper.
  */
 function traceCadran({
@@ -195,7 +196,7 @@ function traceCadran({
     g += `</g>`;
   }
 
-  // Analemme (courbe en huit réelle, heure légale d'hiver fixe).
+  // Analemme (courbe en huit réelle, heure légale d’hiver fixe).
   if (analemmeHeureLegale !== null) {
     const pts = analemme(lat, 6.85, analemmeHeureLegale, {
       fuseau: 1, annee: 2026, pasJours: 4, declMur, longueurStyle: echelleNodus,
@@ -210,9 +211,9 @@ function traceCadran({
 }
 
 /* ------------------------------------------------------------------ */
-/* 1. LE CADRAN VIVANT — héros de l'accueil                            */
+/* 1. LE CADRAN VIVANT — héros de l’accueil                            */
 /* ------------------------------------------------------------------ */
-const HERO = { lat: 44.6885, lon: 6.8503, declMur: -14 }; // 14° EST — le mur de l'atelier (hypothèse fictive)
+const HERO = { lat: 44.6885, lon: 6.8503, declMur: -14 }; // 14° EST — le mur de l’atelier (hypothèse fictive)
 
 function genereHero() {
   const W = 760, H = 600;
@@ -231,27 +232,27 @@ function genereHero() {
   const derniere = Math.max(...eclairees.map((l) => l.heure));
   console.log(`HÉROS — mur ${HERO.declMur}° (est<0) : heures éclairées ${ROMAIN[premiere]}–${ROMAIN[derniere]}`);
 
-  // Longueur de l'ombre : jusqu'au bord bas de la boîte.
+  // Longueur de l’ombre : jusqu’au bord bas de la boîte.
   const lOmbre = box[3] - centre.y - 26;
 
   const svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="cadran-titre cadran-desc" fill="none" class="cadran-svg" data-lat="${HERO.lat}" data-lon="${HERO.lon}" data-decl-mur="${HERO.declMur}">
-  <title id="cadran-titre">Le Cadran Vivant — cadran solaire vertical déclinant de 14° vers l'est, calculé pour Molines-en-Queyras</title>
-  <desc id="cadran-desc">Tracé gnomonique complet : lignes horaires de ${ROMAIN[premiere]} à ${ROMAIN[derniere]} heures, arcs des solstices et de l'équinoxe, analemme de midi. L'ombre dorée du style indique l'heure solaire vraie, calculée dans votre navigateur.</desc>
+  <title id="cadran-titre">Le Cadran Vivant — cadran solaire vertical déclinant de 14° vers l’est, calculé pour Molines-en-Queyras</title>
+  <desc id="cadran-desc">Tracé gnomonique complet : lignes horaires de ${ROMAIN[premiere]} à ${ROMAIN[derniere]} heures, arcs des solstices et de l’équinoxe, analemme de midi. L’ombre dorée du style indique l’heure solaire vraie, calculée dans votre navigateur.</desc>
   <!-- cadre double de planche -->
   <rect x="18" y="14" width="${W - 36}" height="${H - 28}" stroke="${C.bleu}" stroke-width="1.5"/>
   <rect x="26" y="22" width="${W - 52}" height="${H - 44}" stroke="${C.gris}" stroke-width="0.75"/>
   ${g}
   <!-- ombre du style : SEUL élément animé, pivote au pied du gnomon (rosace).
-       Dessinée à la verticale = ligne de midi vrai ; cadran.js la met à l'heure. -->
+       Dessinée à la verticale = ligne de midi vrai ; cadran.js la met à l’heure. -->
   <g id="cadran-ombre" style="transform-origin:${centre.x}px ${centre.y}px" data-longueur="${lOmbre}">
     <line x1="${centre.x}" y1="${centre.y}" x2="${centre.x}" y2="${centre.y + lOmbre}" stroke="${C.ocre}" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
     <circle cx="${centre.x}" cy="${centre.y + lOmbre}" r="4" fill="${C.ocre}"/>
   </g>
-  <!-- nuit : point du jour sur l'analemme (rempli par cadran.js) -->
+  <!-- nuit : point du jour sur l’analemme (rempli par cadran.js) -->
   <circle id="cadran-point-nuit" r="5" fill="${C.sang}" opacity="0" cx="${centre.x}" cy="${centre.y + 60}"/>
   ${rosace(centre.x, centre.y)}
   ${chocard(88, 78, 1.1)}${chocard(132, 64, 0.8)}
-  <text x="${W - 40}" y="${H - 40}" text-anchor="end" font-size="11" fill="${C.gris}" class="svg-mono">44°41′N 6°51′E · DÉCL. 14° EST · TRACÉ CALCULÉ</text>
+  <text x="${W - 40}" y="${H - 40}" text-anchor="end" font-size="12" fill="${C.encreSeconde}" class="svg-mono">44°41′N 6°51′E · DÉCL. 14° EST · TRACÉ CALCULÉ</text>
 </svg>`;
   writeFileSync(new URL("cadran-hero.svg.html", OUT), svg);
 }
@@ -261,29 +262,29 @@ function genereHero() {
 /* ------------------------------------------------------------------ */
 const PLANCHES = [
   {
-    n: 1, id: "veilleur-arvieux", titre: "Planche I — Le Veilleur d'Arvieux",
-    desc: "Cadran déclinant de 18° vers l'est sur pignon de grange : éventail de VI à XVI heures, soleil à seize rais, chiffres au sang de bœuf.",
+    n: 1, id: "veilleur-arvieux", titre: "Planche I — Le Veilleur d’Arvieux",
+    desc: "Cadran déclinant de 18° vers l’est sur pignon de grange : éventail de VI à XVI heures, soleil à seize rais, chiffres au sang de bœuf.",
     lat: 44.7667, declMur: -18, heures: [6, 16], demies: false,
     analemme: null, couleurChiffres: C.sang, deco: "soleil",
     devise: "Sine sole sileo.", cartouche: ["PL. I — ARVIEUX", "44°46′N · DÉCL. 18° EST", "A FRESCO · 6 GIORNATE"],
   },
   {
     n: 2, id: "grand-declinant", titre: "Planche II — Le Grand Déclinant",
-    desc: "Grand cadran d'après-midi sur façade déclinant de 41° vers l'ouest : éventail déporté de X à XIX heures, demies, analemme sur la ligne de quatorze heures, frise bleue.",
+    desc: "Grand cadran d’après-midi sur façade déclinant de 41° vers l’ouest : éventail déporté de X à XIX heures, demies, analemme sur la ligne de quatorze heures, frise bleue.",
     lat: 44.7, declMur: 41, heures: [10, 19], demies: true,
     analemme: 15, couleurChiffres: C.bistre, deco: "frise-bleue",
     devise: "Sol omnibus lucet.", cartouche: ["PL. II — SAINT-VÉRAN", "44°42′N · DÉCL. 41° OUEST", "A FRESCO · 11 GIORNATE"],
   },
   {
-    n: 3, id: "heure-apprendre", titre: "Planche III — L'Heure d'apprendre",
-    desc: "Cadran d'école quasi méridional, déclinant de 6° vers l'ouest : heures pleines et demies de VII à XVII, analemme de midi, table de l'équation du temps sous la corniche.",
+    n: 3, id: "heure-apprendre", titre: "Planche III — L’Heure d’apprendre",
+    desc: "Cadran d’école quasi méridional, déclinant de 6° vers l’ouest : heures pleines et demies de VII à XVII, analemme de midi, table de l’équation du temps sous la corniche.",
     lat: 44.6667, declMur: 6, heures: [7, 17], demies: true,
     analemme: 13, couleurChiffres: C.bistre, deco: "table-eqt", grandsChiffres: true,
     devise: "Disce dum lucet.", cartouche: ["PL. III — CEILLAC", "44°40′N · DÉCL. 6° OUEST", "A FRESCO · 8 GIORNATE"],
   },
   {
     n: 4, id: "heures-sereines", titre: "Planche IV — Les Heures Sereines",
-    desc: "Cadran sobre d'une maison de famille, déclinant de 4° vers l'est : douze lignes de VI à XVII heures, analemme de midi en pointillé, chiffres bistre sur chaux nue.",
+    desc: "Cadran sobre d’une maison de famille, déclinant de 4° vers l’est : douze lignes de VI à XVII heures, analemme de midi en pointillé, chiffres bistre sur chaux nue.",
     lat: 44.75, declMur: -4, heures: [6, 17], demies: false,
     analemme: 13, couleurChiffres: C.bistre, deco: "aucun",
     devise: "Horas non numero nisi serenas.", cartouche: ["PL. IV — CHÂTEAU-VILLE-VIEILLE", "44°45′N · DÉCL. 4° EST", "A FRESCO · 4 GIORNATE"],
@@ -299,7 +300,7 @@ const PLANCHES = [
 
 function generePlanche(p) {
   const W = 480, H = 380;
-  // Le centre glisse à l'opposé du déport de l'éventail pour remplir la planche.
+  // Le centre glisse à l’opposé du déport de l’éventail pour remplir la planche.
   const heures = [];
   for (let h = p.heures[0]; h <= p.heures[1]; h++) heures.push(h);
   const lignesProbe = lignesHoraires(p.lat, p.declMur, heures).filter((l) => l.recoitSoleil);
@@ -311,7 +312,7 @@ function generePlanche(p) {
     lat: p.lat, declMur: p.declMur, heures, demies: p.demies,
     centre, box, echelleNodus: 62, analemmeHeureLegale: p.analemme,
     couleurChiffres: p.couleurChiffres,
-    tailleChiffres: p.grandsChiffres ? 16 : 13,
+    tailleChiffres: p.grandsChiffres ? 17 : 15,
   });
 
   const premiere = ROMAIN[Math.min(...eclairees.map((l) => l.heure))];
@@ -322,7 +323,7 @@ function generePlanche(p) {
   if (p.deco === "soleil") deco = soleilRais(84, 84, 17);
   if (p.deco === "frise-bleue") deco = dentsDeLoup(48, W - 48, 42, 9, 24, C.bleu);
   if (p.deco === "table-eqt") {
-    // Table de l'équation du temps sous la corniche : 12 ticks mensuels réels.
+    // Table de l’équation du temps sous la corniche : 12 ticks mensuels réels.
     let t = `<g stroke="${C.bleu}" stroke-width="0.75">`;
     for (let m = 0; m < 12; m++) {
       const e = equationDuTemps(new Date(Date.UTC(2026, m, 15, 12)));
@@ -362,8 +363,8 @@ function generePlanche(p) {
   ${g}
   ${rosace(centre.x, centre.y, 11)}
   ${p.n % 2 ? chocard(W - 96, 60, 0.8) + chocard(W - 66, 50, 0.6) : chocard(52, 58, 0.8)}
-  <g class="svg-mono" font-size="8.5" fill="${C.bistre}" text-anchor="end">
-    ${p.cartouche.map((l, i) => `<text x="${W - 26}" y="${H - 46 + i * 12}">${l}</text>`).join("\n    ")}
+  <g class="svg-mono" font-size="11" fill="${C.bistre}" text-anchor="end">
+    ${p.cartouche.map((l, i) => `<text x="${W - 26}" y="${H - 52 + i * 15}">${l}</text>`).join("\n    ")}
   </g>
 </svg>`;
   writeFileSync(new URL(`planche-${p.n}.svg.html`, OUT), svg);
