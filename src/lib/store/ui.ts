@@ -21,6 +21,8 @@ interface UiState {
   sidebarCollapsed: boolean;
   mobileNavOpen: boolean;
   toasts: Toast[];
+  /** Set by detail pages so the top bar breadcrumb can name the record. */
+  pageTitle: string | null;
 
   setPaletteOpen: (open: boolean) => void;
   togglePalette: () => void;
@@ -28,6 +30,7 @@ interface UiState {
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   setMobileNavOpen: (open: boolean) => void;
+  setPageTitle: (title: string | null) => void;
 
   toast: (input: Omit<Toast, "id" | "tone" | "duration"> & { tone?: ToastTone; duration?: number }) => string;
   dismissToast: (id: string) => void;
@@ -46,6 +49,7 @@ export const useUiStore = create<UiState>()((set, get) => ({
   sidebarCollapsed: false,
   mobileNavOpen: false,
   toasts: [],
+  pageTitle: null,
 
   setPaletteOpen: (open) => set({ paletteOpen: open }),
   togglePalette: () => set((s) => ({ paletteOpen: !s.paletteOpen })),
@@ -62,6 +66,7 @@ export const useUiStore = create<UiState>()((set, get) => ({
 
   setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
   setMobileNavOpen: (open) => set({ mobileNavOpen: open }),
+  setPageTitle: (title) => set({ pageTitle: title }),
 
   toast: ({ tone = "default", duration = 4200, ...rest }) => {
     const id = createId("toast");

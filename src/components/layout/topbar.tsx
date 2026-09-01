@@ -11,8 +11,9 @@ import { KbdGroup } from "@/components/ui/kbd";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 
-export function Topbar({ children }: { children?: React.ReactNode }) {
+export function Topbar() {
   const pathname = usePathname();
+  const pageTitle = useUiStore((s) => s.pageTitle);
   const setPaletteOpen = useUiStore((s) => s.setPaletteOpen);
   const setShortcutsOpen = useUiStore((s) => s.setShortcutsOpen);
   const setMobileNavOpen = useUiStore((s) => s.setMobileNavOpen);
@@ -50,7 +51,7 @@ export function Topbar({ children }: { children?: React.ReactNode }) {
             </Link>
             <span className="shrink-0 text-ink-4">/</span>
             <h1 className="truncate text-[13px] font-semibold tracking-[-0.005em] text-ink">
-              {children ?? "Detail"}
+              {pageTitle ?? "Detail"}
             </h1>
           </>
         ) : (
