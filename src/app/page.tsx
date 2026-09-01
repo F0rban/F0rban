@@ -13,6 +13,7 @@ import {
   Trophy,
 } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/layout/page-header";
+import { SampleBanner } from "@/components/layout/sample-banner";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -93,6 +94,8 @@ export default function TodayPage() {
           </Button>
         }
       />
+
+      <SampleBanner className="mt-4" />
 
       {!ready || !data ? (
         <div className="mt-5 space-y-4">

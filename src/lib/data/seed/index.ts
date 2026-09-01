@@ -17,6 +17,7 @@ const DEFAULT_PREFERENCES: Preferences = {
   focusModelIds: [],
   compactDensity: false,
   reduceMotion: false,
+  usingSampleData: true,
 };
 
 function isoAt(now: Date, daysAgo: number): string {

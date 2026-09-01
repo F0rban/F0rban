@@ -7,6 +7,8 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { formatCompact, formatDuration } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 import { METRIC_KEYS, compareColor } from "./model-meta";
+import type { Standing } from "@/lib/analytics/verdicts";
+import { FormStrip, RecordScore, TallyMarks } from "@/components/ui/record";
 
 /** Five-bar capability glyph. Reads as a shape before it reads as data. */
 function ScoreBars({ model }: { model: Model }) {
@@ -25,6 +27,8 @@ function ScoreBars({ model }: { model: Model }) {
 
 export function ModelRow({
   model,
+  record,
+  strengths,
   selected,
   selectionIndex,
   disabled,
@@ -33,6 +37,10 @@ export function ModelRow({
   onToggleFavorite,
 }: {
   model: Model;
+  /** The model's record in your own duels. Null if it never entered one. */
+  record: Standing | null;
+  /** Task types this model is the recommendation for. */
+  strengths: string[];
   selected: boolean;
   selectionIndex: number;
   disabled: boolean;
@@ -76,6 +84,11 @@ export function ModelRow({
           <span className="flex items-center gap-1.5">
             <span className="truncate text-[12.5px] font-medium text-ink">{model.name}</span>
             {model.favorite && <Star className="size-3 shrink-0 fill-accent text-accent" />}
+            {strengths.length > 0 && (
+              <span className="hidden shrink-0 rounded-[3px] bg-accent-soft px-1 text-[9.5px] font-medium text-accent sm:inline">
+                your pick for {strengths.length}
+              </span>
+            )}
             {model.openWeights && (
               <span className="hidden shrink-0 rounded-[3px] border border-line px-1 text-[9px] font-medium uppercase tracking-wide text-ink-4 sm:inline">
                 open
@@ -90,6 +103,27 @@ export function ModelRow({
       </button>
 
       <div className="flex shrink-0 items-center gap-3">
+        {/* Your record leads; the vendor's capability glyph follows it. That
+            ordering is the whole argument of the product. */}
+        {record && record.played > 0 ? (
+          <Tooltip
+            content={
+              <span className="block">
+                {record.wins} won, {record.losses} lost
+                {record.ties ? `, ${record.ties} tied` : ""} across {record.played} of your duels
+              </span>
+            }
+          >
+            <span className="hidden items-center gap-2 sm:flex">
+              <TallyMarks count={record.wins} label={`${record.wins} wins`} />
+              <RecordScore wins={record.wins} losses={record.losses} ties={record.ties} size="sm" />
+              <FormStrip form={record.form} />
+            </span>
+          </Tooltip>
+        ) : (
+          <span className="hidden text-[10.5px] text-ink-4 sm:block">no duels yet</span>
+        )}
+
         <Tooltip
           content={
             <span className="block space-y-0.5">

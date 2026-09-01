@@ -26,14 +26,17 @@ import { useWorkspaceStore } from "@/lib/store/workspace";
 import { fuzzyMatch } from "@/lib/search/fuzzy";
 import { matchesQuery } from "@/lib/search";
 import { blendedRate } from "@/lib/analytics/spend";
+import { allVerdicts, modelRecord, modelStrengths } from "@/lib/analytics/verdicts";
+import { TASK_TYPES } from "@/lib/data/seed/duels";
 import { PROVIDERS } from "@/lib/data/seed/providers";
 import { formatCompact } from "@/lib/utils/format";
 import type { Model } from "@/lib/data/types";
 import { cn } from "@/lib/utils/cn";
 
-type SortKey = "score" | "cheapest" | "fastest" | "context" | "newest" | "name";
+type SortKey = "record" | "score" | "cheapest" | "fastest" | "context" | "newest" | "name";
 
 const SORTS: Array<{ value: SortKey; label: string }> = [
+  { value: "record", label: "Your record" },
   { value: "score", label: "Your score" },
   { value: "cheapest", label: "Cheapest" },
   { value: "fastest", label: "Fastest" },
@@ -53,12 +56,22 @@ function ModelsPageInner() {
   const [modalities, setModalities] = useState<string[]>([]);
   const [openOnly, setOpenOnly] = useState(false);
   const [starredOnly, setStarredOnly] = useState(false);
-  const [sort, setSort] = useState<SortKey>("score");
+  const [sort, setSort] = useState<SortKey>("record");
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [mobileCompareOpen, setMobileCompareOpen] = useState(false);
 
   const models = useMemo(() => workspace?.models ?? [], [workspace]);
+
+  // Your record, computed once for the whole page.
+  const evidence = useMemo(() => {
+    if (!workspace) return { records: new Map<string, ReturnType<typeof modelRecord>>(), strengths: new Map<string, string[]>() };
+    const verdicts = allVerdicts(workspace.duels, workspace.models, workspace.taskProfiles, TASK_TYPES);
+    return {
+      records: new Map(workspace.models.map((m) => [m.id, modelRecord(workspace.duels, m.id)])),
+      strengths: new Map(workspace.models.map((m) => [m.id, modelStrengths(verdicts, m.id)])),
+    };
+  }, [workspace]);
 
   // Open the comparison on the user's starred models the first time through.
   const [seeded, setSeeded] = useState(false);
@@ -110,6 +123,10 @@ function ModelsPageInner() {
 
     return [...list].sort((a, b) => {
       switch (sort) {
+        case "record": {
+          const wins = (id: string) => evidence.records.get(id)?.wins ?? -1;
+          return wins(b.id) - wins(a.id) || (b.personalScore ?? -1) - (a.personalScore ?? -1);
+        }
         case "cheapest":
           return blendedRate(a) - blendedRate(b);
         case "fastest":
@@ -124,7 +141,7 @@ function ModelsPageInner() {
           return (b.personalScore ?? -1) - (a.personalScore ?? -1);
       }
     });
-  }, [models, providers, modalities, openOnly, starredOnly, query, sort]);
+  }, [models, providers, modalities, openOnly, starredOnly, query, sort, evidence]);
 
   const selectedModels = compareIds
     .map((id) => models.find((m) => m.id === id))
@@ -150,8 +167,8 @@ function ModelsPageInner() {
   return (
     <PageContainer width="wide">
       <PageHeader
-        title="Model Lab"
-        description="Capability, price and latency side by side — with what your own workload would actually cost on each."
+        title="Models"
+        description="What each model actually did for you, beside what the vendor charges for it."
         meta={
           ready && stats ? (
             <>
@@ -262,6 +279,8 @@ function ModelsPageInner() {
                 <ModelRow
                   key={model.id}
                   model={model}
+                  record={evidence.records.get(model.id) ?? null}
+                  strengths={evidence.strengths.get(model.id) ?? []}
                   selected={compareIds.includes(model.id)}
                   selectionIndex={compareIds.indexOf(model.id)}
                   disabled={compareIds.length >= MAX_COMPARE}

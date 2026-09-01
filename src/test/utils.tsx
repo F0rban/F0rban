@@ -2,7 +2,7 @@ import { render, type RenderOptions } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { vi } from "vitest";
-import type { ReactElement } from "react";
+import { Suspense, type ReactElement } from "react";
 import { useWorkspaceStore } from "@/lib/store/workspace";
 import { useUiStore } from "@/lib/store/ui";
 import { MemoryAdapter } from "@/lib/data/adapter";
@@ -36,7 +36,13 @@ export function currentWorkspace(): Workspace {
 }
 
 function Providers({ children }: { children: React.ReactNode }) {
-  return <TooltipProvider delayDuration={0}>{children}</TooltipProvider>;
+  // Route components resolve their params with React's `use()`, which suspends.
+  // Next supplies a boundary in the app; tests have to supply their own.
+  return (
+    <TooltipProvider delayDuration={0}>
+      <Suspense fallback={null}>{children}</Suspense>
+    </TooltipProvider>
+  );
 }
 
 export function renderApp(ui: ReactElement, options?: Omit<RenderOptions, "wrapper">) {

@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowRight, CircleCheck, Gavel, Scale, Swords, TrendingUp } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/layout/page-header";
+import { SampleBanner } from "@/components/layout/sample-banner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -104,6 +105,8 @@ export default function VerdictsPage() {
           </Button>
         }
       />
+
+      <SampleBanner className="mt-4" />
 
       {/* The number the product exists to produce. */}
       <section className="mt-5 overflow-hidden rounded-xl border border-line bg-surface-1 shadow-xs">

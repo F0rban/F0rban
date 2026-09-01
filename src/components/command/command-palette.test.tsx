@@ -92,7 +92,8 @@ describe("command palette", () => {
   it("navigates to the highlighted result on Enter and closes", async () => {
     const { user, input } = await openPalette();
     await user.type(input, "opus");
-    await user.keyboard("{Enter}");
+    await waitFor(() => expect(screen.getAllByRole("option")[0]).toHaveTextContent("Opus"));
+    await user.type(input, "{Enter}");
 
     await waitFor(() => expect(push).toHaveBeenCalled());
     expect(push.mock.calls[0]![0]).toContain("/models?model=");
@@ -101,9 +102,12 @@ describe("command palette", () => {
 
   it("runs a navigation command on Enter", async () => {
     const { user, input } = await openPalette();
-    await user.type(input, ">go to spending");
-    await user.keyboard("{Enter}");
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/spend"));
+    await user.type(input, ">go to verdicts");
+    await waitFor(() => expect(screen.getAllByRole("option")[0]).toHaveTextContent("Verdicts"));
+    // Target the field rather than whatever holds focus: a dialog closed by an
+    // earlier test can still be restoring focus at this point.
+    await user.type(input, "{Enter}");
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/verdicts"));
   });
 
   it("activates a result on click", async () => {

@@ -74,6 +74,9 @@ interface WorkspaceState {
   addTask: (projectId: string, title: string) => void;
   removeTask: (projectId: string, taskId: string) => void;
 
+  /** Drops the seeded evidence, keeping the library. */
+  clearSampleEvidence: () => void;
+
   // Duels
   startDuel: (draft: Omit<Duel, "id" | "createdAt" | "decidedAt" | "status" | "winnerModelId" | "tie" | "reason">) => string;
   decideDuel: (id: string, winnerModelId: string | null, reason: string) => void;
@@ -560,6 +563,26 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => {
       })),
 
     /* ---------------------------------------------------------- */
+
+    clearSampleEvidence: () =>
+      mutate(
+        (ws) => ({
+          ...ws,
+          duels: [],
+          // The prompt, model and tool library is reference material, not
+          // evidence — it survives. Usage counters do not.
+          prompts: ws.prompts.map((p) => ({ ...p, useCount: 0, lastUsedAt: null })),
+          activity: [],
+          preferences: { ...ws.preferences, usingSampleData: false },
+        }),
+        {
+          kind: "project.updated",
+          title: "Started a fresh record",
+          detail: "Sample evidence cleared. Your own duels start from here.",
+          entityType: null,
+          entityId: null,
+        },
+      ),
 
     startDuel: (draft) => {
       const id = createId("d");

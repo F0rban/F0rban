@@ -299,6 +299,12 @@ export interface Preferences {
   focusModelIds: Id[];
   compactDensity: boolean;
   reduceMotion: boolean;
+  /**
+   * True while the workspace still holds the seeded example evidence. Shown as
+   * a banner, because presenting someone else's record as theirs would poison
+   * the one thing this product sells.
+   */
+  usingSampleData: boolean;
 }
 
 export type EntityType =

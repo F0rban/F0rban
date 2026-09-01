@@ -1,4 +1,4 @@
-import type { Duel, Model } from "@/lib/data/types";
+import type { Duel } from "@/lib/data/types";
 
 /** Anonymous labels while judging. A, B, C — never the model's name. */
 export const BLIND_LABELS = ["A", "B", "C", "D"] as const;
@@ -28,9 +28,6 @@ export function blindOrder(duel: Duel): number[] {
   return indices;
 }
 
-export function duelCost(duel: Duel): number {
-  return duel.entries.reduce((sum, entry) => sum + entry.cost, 0);
-}
 
 /** What the winner cost against the most expensive alternative. */
 export function costSpread(duel: Duel): { cheapest: number; dearest: number; ratio: number } {
@@ -41,6 +38,3 @@ export function costSpread(duel: Duel): { cheapest: number; dearest: number; rat
   return { cheapest, dearest, ratio: cheapest > 0 ? dearest / cheapest : 1 };
 }
 
-export function modelsIn(duel: Duel, models: Map<string, Model>): Model[] {
-  return duel.entries.map((e) => models.get(e.modelId)).filter((m): m is Model => Boolean(m));
-}

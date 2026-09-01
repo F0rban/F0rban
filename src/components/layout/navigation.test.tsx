@@ -13,12 +13,12 @@ beforeEach(() => {
 });
 
 describe("findNavItem", () => {
-  it("resolves the dashboard for the root path", () => {
-    expect(findNavItem("/")!.label).toBe("Dashboard");
+  it("resolves Today for the root path", () => {
+    expect(findNavItem("/")!.label).toBe("Today");
   });
 
   it("resolves a section from a nested route", () => {
-    expect(findNavItem("/projects/pr-atlas")!.label).toBe("Projects");
+    expect(findNavItem("/duels/d-abc")!.label).toBe("Duels");
   });
 
   it("does not let the root item swallow every other route", () => {
@@ -42,15 +42,14 @@ describe("sidebar", () => {
   it("marks the current page for assistive technology", () => {
     setRoute("/prompts");
     renderApp(<Sidebar />);
-    const current = screen.getByRole("link", { name: "Prompt Vault" });
-    expect(current).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: "Tools" })).not.toHaveAttribute("aria-current");
+    expect(screen.getByRole("link", { name: "Prompts" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Models" })).not.toHaveAttribute("aria-current");
   });
 
   it("keeps a nested route's section marked as current", () => {
-    setRoute("/projects/pr-atlas");
+    setRoute("/duels/d-abc");
     renderApp(<Sidebar />);
-    expect(screen.getByRole("link", { name: "Projects" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Duels" })).toHaveAttribute("aria-current", "page");
   });
 
   it("opens the palette from the search affordance", async () => {
@@ -85,7 +84,7 @@ describe("mobile tab bar", () => {
   it("marks the current tab", () => {
     setRoute("/models");
     renderApp(<MobileTabBar />);
-    expect(screen.getByRole("link", { name: "Model Lab" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Models" })).toHaveAttribute("aria-current", "page");
   });
 });
 
@@ -95,18 +94,18 @@ describe("top bar", () => {
     const { Topbar } = await import("./topbar");
     renderApp(<Topbar />);
     const crumb = screen.getByRole("navigation", { name: "Breadcrumb" });
-    expect(within(crumb).getByText("Spending")).toHaveAttribute("aria-current", "page");
+    expect(within(crumb).getByText("Spend")).toHaveAttribute("aria-current", "page");
     expect(screen.queryByRole("heading")).not.toBeInTheDocument();
   });
 
   it("shows the section and the record name on a detail route", async () => {
-    setRoute("/projects/pr-atlas");
-    useUiStore.setState({ pageTitle: "Atlas — knowledge base search" });
+    setRoute("/duels/d-abc");
+    useUiStore.setState({ pageTitle: "Billing service refund path" });
     const { Topbar } = await import("./topbar");
     renderApp(<Topbar />);
     const crumb = screen.getByRole("navigation", { name: "Breadcrumb" });
-    expect(within(crumb).getByRole("link", { name: "Projects" })).toBeInTheDocument();
-    expect(within(crumb).getByText("Atlas — knowledge base search")).toHaveAttribute(
+    expect(within(crumb).getByRole("link", { name: "Duels" })).toBeInTheDocument();
+    expect(within(crumb).getByText("Billing service refund path")).toHaveAttribute(
       "aria-current",
       "page",
     );

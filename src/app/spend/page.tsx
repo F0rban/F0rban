@@ -10,6 +10,11 @@ import { Donut } from "@/components/charts/donut";
 import { BarChart, BreakdownBars } from "@/components/charts/bar-chart";
 import { TrendChart } from "@/components/charts/trend-chart";
 import { BudgetCard } from "@/features/spending/budget-card";
+import { SpendTabs } from "@/features/spending/spend-tabs";
+import { allVerdicts, routingSummary } from "@/lib/analytics/verdicts";
+import { TASK_TYPES } from "@/lib/data/seed/duels";
+import Link from "next/link";
+import { ArrowRight, TrendingUp } from "lucide-react";
 import { TransactionsTable } from "@/features/spending/transactions-table";
 import { useWorkspace } from "@/hooks/use-workspace";
 import {
@@ -73,6 +78,9 @@ export default function SpendingPage() {
       tokens: current.reduce((sum, e) => sum + (e.tokensIn ?? 0) + (e.tokensOut ?? 0), 0),
       biggestMonth: [...monthly].sort((a, b) => b.value - a.value)[0],
       lifetime: total(entries),
+      routing: routingSummary(
+        allVerdicts(workspace.duels, workspace.models, workspace.taskProfiles, TASK_TYPES),
+      ),
     };
   }, [workspace, range, now]);
 
@@ -85,7 +93,7 @@ export default function SpendingPage() {
     <PageContainer>
       <PageHeader
         title="Spending"
-        description="Where the money actually goes, what it is on track to become, and which project it belongs to."
+        description="Where the money goes, what it is on track to become, and how much of it your own evidence says is avoidable."
         actions={
           <Segmented
             ariaLabel="Time range"
@@ -95,6 +103,8 @@ export default function SpendingPage() {
           />
         }
       />
+
+      <SpendTabs />
 
       {!ready || !data ? (
         <div className="mt-5 space-y-4">
@@ -107,7 +117,35 @@ export default function SpendingPage() {
         </div>
       ) : (
         <>
-          <div className="mt-5 grid min-w-0 gap-3 lg:grid-cols-4">
+          {/* The bridge between money and evidence. */}
+          {data.routing.actionableSaving > 0 && (
+            <Link
+              href="/verdicts"
+              className="group mt-4 flex flex-col gap-3 rounded-xl border border-line bg-surface-1 p-4 shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-accent-line hover:shadow-md sm:flex-row sm:items-center"
+            >
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg border border-accent-line/60 bg-accent-soft text-accent">
+                <TrendingUp className="size-4" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13.5px] font-semibold text-ink">
+                  {formatCurrency(data.routing.actionableSaving, { maximumFractionDigits: 0 })} a
+                  month of this is avoidable
+                </span>
+                <span className="mt-0.5 block text-[12px] leading-snug text-ink-3">
+                  Across {data.routing.actionable.length} kind
+                  {data.routing.actionable.length === 1 ? "" : "s"} of work where a cheaper model
+                  already won your own head-to-heads. This is not a generic benchmark — it is your
+                  record.
+                </span>
+              </span>
+              <span className="flex shrink-0 items-center gap-1.5 text-[12.5px] font-medium text-accent">
+                See the routing table
+                <ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+              </span>
+            </Link>
+          )}
+
+          <div className="mt-4 grid min-w-0 gap-3 lg:grid-cols-4">
             <div className="flex flex-col rounded-xl border border-line bg-surface-1 p-4 shadow-xs">
               <StatLabel>Total, {RANGE_OPTIONS.find((r) => r.value === range)?.label}</StatLabel>
               <StatValue className="mt-1.5">

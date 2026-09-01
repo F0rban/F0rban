@@ -17,6 +17,7 @@ import { ToolCard } from "@/features/tools/tool-card";
 import { ToolDetail } from "@/features/tools/tool-detail";
 import { ToolForm } from "@/features/tools/tool-form";
 import { StackInsight } from "@/features/tools/stack-insight";
+import { SpendTabs } from "@/features/spending/spend-tabs";
 import {
   TOOL_CATEGORIES,
   TOOL_CATEGORY_LABEL,
@@ -139,8 +140,8 @@ function ToolsPageInner() {
   return (
     <PageContainer>
       <PageHeader
-        title="Tools"
-        description="Every AI subscription and API you pay for, with what it costs and whether you actually use it."
+        title="Spending"
+        description="Every subscription and API you pay for, with what it costs and whether you actually use it."
         meta={
           ready ? (
             <>
@@ -177,6 +178,8 @@ function ToolsPageInner() {
           </Button>
         }
       />
+
+      <SpendTabs />
 
       {ready && (
         <StackInsight

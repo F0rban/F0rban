@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -39,6 +40,9 @@ import { useWorkspace } from "@/hooks/use-workspace";
 import { useWorkspaceStore } from "@/lib/store/workspace";
 import { useUiStore } from "@/lib/store/ui";
 import { fuzzyMatch } from "@/lib/search/fuzzy";
+import { standingsFor } from "@/lib/analytics/verdicts";
+import { FormStrip, RecordScore, TallyMarks } from "@/components/ui/record";
+import { Swords } from "lucide-react";
 import { matchesQuery } from "@/lib/search";
 import { formatNumber } from "@/lib/utils/format";
 import { relativeTime } from "@/lib/utils/date";
@@ -83,6 +87,22 @@ function PromptsPageInner() {
   const [tab, setTab] = useState("compose");
 
   const prompts = useMemo(() => workspace?.prompts ?? [], [workspace]);
+
+  /**
+   * A prompt's own record: which model has won the duels that used it. This is
+   * the difference between a snippet manager and a library that knows what
+   * works — and it is why "Run as a duel" is the primary action here.
+   */
+  const promptRecords = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof standingsFor>>();
+    for (const prompt of prompts) {
+      const duels = (workspace?.duels ?? []).filter(
+        (d) => d.promptId === prompt.id && d.status === "decided",
+      );
+      if (duels.length > 0) map.set(prompt.id, standingsFor(duels));
+    }
+    return map;
+  }, [prompts, workspace]);
   const now = useMemo(() => new Date(), []);
   const isDesktop = useIsDesktop();
 
@@ -180,8 +200,8 @@ function PromptsPageInner() {
   return (
     <PageContainer width="wide">
       <PageHeader
-        title="Prompt Vault"
-        description="Reusable prompts with typed variables, a fill-in panel and version history."
+        title="Prompts"
+        description="The inputs to a duel. Each one remembers which model wins it."
         meta={
           ready ? (
             <>
@@ -341,6 +361,14 @@ function PromptsPageInner() {
                             {prompt.variables.length} vars
                           </span>
                         )}
+                        {(() => {
+                          const leader = promptRecords.get(prompt.id)?.[0];
+                          return leader ? (
+                            <span className="flex items-center gap-1">
+                              <TallyMarks count={leader.wins} label={`${leader.wins} wins`} />
+                            </span>
+                          ) : null;
+                        })()}
                         <span className="ml-auto font-mono text-[10px] tabular-nums text-ink-4">
                           {formatNumber(prompt.useCount)}× · {relativeTime(prompt.lastUsedAt, now)}
                         </span>
@@ -394,9 +422,33 @@ function PromptsPageInner() {
                       updated {relativeTime(selected.updatedAt, now)}
                     </span>
                   </div>
+
+                  {(() => {
+                    const standings = promptRecords.get(selected.id);
+                    const leader = standings?.[0];
+                    if (!leader) return null;
+                    const model = workspace?.models.find((m) => m.id === leader.modelId);
+                    return (
+                      <p className="mt-2.5 flex flex-wrap items-center gap-2 rounded-lg border border-line-subtle bg-surface-2/40 px-2.5 py-1.5">
+                        <TallyMarks count={leader.wins} label={`${leader.wins} wins`} />
+                        <span className="text-[11.5px] text-ink-3">
+                          <span className="font-medium text-ink">{model?.name}</span> wins this
+                          prompt
+                        </span>
+                        <RecordScore wins={leader.wins} losses={leader.losses} size="sm" />
+                        <FormStrip form={leader.form} />
+                      </p>
+                    );
+                  })()}
                 </div>
 
-                <div className="flex shrink-0 items-center gap-0.5">
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button variant="secondary" size="sm" asChild>
+                    <Link href={`/duels/new?prompt=${selected.id}`}>
+                      <Swords className="size-3.5" />
+                      Run as a duel
+                    </Link>
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon-sm"

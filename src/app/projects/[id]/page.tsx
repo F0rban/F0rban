@@ -11,7 +11,6 @@ import {
   Plus,
   Target,
   Trash2,
-  Swords,
   X,
 } from "lucide-react";
 import { PageContainer } from "@/components/layout/page-header";

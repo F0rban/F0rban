@@ -340,9 +340,13 @@
     display: none;
   }
 
-  /* Fades the far edge of a horizontally scrolling strip. */
+  /* Fades the far edge of a scrolling strip, so a cut-off looks intentional
+     rather than broken. */
   .mask-fade-r {
     mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent 100%);
+  }
+  .mask-fade-b {
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent 100%);
   }
 
   .stack-in > * {

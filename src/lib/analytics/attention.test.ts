@@ -12,6 +12,7 @@ function base(): Workspace {
   workspace.tools = [];
   workspace.projects = [];
   workspace.spend = [];
+  workspace.duels = [];
   return workspace;
 }
 
@@ -211,6 +212,37 @@ describe("deriveAttention — tasks", () => {
       },
     ];
     expect(deriveAttention(workspace, NOW)).toHaveLength(0);
+  });
+});
+
+describe("deriveAttention — duels", () => {
+  it("puts unjudged duels above everything else", () => {
+    const workspace = createSeedWorkspace(NOW);
+    const items = deriveAttention(workspace, NOW);
+    expect(items[0]!.id).toBe("duels-pending");
+    expect(items[0]!.title).toMatch(/waiting for a verdict/);
+  });
+
+  it("links straight to the duel when only one is waiting", () => {
+    const workspace = base();
+    workspace.duels = [
+      {
+        ...createSeedWorkspace(NOW).duels[0]!,
+        id: "d-1",
+        title: "Only one",
+        status: "pending",
+        decidedAt: null,
+        winnerModelId: null,
+      },
+    ];
+    const item = deriveAttention(workspace, NOW).find((i) => i.id === "duels-pending")!;
+    expect(item.href).toBe("/duels/d-1");
+    expect(item.detail).toContain("Only one");
+  });
+
+  it("stays quiet when everything has been judged", () => {
+    const workspace = base();
+    expect(deriveAttention(workspace, NOW).some((i) => i.id === "duels-pending")).toBe(false);
   });
 });
 

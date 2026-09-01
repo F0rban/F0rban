@@ -1,443 +1,431 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { ArrowLeft, ArrowRight, Check, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Eye, Gavel, TrendingUp } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useWorkspaceStore } from "@/lib/store/workspace";
 import { useUiStore } from "@/lib/store/ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ProviderMark } from "@/components/ui/provider-mark";
-import { Kbd } from "@/components/ui/kbd";
 import { Logo } from "@/components/layout/logo";
-import { formatCompact, formatCurrency } from "@/lib/utils/format";
+import { TallyMarks } from "@/components/ui/record";
+import { allVerdicts, routingSummary } from "@/lib/analytics/verdicts";
+import { TASK_LABEL, TASK_TYPES } from "@/lib/data/seed/duels";
+import { formatCurrency, formatDuration } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
+import { SAMPLE_ANSWERS, SAMPLE_DIFF } from "./sample-duel";
+import type { TaskType } from "@/lib/data/types";
 
 const STEPS = [
-  { id: "welcome", label: "Welcome", hint: "What this is" },
-  { id: "tools", label: "Your stack", hint: "What you already pay for" },
-  { id: "models", label: "Models", hint: "What you reach for" },
-  { id: "budget", label: "Budget", hint: "Your monthly ceiling" },
-  { id: "ready", label: "Ready", hint: "Where to start" },
+  { id: "judge", label: "Judge one", hint: "Twenty seconds" },
+  { id: "work", label: "Your work", hint: "What you use AI for" },
+  { id: "payoff", label: "The payoff", hint: "What it is worth" },
 ] as const;
 
-const BUDGET_PRESETS = [120, 250, 420, 800];
-
-function SelectCard({
-  selected,
-  onClick,
-  children,
-  className,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={selected}
-      className={cn(
-        "group relative flex items-start gap-2.5 rounded-lg border p-2.5 text-left",
-        "transition-[border-color,background-color,transform] duration-150 active:translate-y-px",
-        selected
-          ? "border-accent bg-accent-soft/50"
-          : "border-line bg-surface-1 hover:border-line-strong hover:bg-surface-2",
-        className,
-      )}
-    >
-      {children}
-      <span
-        className={cn(
-          "absolute right-2 top-2 grid size-4 place-items-center rounded-full border transition-all duration-150",
-          selected ? "border-accent bg-accent text-accent-ink" : "border-line bg-surface-2 opacity-0 group-hover:opacity-100",
-        )}
-      >
-        <Check className="size-2.5" strokeWidth={3.5} />
-      </span>
-    </button>
-  );
-}
-
 /**
- * First-run flow.
+ * First run.
  *
- * Every choice here has a real consequence in the app — the selected tools stay
- * active and everything else is marked as evaluating, chosen models are starred
- * so the Model Lab opens on them, and the budget drives the meter in the
- * sidebar from the first screen.
+ * Step one is not a welcome screen — it is a real blind comparison. The user
+ * picks an answer before they know what produced it, and the reveal makes the
+ * entire product argument in one sentence. Everything after that is setup.
  */
 export function OnboardingFlow() {
   const { workspace } = useWorkspace();
   const completeOnboarding = useWorkspaceStore((s) => s.completeOnboarding);
-  const updateTool = useWorkspaceStore((s) => s.updateTool);
   const toast = useUiStore((s) => s.toast);
 
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
-  const [toolIds, setToolIds] = useState<string[]>([]);
-  const [modelIds, setModelIds] = useState<string[]>([]);
-  const [budget, setBudget] = useState(420);
+  const [picked, setPicked] = useState<"a" | "b" | null>(null);
+  const [taskTypes, setTaskTypes] = useState<TaskType[]>([
+    "code-review",
+    "classification",
+    "summarisation",
+  ]);
 
-  const tools = useMemo(() => workspace?.tools ?? [], [workspace]);
-  const models = useMemo(() => workspace?.models ?? [], [workspace]);
+  // Presentation order is fixed per session but not alphabetical, so the
+  // expensive answer is not reliably first.
+  const order = useMemo(() => (Math.random() < 0.5 ? [0, 1] : [1, 0]), []);
 
-  const suggestedTools = useMemo(
-    () => tools.filter((t) => t.status !== "cancelled").slice(0, 12),
-    [tools],
-  );
-  const suggestedModels = useMemo(
-    () => [...models].sort((a, b) => (b.personalScore ?? 0) - (a.personalScore ?? 0)).slice(0, 8),
-    [models],
-  );
-
-  // Seed the form from the workspace once it hydrates.
-  useEffect(() => {
-    if (!workspace) return;
-    setToolIds(workspace.tools.filter((t) => t.status === "active").map((t) => t.id));
-    setModelIds(workspace.models.filter((m) => m.favorite).map((m) => m.id));
-    setBudget(workspace.preferences.monthlyBudget);
-    // Runs once per hydration, not on every workspace mutation.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workspace !== null]);
+  const payoff = useMemo(() => {
+    if (!workspace) return null;
+    const verdicts = allVerdicts(
+      workspace.duels,
+      workspace.models,
+      workspace.taskProfiles,
+      TASK_TYPES,
+    );
+    return routingSummary(verdicts);
+  }, [workspace]);
 
   if (!workspace) return null;
 
-  const toggle = (list: string[], id: string, setter: (next: string[]) => void) =>
-    setter(list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
+  const chosen = picked ? SAMPLE_ANSWERS.find((a) => a.id === picked)! : null;
+  const other = picked ? SAMPLE_ANSWERS.find((a) => a.id !== picked)! : null;
+  const cheaperWon = chosen && other ? chosen.cost < other.cost : false;
 
   const finish = () => {
-    // Selections have consequences: unpicked tools drop to "evaluating"
-    // rather than silently staying active.
-    for (const tool of tools) {
-      const picked = toolIds.includes(tool.id);
-      if (picked && tool.status !== "active") updateTool(tool.id, { status: "active" });
-      if (!picked && tool.status === "active") updateTool(tool.id, { status: "evaluating" });
-    }
-    completeOnboarding({
-      displayName: name.trim(),
-      monthlyBudget: budget,
-      focusModelIds: modelIds,
-    });
+    completeOnboarding({ displayName: name.trim(), focusModelIds: [] });
     toast({
-      title: "Workspace ready",
-      description: `${toolIds.length} tools tracked · ${formatCurrency(budget)} monthly budget`,
+      title: "Your record is ready",
+      description: "It starts with sample evidence so you can see the shape. Clear it any time.",
       tone: "success",
     });
   };
 
-  const canAdvance = step !== 1 || toolIds.length > 0;
-  const isLast = step === STEPS.length - 1;
-
   return (
     <DialogPrimitive.Root open>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-[70] bg-canvas/80 backdrop-blur-md" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-[70] bg-canvas/85 backdrop-blur-md" />
         <DialogPrimitive.Content
-          aria-label="Set up your workspace"
+          aria-label="Set up Bench"
           onEscapeKeyDown={(event) => event.preventDefault()}
           onInteractOutside={(event) => event.preventDefault()}
           className={cn(
-            "fixed left-1/2 top-1/2 z-[71] flex w-[calc(100vw-1.5rem)] max-w-3xl -translate-x-1/2 -translate-y-1/2",
-            "max-h-[min(92dvh,44rem)] flex-col overflow-hidden rounded-2xl border border-line",
-            "bg-surface-1 shadow-lg data-[state=open]:animate-pop sm:flex-row",
+            "fixed left-1/2 top-1/2 z-[71] flex w-[calc(100vw-1.5rem)] max-w-4xl -translate-x-1/2 -translate-y-1/2",
+            "max-h-[min(93dvh,50rem)] flex-col overflow-hidden rounded-2xl border border-line",
+            "bg-surface-1 shadow-lg data-[state=open]:animate-pop",
           )}
         >
-          <DialogPrimitive.Title className="sr-only">Set up your workspace</DialogPrimitive.Title>
+          <DialogPrimitive.Title className="sr-only">Set up Bench</DialogPrimitive.Title>
 
-          {/* Rail */}
-          <div className="flex shrink-0 items-center gap-4 border-b border-line-subtle bg-surface-2/50 p-4 sm:w-56 sm:flex-col sm:items-stretch sm:border-b-0 sm:border-r sm:p-5">
+          <header className="flex shrink-0 items-center gap-4 border-b border-line-subtle px-5 py-3.5">
             <span className="flex items-center gap-2.5 text-accent">
               <Logo size={20} />
-              <span className="hidden text-[13px] font-semibold tracking-[-0.01em] text-ink sm:inline">
-                Command Center
-              </span>
+              <span className="text-[13px] font-semibold tracking-[-0.01em] text-ink">Bench</span>
             </span>
-
-            <ol className="flex flex-1 items-center gap-1 sm:mt-7 sm:flex-col sm:items-stretch sm:gap-0">
-              {STEPS.map((s, i) => {
-                const done = i < step;
-                const current = i === step;
-                return (
-                  <li key={s.id} className="flex flex-1 items-center gap-2.5 sm:flex-none sm:py-1.5">
-                    <span
-                      className={cn(
-                        "grid size-5 shrink-0 place-items-center rounded-full border font-mono text-[9.5px] font-semibold transition-colors duration-200",
-                        done && "border-accent bg-accent text-accent-ink",
-                        current && "border-accent text-accent",
-                        !done && !current && "border-line text-ink-4",
-                      )}
-                    >
-                      {done ? <Check className="size-2.5" strokeWidth={3.5} /> : i + 1}
-                    </span>
-                    <span className="hidden min-w-0 sm:block">
-                      <span
-                        className={cn(
-                          "block truncate text-[12.5px] font-medium transition-colors",
-                          current ? "text-ink" : done ? "text-ink-2" : "text-ink-4",
-                        )}
-                      >
-                        {s.label}
-                      </span>
-                      <span className="block truncate text-[10.5px] text-ink-4">{s.hint}</span>
-                    </span>
-                    <span
-                      aria-hidden
-                      className={cn(
-                        "h-px flex-1 bg-line transition-colors sm:hidden",
-                        i === STEPS.length - 1 && "hidden",
-                        done && "bg-accent",
-                      )}
-                    />
-                  </li>
-                );
-              })}
+            <ol className="ml-auto flex items-center gap-1">
+              {STEPS.map((s, i) => (
+                <li key={s.id} className="flex items-center gap-1">
+                  <span
+                    className={cn(
+                      "grid size-5 place-items-center rounded-full border font-mono text-[9.5px] font-semibold transition-colors",
+                      i < step && "border-accent bg-accent text-accent-ink",
+                      i === step && "border-accent text-accent",
+                      i > step && "border-line text-ink-4",
+                    )}
+                  >
+                    {i < step ? <Check className="size-2.5" strokeWidth={3.5} /> : i + 1}
+                  </span>
+                  <span
+                    className={cn(
+                      "hidden text-[11.5px] sm:block",
+                      i === step ? "font-medium text-ink" : "text-ink-4",
+                    )}
+                  >
+                    {s.label}
+                  </span>
+                  {i < STEPS.length - 1 && <span className="mx-1 h-px w-4 bg-line" />}
+                </li>
+              ))}
             </ol>
-          </div>
+          </header>
 
-          {/* Panel */}
-          <div className="flex min-h-0 flex-1 flex-col">
-            <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-7">
-              {step === 0 && (
-                <div className="animate-rise">
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-accent-line/60 bg-accent-soft px-2 py-0.5 text-[10.5px] font-medium text-accent">
-                    <Sparkles className="size-3" />
-                    First run
-                  </span>
-                  <h2 className="mt-3 text-balance text-2xl font-semibold tracking-[-0.025em] text-ink">
-                    One cockpit for every AI tool you pay for.
-                  </h2>
-                  <p className="mt-2.5 max-w-md text-[13px] leading-relaxed text-ink-3">
-                    Your prompts, models, projects and spend in one place — so you can answer
-                    &ldquo;what am I actually paying for, and is it working?&rdquo; in about four
-                    seconds.
-                  </p>
-                  <dl className="mt-6 grid gap-3 sm:grid-cols-2">
-                    {[
-                      ["Prompt Vault", "Templates with variables, versions and one-key copy"],
-                      ["Model Lab", "Compare price, speed and capability side by side"],
-                      ["Spending", "Budget, forecast, and where the money went"],
-                      ["Command palette", "Everything reachable from ⌘K"],
-                    ].map(([title, body]) => (
-                      <div key={title} className="rounded-lg border border-line-subtle bg-surface-2/40 p-3">
-                        <dt className="text-[12.5px] font-medium text-ink">{title}</dt>
-                        <dd className="mt-0.5 text-[11.5px] leading-snug text-ink-4">{body}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                  <div className="mt-6 max-w-xs">
-                    <label
-                      htmlFor="onboarding-name"
-                      className="mb-1.5 block text-[11.5px] font-medium text-ink-2"
-                    >
-                      What should we call you? <span className="text-ink-4">Optional</span>
-                    </label>
-                    <Input
-                      id="onboarding-name"
-                      value={name}
-                      onChange={(event) => setName(event.target.value)}
-                      placeholder="Alex"
-                      autoComplete="given-name"
-                    />
+          <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-6">
+            {/* 1 — the blind judgement */}
+            {step === 0 && (
+              <div className="animate-rise">
+                {!picked ? (
+                  <>
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-accent-line/60 bg-accent-soft px-2 py-0.5 text-[10.5px] font-medium text-accent">
+                      <Eye className="size-3" />
+                      Blind — model names hidden
+                    </span>
+                    <h2 className="mt-3 text-balance text-[22px] font-semibold leading-snug tracking-[-0.025em] text-ink">
+                      Which of these is the better code review?
+                    </h2>
+                    <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-ink-3">
+                      A sample pair, so you can see how judging works. Two models reviewed the same
+                      function. Pick the one you would rather have received.
+                    </p>
+
+                    <pre className="mt-4 overflow-x-auto rounded-lg border border-line bg-surface-2/50 p-3 font-mono text-[11px] leading-relaxed text-ink-3">
+                      {SAMPLE_DIFF}
+                    </pre>
+
+                    <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                      {order.map((index) => {
+                        const answer = SAMPLE_ANSWERS[index]!;
+                        return (
+                          <button
+                            key={answer.id}
+                            type="button"
+                            onClick={() => setPicked(answer.id)}
+                            className={cn(
+                              "group flex flex-col rounded-xl border border-line bg-surface-1 p-3.5 text-left",
+                              "transition-[border-color,box-shadow,transform] duration-200",
+                              "hover:-translate-y-px hover:border-accent hover:shadow-md",
+                            )}
+                          >
+                            <span className="flex items-center gap-2">
+                              <span className="grid size-6 place-items-center rounded-[6px] border border-line bg-surface-2 font-mono text-[11px] font-semibold text-ink-2">
+                                {answer.id.toUpperCase()}
+                              </span>
+                              <span className="text-[12.5px] font-medium text-ink">
+                                Answer {answer.id.toUpperCase()}
+                              </span>
+                              <span className="ml-auto text-[11.5px] font-medium text-accent opacity-0 transition-opacity group-hover:opacity-100">
+                                Pick this
+                              </span>
+                            </span>
+                            <span className="mask-fade-b mt-2.5 max-h-72 overflow-y-auto whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-ink-2">
+                              {answer.body}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <div className="animate-rise">
+                    <span className="grid size-10 place-items-center rounded-xl border border-accent-line/60 bg-accent-soft text-accent">
+                      <Gavel className="size-5" />
+                    </span>
+                    <h2 className="mt-3.5 text-balance text-[22px] font-semibold leading-snug tracking-[-0.025em] text-ink">
+                      You picked {chosen!.id.toUpperCase()}. That was{" "}
+                      <span className="text-accent">{chosen!.modelName}</span>.
+                    </h2>
+                    <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-ink-3">
+                      {cheaperWon ? (
+                        <>
+                          It costs{" "}
+                          <span className="font-medium text-ink">
+                            {(other!.cost / chosen!.cost).toFixed(1)}× less
+                          </span>{" "}
+                          than the answer you passed over — {other!.modelName}, at $
+                          {other!.inputPrice}/${other!.outputPrice} per million tokens against $
+                          {chosen!.inputPrice}/${chosen!.outputPrice}. If that holds across your
+                          work, you are paying for a difference you cannot see.
+                        </>
+                      ) : (
+                        <>
+                          It costs{" "}
+                          <span className="font-medium text-ink">
+                            {(chosen!.cost / other!.cost).toFixed(1)}× more
+                          </span>{" "}
+                          than {other!.modelName}. Sometimes the expensive one really is better —
+                          the point is knowing which times, on your work, rather than guessing.
+                        </>
+                      )}
+                    </p>
+
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      {SAMPLE_ANSWERS.map((answer) => (
+                        <div
+                          key={answer.id}
+                          className={cn(
+                            "rounded-xl border p-3.5",
+                            answer.id === picked
+                              ? "border-accent bg-accent-soft/30"
+                              : "border-line bg-surface-1",
+                          )}
+                        >
+                          <p className="flex items-center gap-2 text-[12.5px] font-medium text-ink">
+                            {answer.modelName}
+                            {answer.id === picked && (
+                              <span className="rounded-[3px] bg-accent px-1 text-[9.5px] font-semibold text-accent-ink">
+                                your pick
+                              </span>
+                            )}
+                          </p>
+                          <dl className="mt-2 grid grid-cols-3 gap-2">
+                            {[
+                              ["Cost", formatCurrency(answer.cost, { maximumFractionDigits: 4 })],
+                              ["Latency", formatDuration(answer.latencyMs)],
+                              ["Per M in", `$${answer.inputPrice}`],
+                            ].map(([label, value]) => (
+                              <div key={label}>
+                                <dt className="text-[9.5px] font-medium uppercase tracking-[0.06em] text-ink-4">
+                                  {label}
+                                </dt>
+                                <dd className="mt-0.5 font-mono text-[12px] font-medium tabular-nums text-ink">
+                                  {value}
+                                </dd>
+                              </div>
+                            ))}
+                          </dl>
+                        </div>
+                      ))}
+                    </div>
+
+                    <p className="mt-4 rounded-lg border border-line-subtle bg-surface-2/40 p-3 text-[12px] leading-relaxed text-ink-3">
+                      That is the whole mechanic. One task, several models, names hidden, one click.
+                      Bench keeps the result — and after a few dozen of them it can tell you which
+                      model to use for which kind of work, and what your habits cost.
+                    </p>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+            )}
 
-              {step === 1 && (
-                <div className="animate-rise">
-                  <h2 className="text-lg font-semibold tracking-[-0.02em] text-ink">
-                    Which of these are you actually using?
-                  </h2>
-                  <p className="mt-1 text-[13px] text-ink-3">
-                    Anything you leave unchecked is kept but marked as evaluating, so it stops
-                    counting toward your active stack.
-                  </p>
-                  <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                    {suggestedTools.map((tool) => (
-                      <SelectCard
-                        key={tool.id}
-                        selected={toolIds.includes(tool.id)}
-                        onClick={() => toggle(toolIds, tool.id, setToolIds)}
-                      >
-                        <ProviderMark provider={tool.provider} size="sm" />
-                        <span className="min-w-0 pr-5">
-                          <span className="block truncate text-[12.5px] font-medium text-ink">
-                            {tool.name}
-                          </span>
-                          <span className="block truncate text-[11px] text-ink-4">
-                            {tool.billingCycle === "usage"
-                              ? "Usage-based"
-                              : tool.monthlyCost > 0
-                                ? `${formatCurrency(tool.monthlyCost)}/mo`
-                                : tool.status === "paused"
-                                  ? "Paused — no charge"
-                                  : "Free"}
-                          </span>
-                        </span>
-                      </SelectCard>
-                    ))}
-                  </div>
-                </div>
-              )}
+            {/* 2 — what they actually do */}
+            {step === 1 && (
+              <div className="animate-rise">
+                <h2 className="text-[20px] font-semibold tracking-[-0.02em] text-ink">
+                  What do you use AI for?
+                </h2>
+                <p className="mt-1.5 max-w-2xl text-[13px] leading-relaxed text-ink-3">
+                  Verdicts are kept per kind of work, because the answer is different for each one.
+                  A model that wins your code reviews may lose your long-form writing.
+                </p>
 
-              {step === 2 && (
-                <div className="animate-rise">
-                  <h2 className="text-lg font-semibold tracking-[-0.02em] text-ink">
-                    Which models do you reach for first?
-                  </h2>
-                  <p className="mt-1 text-[13px] text-ink-3">
-                    These get starred, so the Model Lab and comparison views open on them.
-                  </p>
-                  <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                    {suggestedModels.map((model) => (
-                      <SelectCard
-                        key={model.id}
-                        selected={modelIds.includes(model.id)}
-                        onClick={() => toggle(modelIds, model.id, setModelIds)}
-                      >
-                        <ProviderMark provider={model.provider} size="sm" />
-                        <span className="min-w-0 pr-5">
-                          <span className="block truncate text-[12.5px] font-medium text-ink">
-                            {model.name}
-                          </span>
-                          <span className="block truncate font-mono text-[10.5px] tabular-nums text-ink-4">
-                            ${model.inputPrice}/${model.outputPrice} per M ·{" "}
-                            {formatCompact(model.contextWindow)}
-                          </span>
-                        </span>
-                      </SelectCard>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {step === 3 && (
-                <div className="animate-rise">
-                  <h2 className="text-lg font-semibold tracking-[-0.02em] text-ink">
-                    What is your monthly ceiling?
-                  </h2>
-                  <p className="mt-1 text-[13px] text-ink-3">
-                    Used for the budget meter and the month-end forecast. You can change it any
-                    time in Settings.
-                  </p>
-
-                  <div className="mt-5 flex items-baseline gap-1.5">
-                    <span className="text-3xl font-semibold tracking-[-0.03em] text-ink-3">$</span>
-                    <input
-                      type="number"
-                      min={0}
-                      step={10}
-                      value={budget}
-                      onChange={(event) => setBudget(Math.max(0, Number(event.target.value) || 0))}
-                      aria-label="Monthly budget in dollars"
-                      className="w-40 border-0 border-b-2 border-line bg-transparent pb-1 text-4xl font-semibold tabular-nums tracking-[-0.03em] text-ink outline-none transition-colors focus:border-accent"
-                    />
-                    <span className="text-sm text-ink-4">/ month</span>
-                  </div>
-
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {BUDGET_PRESETS.map((preset) => (
+                <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                  {TASK_TYPES.map((type) => {
+                    const active = taskTypes.includes(type);
+                    return (
                       <button
-                        key={preset}
+                        key={type}
                         type="button"
-                        onClick={() => setBudget(preset)}
+                        aria-pressed={active}
+                        onClick={() =>
+                          setTaskTypes((prev) =>
+                            prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
+                          )
+                        }
                         className={cn(
-                          "rounded-md border px-2.5 py-1 font-mono text-[12px] tabular-nums transition-colors",
-                          budget === preset
-                            ? "border-accent bg-accent-soft text-accent"
-                            : "border-line text-ink-3 hover:border-line-strong hover:text-ink",
+                          "flex items-center gap-2.5 rounded-lg border p-2.5 text-left transition-colors duration-150",
+                          active
+                            ? "border-accent bg-accent-soft/50"
+                            : "border-line bg-surface-1 hover:border-line-strong hover:bg-surface-2",
                         )}
                       >
-                        ${preset}
-                      </button>
-                    ))}
-                  </div>
-
-                  <p className="mt-5 rounded-lg border border-line-subtle bg-surface-2/40 p-3 text-[11.5px] leading-relaxed text-ink-3">
-                    For reference, the {toolIds.length} tools you selected carry{" "}
-                    <span className="font-mono font-medium text-ink">
-                      {formatCurrency(
-                        tools
-                          .filter((t) => toolIds.includes(t.id))
-                          .reduce((sum, t) => sum + t.monthlyCost, 0),
-                      )}
-                    </span>{" "}
-                    of fixed subscription cost before any API usage.
-                  </p>
-                </div>
-              )}
-
-              {step === 4 && (
-                <div className="animate-rise">
-                  <span className="grid size-10 place-items-center rounded-xl border border-accent-line/60 bg-accent-soft text-accent">
-                    <Check className="size-5" strokeWidth={2.5} />
-                  </span>
-                  <h2 className="mt-3.5 text-lg font-semibold tracking-[-0.02em] text-ink">
-                    {name.trim() ? `You're set, ${name.trim()}.` : "You're set."}
-                  </h2>
-                  <p className="mt-1 text-[13px] text-ink-3">
-                    The workspace is loaded with a realistic year of history so nothing is empty.
-                    Three places worth opening first:
-                  </p>
-                  <ul className="mt-4 space-y-2">
-                    {[
-                      ["Press ⌘K", "Search every prompt, tool, model and project from one field."],
-                      ["Prompt Vault", "Fill in a prompt's variables and copy the result."],
-                      ["Spending", "See the month-end forecast against your new budget."],
-                    ].map(([title, body]) => (
-                      <li
-                        key={title}
-                        className="flex gap-3 rounded-lg border border-line-subtle bg-surface-2/40 p-3"
-                      >
-                        <span className="mt-0.5 size-1.5 shrink-0 rounded-full bg-accent" />
-                        <span>
-                          <span className="block text-[12.5px] font-medium text-ink">{title}</span>
-                          <span className="block text-[11.5px] leading-snug text-ink-4">{body}</span>
+                        <span
+                          className={cn(
+                            "grid size-4 shrink-0 place-items-center rounded-[5px] border transition-colors",
+                            active ? "border-accent bg-accent text-accent-ink" : "border-line",
+                          )}
+                        >
+                          {active && <Check className="size-2.5" strokeWidth={3.5} />}
                         </span>
-                      </li>
-                    ))}
-                  </ul>
+                        <span className="text-[12.5px] text-ink">{TASK_LABEL[type]}</span>
+                      </button>
+                    );
+                  })}
                 </div>
-              )}
-            </div>
 
-            <div className="flex shrink-0 items-center justify-between gap-3 border-t border-line-subtle bg-surface-2/40 px-5 py-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setStep((s) => Math.max(0, s - 1))}
-                disabled={step === 0}
-              >
-                <ArrowLeft className="size-3.5" />
-                Back
-              </Button>
-
-              <div className="flex items-center gap-2">
-                {step === 1 && (
-                  <span className="hidden font-mono text-[11px] tabular-nums text-ink-4 sm:inline">
-                    {toolIds.length} selected
-                  </span>
-                )}
-                {step === 2 && (
-                  <span className="hidden font-mono text-[11px] tabular-nums text-ink-4 sm:inline">
-                    {modelIds.length} starred
-                  </span>
-                )}
-                <Button
-                  variant="primary"
-                  size="sm"
-                  disabled={!canAdvance}
-                  onClick={() => (isLast ? finish() : setStep((s) => s + 1))}
-                >
-                  {isLast ? "Open the dashboard" : "Continue"}
-                  {isLast ? <Kbd className="ml-0.5 border-accent-ink/25 bg-accent-ink/10 text-accent-ink">↵</Kbd> : <ArrowRight className="size-3.5" />}
-                </Button>
+                <div className="mt-5 max-w-xs">
+                  <label
+                    htmlFor="onboarding-name"
+                    className="mb-1.5 block text-[11.5px] font-medium text-ink-2"
+                  >
+                    What should we call you? <span className="text-ink-4">Optional</span>
+                  </label>
+                  <Input
+                    id="onboarding-name"
+                    value={name}
+                    placeholder="Alex"
+                    autoComplete="given-name"
+                    onChange={(event) => setName(event.target.value)}
+                  />
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* 3 — what it is worth, honestly labelled */}
+            {step === 2 && payoff && (
+              <div className="animate-rise">
+                <span className="grid size-10 place-items-center rounded-xl border border-accent-line/60 bg-accent-soft text-accent">
+                  <TrendingUp className="size-5" />
+                </span>
+                <h2 className="mt-3.5 text-balance text-[22px] font-semibold leading-snug tracking-[-0.025em] text-ink">
+                  This is what {payoff.actionable.length + payoff.confirmed.length + payoff.needsEvidence.length}{" "}
+                  task types and 70 duels look like.
+                </h2>
+                <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-ink-3">
+                  Your workspace opens on a worked example, so the routing table is not empty while
+                  you build your own record. It is clearly marked, and one click clears it.
+                </p>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  {[
+                    {
+                      value: formatCurrency(payoff.actionableSaving, { maximumFractionDigits: 0 }),
+                      unit: "/ mo avoidable",
+                      detail: `${payoff.actionable.length} routing changes the record supports`,
+                      tone: "text-positive",
+                    },
+                    {
+                      value: String(payoff.confirmed.length),
+                      unit: "already right",
+                      detail: "Where the evidence agrees with the habit",
+                      tone: "text-ink",
+                    },
+                    {
+                      value: String(payoff.needsEvidence.length),
+                      unit: "not settled",
+                      detail: "Where it honestly does not know yet",
+                      tone: "text-ink",
+                    },
+                  ].map((stat) => (
+                    <div
+                      key={stat.unit}
+                      className="rounded-xl border border-line-subtle bg-surface-2/40 p-3.5"
+                    >
+                      <p
+                        className={cn(
+                          "font-mono text-[26px] font-semibold leading-8 tabular-nums tracking-[-0.03em]",
+                          stat.tone,
+                        )}
+                      >
+                        {stat.value}
+                      </p>
+                      <p className="text-[11px] text-ink-4">{stat.unit}</p>
+                      <p className="mt-1.5 text-[11.5px] leading-snug text-ink-3">{stat.detail}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <ul className="mt-4 space-y-2">
+                  {[
+                    ["Judge what is waiting", "Two duels are already open. One click each."],
+                    ["Read the routing table", "Verdicts, grouped by what you should do about them."],
+                    ["Run your own", "The next time a model choice matters, run it as a duel."],
+                  ].map(([title, body]) => (
+                    <li
+                      key={title}
+                      className="flex items-start gap-2.5 rounded-lg border border-line-subtle bg-surface-2/40 p-2.5"
+                    >
+                      <TallyMarks count={1} className="mt-1" />
+                      <span>
+                        <span className="block text-[12.5px] font-medium text-ink">{title}</span>
+                        <span className="block text-[11.5px] leading-snug text-ink-4">{body}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
+
+          <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-line-subtle bg-surface-2/40 px-5 py-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={step === 0}
+              onClick={() => setStep((s) => Math.max(0, s - 1))}
+            >
+              <ArrowLeft className="size-3.5" />
+              Back
+            </Button>
+
+            <div className="flex items-center gap-2">
+              {step === 0 && !picked && (
+                <Button variant="ghost" size="sm" onClick={() => setStep(1)}>
+                  Skip
+                </Button>
+              )}
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={step === 0 && !picked}
+                onClick={() => (step === STEPS.length - 1 ? finish() : setStep((s) => s + 1))}
+              >
+                {step === STEPS.length - 1 ? "Open my record" : "Continue"}
+                <ArrowRight className="size-3.5" />
+              </Button>
+            </div>
+          </footer>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
