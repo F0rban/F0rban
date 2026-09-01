@@ -285,6 +285,7 @@ export function generateDuels(now: Date): Duel[] {
         tie: outcome.winner === -1,
         reason: outcome.reason,
         blind: true,
+        sample: true,
       });
     });
   }
@@ -312,6 +313,7 @@ export function generateDuels(now: Date): Duel[] {
       tie: false,
       reason: "",
       blind: true,
+      sample: true,
     });
   }
 

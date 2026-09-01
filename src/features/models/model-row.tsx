@@ -113,7 +113,7 @@ export function ModelRow({
             content={
               <span className="block">
                 {record.wins} won, {record.losses} lost
-                {record.ties ? `, ${record.ties} tied` : ""} across {record.played} of your duels
+                {record.ties ? `, ${record.ties} tied` : ""} across {record.played} duels
               </span>
             }
           >

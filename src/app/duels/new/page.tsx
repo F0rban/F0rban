@@ -15,6 +15,7 @@ import { useWorkspaceStore } from "@/lib/store/workspace";
 import { useUiStore } from "@/lib/store/ui";
 import { TASK_DESCRIPTION, TASK_LABEL, TASK_TYPES } from "@/lib/data/seed/duels";
 import { modelRecord, verdictFor } from "@/lib/analytics/verdicts";
+import { evidenceMode } from "@/lib/analytics/evidence";
 import { estimateTokens } from "@/lib/prompts/template";
 import { formatCurrency } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
@@ -78,6 +79,7 @@ function NewDuelInner() {
   }, 0);
 
   const canStart = title.trim().length > 0 && selected.length >= 2;
+  const firstOwn = workspace ? evidenceMode(workspace) === "example" : false;
 
   const submit = () => {
     if (!canStart) return;
@@ -103,8 +105,10 @@ function NewDuelInner() {
       }),
     });
     toast({
-      title: "Duel started",
-      description: "Run the prompt on each model, then judge them blind.",
+      title: firstOwn ? "Your record starts here" : "Duel started",
+      description: firstOwn
+        ? "The worked example is cleared. Run the prompt on each model, then judge them blind."
+        : "Run the prompt on each model, then judge them blind.",
       tone: "success",
     });
     router.push(`/duels/${id}`);
@@ -247,6 +251,12 @@ function NewDuelInner() {
           <div className="flex items-start gap-2.5">
             <Info className="mt-0.5 size-3.5 shrink-0 text-ink-4" />
             <p className="text-[11.5px] leading-relaxed text-ink-3">
+              {firstOwn && (
+                <>
+                  <span className="font-medium text-ink">This is your first own duel.</span> Starting
+                  it replaces the worked example with your record — your prompts and models stay.{" "}
+                </>
+              )}
               Bench does not call the providers. Run the prompt yourself in whichever apps you
               already use, paste the answers back — or skip pasting and just record who won. The
               verdict is the part that compounds.

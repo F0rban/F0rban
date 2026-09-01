@@ -4,6 +4,7 @@ import { FlaskConical, X } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useWorkspaceStore } from "@/lib/store/workspace";
 import { useUiStore } from "@/lib/store/ui";
+import { evidenceMode, sampleDuels } from "@/lib/analytics/evidence";
 import { cn } from "@/lib/utils/cn";
 
 /**
@@ -17,7 +18,9 @@ export function SampleBanner({ className }: { className?: string }) {
   const clearSampleEvidence = useWorkspaceStore((s) => s.clearSampleEvidence);
   const toast = useUiStore((s) => s.toast);
 
-  if (!ready || !workspace?.preferences.usingSampleData) return null;
+  if (!ready || !workspace || evidenceMode(workspace) !== "example") return null;
+
+  const judged = sampleDuels(workspace.duels).filter((d) => d.status === "decided").length;
 
   return (
     <div
@@ -29,15 +32,16 @@ export function SampleBanner({ className }: { className?: string }) {
     >
       <FlaskConical className="size-3.5 shrink-0 text-accent" />
       <p className="min-w-0 flex-1 text-[11.5px] leading-snug text-ink-2">
-        <span className="font-medium text-ink">This is sample evidence.</span> 70 duels from a
-        worked example, so the routing table is not empty while you build your own record.
+        <span className="font-medium text-ink">You are looking at a worked example.</span> {judged}{" "}
+        judged duels of sample evidence, so you can see what a settled record looks like. Nothing
+        here is yours yet — your first own duel replaces it.
       </p>
       <button
         type="button"
         onClick={() => {
           clearSampleEvidence();
           toast({
-            title: "Sample evidence cleared",
+            title: "Worked example cleared",
             description: "Your prompts and models stayed. Run a duel to start your own record.",
             tone: "success",
           });

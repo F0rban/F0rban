@@ -18,6 +18,7 @@ import type {
 import { LocalStorageAdapter } from "../data/local-adapter";
 import type { WorkspaceAdapter } from "../data/adapter";
 import { createSeedWorkspace } from "../data/seed";
+import { withoutSampleEvidence } from "../analytics/evidence";
 import { createId } from "../utils/id";
 import { syncVariables } from "../prompts/template";
 
@@ -78,7 +79,17 @@ interface WorkspaceState {
   clearSampleEvidence: () => void;
 
   // Duels
-  startDuel: (draft: Omit<Duel, "id" | "createdAt" | "decidedAt" | "status" | "winnerModelId" | "tie" | "reason">) => string;
+  /**
+   * Starts a duel. The first one started while the worked example is still
+   * loaded also clears that example: the record is either the user's or the
+   * sample's, never both.
+   */
+  startDuel: (
+    draft: Omit<
+      Duel,
+      "id" | "createdAt" | "decidedAt" | "status" | "winnerModelId" | "tie" | "reason" | "sample"
+    >,
+  ) => string;
   decideDuel: (id: string, winnerModelId: string | null, reason: string) => void;
   updateDuelEntry: (duelId: string, modelId: string, output: string) => void;
   deleteDuel: (id: string) => void;
@@ -565,24 +576,13 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => {
     /* ---------------------------------------------------------- */
 
     clearSampleEvidence: () =>
-      mutate(
-        (ws) => ({
-          ...ws,
-          duels: [],
-          // The prompt, model and tool library is reference material, not
-          // evidence — it survives. Usage counters do not.
-          prompts: ws.prompts.map((p) => ({ ...p, useCount: 0, lastUsedAt: null })),
-          activity: [],
-          preferences: { ...ws.preferences, usingSampleData: false },
-        }),
-        {
-          kind: "project.updated",
-          title: "Started a fresh record",
-          detail: "Sample evidence cleared. Your own duels start from here.",
-          entityType: null,
-          entityId: null,
-        },
-      ),
+      mutate(withoutSampleEvidence, {
+        kind: "project.updated",
+        title: "Started a fresh record",
+        detail: "Sample evidence cleared. Your own duels start from here.",
+        entityType: null,
+        entityId: null,
+      }),
 
     startDuel: (draft) => {
       const id = createId("d");
@@ -595,14 +595,24 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => {
         winnerModelId: null,
         tie: false,
         reason: "",
+        sample: false,
       };
-      mutate((ws) => ({ ...ws, duels: [duel, ...ws.duels] }), {
-        kind: "duel.started",
-        title: `Started: ${duel.title}`,
-        detail: `${duel.entries.length} models · ${duel.taskType.replace(/-/g, " ")}`,
-        entityType: "duel",
-        entityId: id,
-      });
+      const startingOwnRecord = get().workspace?.preferences.usingSampleData ?? false;
+      mutate(
+        (ws) => {
+          const base = startingOwnRecord ? withoutSampleEvidence(ws) : ws;
+          return { ...base, duels: [duel, ...base.duels] };
+        },
+        {
+          kind: "duel.started",
+          title: `Started: ${duel.title}`,
+          detail: startingOwnRecord
+            ? `Your record starts here · ${duel.entries.length} models · ${duel.taskType.replace(/-/g, " ")}`
+            : `${duel.entries.length} models · ${duel.taskType.replace(/-/g, " ")}`,
+          entityType: "duel",
+          entityId: id,
+        },
+      );
       return id;
     },
 

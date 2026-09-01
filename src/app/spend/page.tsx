@@ -12,6 +12,7 @@ import { TrendChart } from "@/components/charts/trend-chart";
 import { BudgetCard } from "@/features/spending/budget-card";
 import { SpendTabs } from "@/features/spending/spend-tabs";
 import { allVerdicts, routingSummary } from "@/lib/analytics/verdicts";
+import { evidenceMode } from "@/lib/analytics/evidence";
 import { TASK_TYPES } from "@/lib/data/seed/duels";
 import Link from "next/link";
 import { ArrowRight, TrendingUp } from "lucide-react";
@@ -134,8 +135,10 @@ export default function SpendingPage() {
                 <span className="mt-0.5 block text-[12px] leading-snug text-ink-3">
                   Across {data.routing.actionable.length} kind
                   {data.routing.actionable.length === 1 ? "" : "s"} of work where a cheaper model
-                  already won your own head-to-heads. This is not a generic benchmark — it is your
-                  record.
+                  already won{" "}
+                  {evidenceMode(workspace!) === "example"
+                    ? "the sample head-to-heads. This is the worked example, not your record yet."
+                    : "your own head-to-heads. This is not a generic benchmark — it is your record."}
                 </span>
               </span>
               <span className="flex shrink-0 items-center gap-1.5 text-[12.5px] font-medium text-accent">

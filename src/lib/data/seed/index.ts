@@ -6,7 +6,9 @@ import { SEED_TOOLS } from "./tools";
 import { generateDuels, SEED_TASK_PROFILES } from "./duels";
 import { addDays, generateActivity, generateSpend, toDayKey } from "./generate";
 
-export const WORKSPACE_VERSION = 1;
+// 2: duels carry `sample`, so the worked example and the user's own record can
+// be told apart. Older prototype workspaces are dropped rather than migrated.
+export const WORKSPACE_VERSION = 2;
 
 const DEFAULT_PREFERENCES: Preferences = {
   theme: "system",

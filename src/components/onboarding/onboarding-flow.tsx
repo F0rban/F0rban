@@ -56,7 +56,11 @@ export function OnboardingFlow() {
       workspace.taskProfiles,
       TASK_TYPES,
     );
-    return routingSummary(verdicts);
+    return {
+      ...routingSummary(verdicts),
+      judged: workspace.duels.filter((d) => d.status === "decided").length,
+      open: workspace.duels.filter((d) => d.status === "pending").length,
+    };
   }, [workspace]);
 
   if (!workspace) return null;
@@ -68,8 +72,9 @@ export function OnboardingFlow() {
   const finish = () => {
     completeOnboarding({ displayName: name.trim(), focusModelIds: [] });
     toast({
-      title: "Your record is ready",
-      description: "It starts with sample evidence so you can see the shape. Clear it any time.",
+      title: "Bench is ready",
+      description:
+        "It opens on a worked example so you can see the shape. Your first own duel replaces it.",
       tone: "success",
     });
   };
@@ -330,11 +335,12 @@ export function OnboardingFlow() {
                 </span>
                 <h2 className="mt-3.5 text-balance text-[22px] font-semibold leading-snug tracking-[-0.025em] text-ink">
                   This is what {payoff.actionable.length + payoff.confirmed.length + payoff.needsEvidence.length}{" "}
-                  task types and 70 duels look like.
+                  task types and {payoff.judged} judged duels look like.
                 </h2>
                 <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-ink-3">
-                  Your workspace opens on a worked example, so the routing table is not empty while
-                  you build your own record. It is clearly marked, and one click clears it.
+                  Bench opens on a worked example, so the routing table is not empty while you learn
+                  the shape. It is labelled everywhere, and the first duel you run yourself replaces
+                  it with your own record.
                 </p>
 
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
@@ -378,9 +384,12 @@ export function OnboardingFlow() {
 
                 <ul className="mt-4 space-y-2">
                   {[
-                    ["Judge what is waiting", "Two duels are already open. One click each."],
+                    [
+                      "Try judging",
+                      `${payoff.open} sample duel${payoff.open === 1 ? " is" : "s are"} open. One click each, names hidden.`,
+                    ],
                     ["Read the routing table", "Verdicts, grouped by what you should do about them."],
-                    ["Run your own", "The next time a model choice matters, run it as a duel."],
+                    ["Run your own", "The next time a model choice matters, run it as a duel. That starts your record."],
                   ].map(([title, body]) => (
                     <li
                       key={title}

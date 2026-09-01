@@ -64,7 +64,7 @@ export const NAVIGATION: NavGroup[] = [
       {
         href: "/models",
         label: "Models",
-        description: "Vendor specs beside your own record",
+        description: "Vendor specs beside the record each model earned",
         icon: ModelIcon,
         shortcut: "g m",
         primary: true,

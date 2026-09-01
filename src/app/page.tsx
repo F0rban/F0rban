@@ -25,6 +25,7 @@ import { ActivityFeed } from "@/features/dashboard/activity-feed";
 import { ModelSwap } from "@/features/verdicts/verdict-parts";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { allVerdicts, evidenceCoverage, routingSummary } from "@/lib/analytics/verdicts";
+import { evidenceMode } from "@/lib/analytics/evidence";
 import { budgetStatus } from "@/lib/analytics/spend";
 import { TASK_LABEL, TASK_TYPES } from "@/lib/data/seed/duels";
 import { formatCurrency, pluralize } from "@/lib/utils/format";
@@ -75,6 +76,9 @@ export default function TodayPage() {
   }, [workspace, now]);
 
   const name = workspace?.preferences.displayName?.trim();
+  // Every "your" on this page has to be earned. Until the user's first own
+  // duel, the record on screen belongs to the worked example, and says so.
+  const example = workspace ? evidenceMode(workspace) === "example" : false;
 
   return (
     <PageContainer>
@@ -118,7 +122,7 @@ export default function TodayPage() {
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-balance text-[19px] font-semibold leading-snug tracking-[-0.02em] text-ink sm:text-[21px]">
-                Your own results say you are overpaying by{" "}
+                {example ? "In this worked example, the record says the habit overpays by" : "Your own results say you are overpaying by"}{" "}
                 <span className="text-positive">
                   {formatCurrency(data.summary.actionableSaving, { maximumFractionDigits: 0 })}
                 </span>{" "}
@@ -127,9 +131,9 @@ export default function TodayPage() {
               <span className="mt-1.5 block text-[12.5px] leading-relaxed text-ink-3">
                 Across {data.summary.actionable.length} kind
                 {data.summary.actionable.length === 1 ? "" : "s"} of work where a cheaper model
-                already won your head-to-heads. That is{" "}
+                already won {example ? "the sample" : "your"} head-to-heads. That is{" "}
                 {formatCurrency(data.summary.actionableSaving * 12, { maximumFractionDigits: 0 })} a
-                year, out of {formatCurrency(data.summary.currentMonthlyCost)} you route today.
+                year, out of {formatCurrency(data.summary.currentMonthlyCost)} routed today.
               </span>
             </span>
             <span className="flex shrink-0 items-center gap-1.5 text-[12.5px] font-medium text-accent">
@@ -202,7 +206,9 @@ export default function TodayPage() {
               <Card>
                 <CardHeader>
                   <div>
-                    <CardTitle>What your evidence says now</CardTitle>
+                    <CardTitle>
+                      {example ? "What the example's evidence says" : "What your evidence says now"}
+                    </CardTitle>
                     <p className="mt-0.5 text-xs text-ink-3">
                       The routing changes with the biggest gap between habit and record
                     </p>
@@ -281,7 +287,9 @@ export default function TodayPage() {
               <Card>
                 <CardHeader>
                   <div>
-                    <CardTitle>How settled your record is</CardTitle>
+                    <CardTitle>
+                      {example ? "How settled the example record is" : "How settled your record is"}
+                    </CardTitle>
                     <p className="mt-0.5 text-xs text-ink-3">
                       {data.coverage.covered} of {data.coverage.total} kinds of work have enough
                       evidence to route on
@@ -423,8 +431,9 @@ export default function TodayPage() {
 
               <p className="flex items-start gap-2 px-1 text-[11px] leading-relaxed text-ink-4">
                 <Sparkles className="mt-0.5 size-3 shrink-0" />
-                Everything here is computed from duels you judged. No vendor benchmark, no shared
-                leaderboard — your work, your record.
+                {example
+                  ? "Everything here is computed from the sample duels. Run one of your own and this page becomes your record."
+                  : "Everything here is computed from duels you judged. No vendor benchmark, no shared leaderboard — your work, your record."}
               </p>
             </div>
           </div>

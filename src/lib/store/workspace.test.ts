@@ -255,7 +255,79 @@ describe("duels", () => {
     const duel = ws().duels.find((d) => d.id === id)!;
     expect(duel.status).toBe("pending");
     expect(duel.winnerModelId).toBeNull();
+    expect(duel.sample).toBe(false);
     expect(ws().activity[0]!.kind).toBe("duel.started");
+  });
+
+  it("the first own duel replaces the worked example with the user's record", () => {
+    expect(ws().preferences.usingSampleData).toBe(true);
+    const sampleCount = ws().duels.filter((d) => d.sample).length;
+    expect(sampleCount).toBe(ws().duels.length);
+
+    const models = ws().models.slice(0, 2);
+    const id = state().startDuel({
+      title: "My first real comparison",
+      taskType: "summarisation",
+      promptId: null,
+      projectId: null,
+      blind: true,
+      entries: models.map((m) => ({
+        modelId: m.id,
+        output: "",
+        tokensIn: 1000,
+        tokensOut: 200,
+        latencyMs: 900,
+        cost: 0.01,
+      })),
+    });
+
+    expect(ws().preferences.usingSampleData).toBe(false);
+    expect(ws().duels.map((d) => d.id)).toEqual([id]);
+    expect(ws().duels.some((d) => d.sample)).toBe(false);
+    // The library survives; only the evidence and its history go.
+    expect(ws().prompts.length).toBeGreaterThan(0);
+    expect(ws().activity).toHaveLength(1);
+    expect(ws().activity[0]!.detail).toContain("Your record starts here");
+  });
+
+  it("a second own duel leaves the record alone", () => {
+    const entries = ws().models.slice(0, 2).map((m) => ({
+      modelId: m.id,
+      output: "",
+      tokensIn: 1000,
+      tokensOut: 200,
+      latencyMs: 900,
+      cost: 0.01,
+    }));
+    const draft = { title: "One", taskType: "code-review" as const, promptId: null, projectId: null, blind: true, entries };
+    const first = state().startDuel(draft);
+    const second = state().startDuel({ ...draft, title: "Two" });
+    expect(ws().duels.map((d) => d.id)).toEqual([second, first]);
+  });
+
+  it("judging a sample duel keeps the workspace in example mode", () => {
+    const pending = ws().duels.find((d) => d.status === "pending")!;
+    expect(pending.sample).toBe(true);
+    state().decideDuel(pending.id, pending.entries[0]!.modelId, "Practice.");
+    expect(ws().preferences.usingSampleData).toBe(true);
+    expect(ws().duels.find((d) => d.id === pending.id)!.sample).toBe(true);
+  });
+
+  it("clearing the sample evidence keeps any own duels", () => {
+    const entries = ws().models.slice(0, 2).map((m) => ({
+      modelId: m.id,
+      output: "",
+      tokensIn: 1000,
+      tokensOut: 200,
+      latencyMs: 900,
+      cost: 0.01,
+    }));
+    // Force a mixed state directly, the way an import could produce one.
+    const own = { ...ws().duels[0]!, id: "d-own", sample: false, entries };
+    useWorkspaceStore.setState({ workspace: { ...ws(), duels: [own, ...ws().duels] } });
+    state().clearSampleEvidence();
+    expect(ws().duels.map((d) => d.id)).toEqual(["d-own"]);
+    expect(ws().preferences.usingSampleData).toBe(false);
   });
 
   it("records a verdict, the winner and the reason", () => {

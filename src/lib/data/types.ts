@@ -379,6 +379,13 @@ export interface Duel {
   reason: string;
   /** Whether model identity was hidden while judging. Untrusted if false. */
   blind: boolean;
+  /**
+   * Part of the seeded worked example rather than the user's own record. Kept on
+   * the row so the two can never be silently mixed: the app either shows the
+   * example (labelled) or the user's evidence, and starting the first own duel
+   * removes every row carrying this flag.
+   */
+  sample: boolean;
 }
 
 /**

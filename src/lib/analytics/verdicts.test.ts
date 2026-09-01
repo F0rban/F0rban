@@ -65,6 +65,7 @@ function duel(winner: string | null, models: string[], day: number, tie = false)
     tie,
     reason: "",
     blind: true,
+    sample: false,
   };
 }
 

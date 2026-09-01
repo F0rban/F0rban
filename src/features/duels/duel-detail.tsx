@@ -108,7 +108,9 @@ export function DuelDetail({ id }: { id: string }) {
       description:
         chosen && entry && dearest > entry.cost
           ? `And it was ${(dearest / Math.max(entry.cost, 1e-9)).toFixed(1)}× cheaper than the alternative.`
-          : "Added to your record.",
+          : duel.sample
+            ? "Added to the worked example."
+            : "Added to your record.",
       tone: "success",
     });
   };
@@ -135,6 +137,7 @@ export function DuelDetail({ id }: { id: string }) {
                 Blind
               </Badge>
             )}
+            {duel.sample && <Badge tone="warning">Sample duel</Badge>}
           </div>
           <h1 className="mt-2.5 text-[21px] font-semibold tracking-[-0.02em] text-ink">
             {duel.title}

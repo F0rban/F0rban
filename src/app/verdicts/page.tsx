@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { VerdictRow } from "@/features/verdicts/verdict-row";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { allVerdicts, evidenceCoverage, routingSummary } from "@/lib/analytics/verdicts";
+import { evidenceMode } from "@/lib/analytics/evidence";
 import { TASK_TYPES } from "@/lib/data/seed/duels";
 import { formatCurrency } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
@@ -53,12 +54,15 @@ export default function VerdictsPage() {
 
   const { summary, coverage, models, verdicts } = data;
   const yearly = summary.actionableSaving * 12;
+  const example = evidenceMode(workspace!) === "example";
 
   const sections = [
     {
       key: "actionable",
       title: "Change these",
-      caption: "Your own results say a different model, and it costs less.",
+      caption: example
+        ? "The example's results say a different model, and it costs less."
+        : "Your own results say a different model, and it costs less.",
       icon: TrendingUp,
       rows: summary.actionable,
       open: true,
@@ -95,7 +99,11 @@ export default function VerdictsPage() {
     <PageContainer>
       <PageHeader
         title="Verdicts"
-        description="What your own head-to-heads say to use for each kind of work — and what your current habits cost."
+        description={
+          example
+            ? "What the worked example's head-to-heads say to use for each kind of work — and what its habits cost. Your own duels will replace it."
+            : "What your own head-to-heads say to use for each kind of work — and what your current habits cost."
+        }
         actions={
           <Button variant="primary" size="sm" asChild>
             <Link href="/duels/new">
