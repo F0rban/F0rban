@@ -68,12 +68,27 @@ export function Radar({
         <polygon
           key={i}
           points={points}
-          fill={i === rings.length - 1 ? "var(--surface-2)" : "none"}
-          fillOpacity={0.45}
+          fill="none"
           stroke="var(--grid)"
-          strokeWidth={1}
+          strokeWidth={i === rings.length - 1 ? 1.25 : 1}
         />
       ))}
+
+      {/* Ring scale, so overlapping shapes are still readable as values. */}
+      {Array.from({ length: levels }, (_, level) => {
+        const value = ((level + 1) / levels) * 100;
+        if (level % 2 === 0 && levels > 2) return null;
+        return (
+          <text
+            key={value}
+            x={cx + 3}
+            y={cy - (radius * (level + 1)) / levels + 3}
+            className="fill-[var(--ink-4)] font-mono text-[8px] tabular-nums"
+          >
+            {value}
+          </text>
+        );
+      })}
 
       {axes.map((_, i) => {
         const angle = angleFor(i);
@@ -95,7 +110,14 @@ export function Radar({
         const path = points.map((p) => `${p.x},${p.y}`).join(" ");
         return (
           <g key={s.key}>
-            <polygon points={path} fill={s.color} fillOpacity={0.13} stroke={s.color} strokeWidth={1.75} strokeLinejoin="round" />
+            <polygon
+              points={path}
+              fill={s.color}
+              fillOpacity={series.length > 2 ? 0.07 : 0.12}
+              stroke={s.color}
+              strokeWidth={1.75}
+              strokeLinejoin="round"
+            />
             {points.map((p, i) => (
               <circle key={i} cx={p.x} cy={p.y} r={2.5} fill="var(--surface-1)" stroke={s.color} strokeWidth={1.75} />
             ))}
