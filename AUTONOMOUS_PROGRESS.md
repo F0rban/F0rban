@@ -56,8 +56,8 @@ left in place as secondary (not removed, not prioritised).
 1. Honest evidence: `sample` flag on Duel, `WORKSPACE_VERSION` 2, first own
    duel clears sample corpus (announced), `evidenceMode()` helper, conditional
    wording everywhere, computed counts. — **done** (319 tests)
-2. Reveal + loop closure on judging screen; `d` hotkey. — **in progress**
-3. Calm Today; remove sidebar budget meter.
+2. Reveal + loop closure on judging screen; `d` hotkey (Today moved to `g t`). — **done**
+3. Calm Today; remove sidebar budget meter. — **in progress**
 4. Confidence labels + "why this" line.
 5. Branding/stale-text sweep.
 6. Provider seam (`DuelRunner`, registry, `priceRun`).
@@ -80,16 +80,27 @@ left in place as secondary (not removed, not prioritised).
 
 ## Tests / build status
 
-After cycle 1: 319 tests green, typecheck clean, lint clean. Build/a11y/
-responsive re-run planned in cycle 7 (also after cycle 3, which changes layout).
+After cycle 2: 329 tests green, typecheck clean, lint clean. The duels-list
+test that timed out twice under load now queries list items instead of
+computing 72 accessible link names. Build/a11y/responsive re-run after cycle 3
+(layout changes) and in cycle 7.
+
+Visual check done on `/duels/d-code-review-1` (cheaper winner) and
+`/duels/d-classification-1` (tie): reveal reads "You picked X, blind." → price
+line → record 8–2 → 9–2 → confidence Leaning → Settled → routing swap + $/mo →
+next-duel buttons. Dev server: `npx next dev -p 3000` (log in /tmp/dev.log).
 
 ## Next action
 
-Cycle 2, in `src/features/duels/duel-detail.tsx`: after `decided`, replace the
-thin reveal card with (a) picked model vs the others, price ratio and latency,
-(b) this task type's record before → after (`verdictFor` with and without this
-duel) and the confidence label, (c) next actions: judge the next pending duel,
-run another on this task (`/duels/new?task=`), see Verdicts. Register the `d`
-hotkey in `src/components/layout/app-shell.tsx`. Extend
-`src/app/duels/duel-page.test.tsx` to assert the reveal shows the record
-change and the next-step links; keep the blindness assertions.
+Cycle 3 — rewrite `src/app/page.tsx` (Today) around three questions:
+1. *What can I do now* — pending queue (max 3 rows) with "Judge", plus the
+   primary "Run a duel" in the header. Empty queue → one calm line + button.
+2. *What has Bench learned* — keep the headline card (mode-aware wording), then
+   ONE list: top 3 actionable routing changes + any reversal. No separate
+   "latest verdicts", no activity feed, no spend tile.
+3. *Does it change how I work* — one line: "N of M kinds of work settled ·
+   $X/mo already avoidable" linking to /verdicts; unsettled task types as
+   inline "run one" links (max 3).
+Also: remove `BudgetMeter` from `src/components/layout/sidebar.tsx` (and now-
+unused imports); add `src/app/today.test.tsx` (example vs own wording, queue
+rows, CTA present, no "Activity" heading); run a11y + responsive afterwards.

@@ -20,13 +20,15 @@ import { Input, Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ProviderMark } from "@/components/ui/provider-mark";
-import { TallyMarks } from "@/components/ui/record";
+import { TALLY_LIMIT, TallyMarks } from "@/components/ui/record";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useWorkspaceStore } from "@/lib/store/workspace";
 import { useUiStore } from "@/lib/store/ui";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { useCopy } from "@/hooks/use-copy";
-import { blindLabel, blindOrder, costSpread } from "@/features/duels/duel-meta";
+import { blindLabel, blindOrder } from "@/features/duels/duel-meta";
+import { revealFor } from "@/features/duels/reveal";
+import { RevealPanel } from "@/features/duels/reveal-panel";
 import { TASK_LABEL } from "@/lib/data/seed/duels";
 import { modelRecord } from "@/lib/analytics/verdicts";
 import { formatCompact, formatCurrency, formatDuration } from "@/lib/utils/format";
@@ -67,6 +69,10 @@ export function DuelDetail({ id }: { id: string }) {
     [duel, models],
   );
   const prompt = duel?.promptId ? workspace?.prompts.find((p) => p.id === duel.promptId) : null;
+  const reveal = useMemo(
+    () => (duel && workspace && duel.status === "decided" ? revealFor(duel, workspace) : null),
+    [duel, workspace],
+  );
 
   if (!ready) {
     return (
@@ -95,22 +101,14 @@ export function DuelDetail({ id }: { id: string }) {
   }
 
   const decided = duel.status === "decided";
-  const spread = costSpread(duel);
-  const winner = duel.winnerModelId ? models.get(duel.winnerModelId) : null;
 
   const submit = (winnerModelId: string | null) => {
     decideDuel(duel.id, winnerModelId, reason.trim());
     const chosen = winnerModelId ? models.get(winnerModelId) : null;
-    const entry = duel.entries.find((e) => e.modelId === winnerModelId);
-    const dearest = duel.entries.reduce((max, e) => Math.max(max, e.cost), 0);
+    // The screen carries the detail now; the toast only confirms the write.
     toast({
       title: chosen ? `${chosen.name} won` : "Recorded as a tie",
-      description:
-        chosen && entry && dearest > entry.cost
-          ? `And it was ${(dearest / Math.max(entry.cost, 1e-9)).toFixed(1)}× cheaper than the alternative.`
-          : duel.sample
-            ? "Added to the worked example."
-            : "Added to your record.",
+      description: duel.sample ? "Added to the worked example." : "Added to your record.",
       tone: "success",
     });
   };
@@ -169,31 +167,7 @@ export function DuelDetail({ id }: { id: string }) {
       </div>
 
       {/* The reveal, after judging. */}
-      {decided && (
-        <section className="mt-5 rounded-xl border border-line bg-surface-1 p-4 shadow-xs">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="grid size-9 shrink-0 place-items-center rounded-lg border border-accent-line/60 bg-accent-soft text-accent">
-              {duel.tie ? <EqualApproximately className="size-4" /> : <Trophy className="size-4" />}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-[14px] font-semibold text-ink">
-                {duel.tie ? "Judged indistinguishable" : `${winner?.name ?? "Unknown"} won`}
-              </p>
-              <p className="mt-0.5 text-[12.5px] text-ink-3">
-                {duel.reason || "No reason recorded."}
-              </p>
-            </div>
-            {spread.ratio > 1.2 && (
-              <p className="shrink-0 text-right">
-                <span className="block font-mono text-[15px] font-semibold tabular-nums text-ink">
-                  {spread.ratio.toFixed(1)}×
-                </span>
-                <span className="block text-[10.5px] text-ink-4">price spread</span>
-              </p>
-            )}
-          </div>
-        </section>
-      )}
+      {decided && reveal && <RevealPanel duel={duel} reveal={reveal} models={models} />}
 
       {/* How to actually run it.
           Blindness means you do not know which column is which — not that you
@@ -275,7 +249,11 @@ export function DuelDetail({ id }: { id: string }) {
                       </span>
                       {record && (
                         <span className="mt-0.5 flex items-center gap-1.5">
-                          <TallyMarks count={record.wins} label={`${record.wins} wins overall`} />
+                          {/* Strokes only while they still read as strokes; past
+                              that the score alone carries it. */}
+                          {record.wins <= TALLY_LIMIT && (
+                            <TallyMarks count={record.wins} label={`${record.wins} wins overall`} />
+                          )}
                           <span className="font-mono text-[10px] tabular-nums text-ink-4">
                             {record.wins}–{record.losses} overall
                           </span>

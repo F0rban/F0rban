@@ -29,7 +29,7 @@ export const NAVIGATION: NavGroup[] = [
         label: "Today",
         description: "What needs a verdict, and what the evidence changed",
         icon: Home,
-        shortcut: "g d",
+        shortcut: "g t",
         primary: true,
       },
       {

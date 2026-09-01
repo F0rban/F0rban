@@ -17,10 +17,15 @@ beforeEach(() => {
 describe("duels list", () => {
   it("puts duels awaiting a verdict first, whatever their date", async () => {
     renderApp(<DuelsPage />);
-    const links = await screen.findAllByRole("link", { name: /Judge this|Indistinguishable|won/ });
-    expect(links.length).toBeGreaterThan(0);
-    const rows = screen.getAllByRole("listitem");
-    expect(within(rows[0]!).getByText("Judge this")).toBeInTheDocument();
+    // Query by list item rather than by accessible link name: computing the
+    // name of 72 links is what made this test time out under load.
+    const rows = await screen.findAllByRole("listitem");
+    expect(rows.length).toBe(currentWorkspace().duels.length);
+    const pending = currentWorkspace().duels.filter((d) => d.status === "pending").length;
+    for (const row of rows.slice(0, pending)) {
+      expect(within(row).getByText("Judge this")).toBeInTheDocument();
+    }
+    expect(within(rows[pending]!).queryByText("Judge this")).not.toBeInTheDocument();
   });
 
   it("filters to the ones still waiting", async () => {
@@ -83,8 +88,61 @@ describe("judging a duel", () => {
 
     const winnerId = currentWorkspace().duels.find((d) => d.id === id)!.winnerModelId!;
     const model = currentWorkspace().models.find((m) => m.id === winnerId)!;
-    expect(await screen.findByText(`${model.name} won`)).toBeInTheDocument();
+    expect(await screen.findByText(/You picked/)).toHaveTextContent(model.name);
     expect(screen.getAllByText("Cost").length).toBeGreaterThan(0);
+  });
+
+  it("the reveal says what the verdict did to the record and offers the next duel", async () => {
+    const id = pendingId();
+    const { user } = renderApp(<DuelDetail id={id} />);
+    await user.click((await screen.findAllByRole("button", { name: /this one won/i }))[0]!);
+    await user.click(screen.getByRole("button", { name: /record verdict/i }));
+
+    const reveal = await screen.findByRole("region", { name: /the reveal/i });
+    // The three things the click changed: record, confidence, routing.
+    expect(within(reveal).getByText(/ record$/)).toBeInTheDocument();
+    expect(within(reveal).getByText("Confidence")).toBeInTheDocument();
+    expect(within(reveal).getByText("Routing")).toBeInTheDocument();
+    // And the way out is another duel, not a dead end. A second sample duel is
+    // still open, so it is offered first.
+    expect(within(reveal).getByRole("link", { name: /judge the next one/i })).toHaveAttribute(
+      "href",
+      expect.stringMatching(/^\/duels\/d-/),
+    );
+    expect(within(reveal).getByRole("link", { name: /run another/i })).toHaveAttribute(
+      "href",
+      expect.stringContaining("/duels/new?task="),
+    );
+    expect(within(reveal).getByRole("link", { name: /see verdicts/i })).toHaveAttribute(
+      "href",
+      "/verdicts",
+    );
+  });
+
+  it("says how much cheaper the winner was when it beat a dearer model", async () => {
+    const duel = currentWorkspace().duels.find((d) => {
+      if (d.status !== "decided" || d.tie) return false;
+      const winner = d.entries.find((e) => e.modelId === d.winnerModelId)!;
+      return d.entries.some((e) => e.cost > winner.cost * 1.5);
+    })!;
+    renderApp(<DuelDetail id={duel.id} />);
+    expect(await screen.findByText(/× less/)).toBeInTheDocument();
+  });
+
+  it("says when the winner cost more, rather than hiding it", async () => {
+    const duel = currentWorkspace().duels.find((d) => {
+      if (d.status !== "decided" || d.tie) return false;
+      const winner = d.entries.find((e) => e.modelId === d.winnerModelId)!;
+      return d.entries.every((e) => e.cost * 1.5 <= winner.cost || e === winner);
+    })!;
+    renderApp(<DuelDetail id={duel.id} />);
+    expect(await screen.findByText(/× more/)).toBeInTheDocument();
+  });
+
+  it("labels a sample duel's reveal as the worked example's, not the user's", async () => {
+    const sample = currentWorkspace().duels.find((d) => d.status === "decided" && d.sample)!;
+    renderApp(<DuelDetail id={sample.id} />);
+    expect(await screen.findByText(/moved the worked example's record/)).toBeInTheDocument();
   });
 
   it("records a tie without a winner", async () => {

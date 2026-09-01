@@ -13,6 +13,7 @@ interface Shortcut {
 const GLOBAL: Shortcut[] = [
   { keys: ["⌘", "K"], label: "Open the command palette" },
   { keys: ["/"], label: "Focus the search field on this page" },
+  { keys: ["D"], label: "Run a duel" },
   { keys: ["N"], label: "New prompt" },
   { keys: ["["], label: "Collapse or expand the sidebar" },
   { keys: ["?"], label: "Show this sheet" },

@@ -49,7 +49,7 @@ export type CommandRunId =
   | "data:reset";
 
 export const COMMANDS: CommandAction[] = [
-  { id: "c-today", label: "Go to Today", keywords: "home overview start dashboard", group: "Navigate", icon: Home, shortcut: ["G", "D"], run: "nav:today" },
+  { id: "c-today", label: "Go to Today", keywords: "home overview start dashboard", group: "Navigate", icon: Home, shortcut: ["G", "T"], run: "nav:today" },
   { id: "c-duels", label: "Go to Duels", keywords: "compare head to head test judge", group: "Navigate", icon: Swords, shortcut: ["G", "U"], run: "nav:duels" },
   { id: "c-verdicts", label: "Go to Verdicts", keywords: "routing table recommendation which model", group: "Navigate", icon: Gavel, shortcut: ["G", "V"], run: "nav:verdicts" },
   { id: "c-prompts", label: "Go to Prompts", keywords: "library templates snippets vault", group: "Navigate", icon: Library, shortcut: ["G", "P"], run: "nav:prompts" },

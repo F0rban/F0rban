@@ -25,7 +25,7 @@ function GlobalHotkeys() {
   useHotkey("mod+k", togglePalette, { allowInInput: true });
   useHotkey("?", () => setShortcutsOpen(true));
   useHotkey("[", toggleSidebar);
-  useHotkey("g d", useCallback(() => router.push("/"), [router]));
+  useHotkey("g t", useCallback(() => router.push("/"), [router]));
   useHotkey("g u", useCallback(() => router.push("/duels"), [router]));
   useHotkey("g v", useCallback(() => router.push("/verdicts"), [router]));
   useHotkey("g p", useCallback(() => router.push("/prompts"), [router]));
@@ -33,6 +33,8 @@ function GlobalHotkeys() {
   useHotkey("g s", useCallback(() => router.push("/spend"), [router]));
   useHotkey("g ,", useCallback(() => router.push("/settings"), [router]));
   useHotkey("n", useCallback(() => router.push("/prompts?new=1"), [router]));
+  // The one action the product is about gets the shortest path to it.
+  useHotkey("d", useCallback(() => router.push("/duels/new"), [router]));
 
   return null;
 }
