@@ -22,7 +22,7 @@ export function startOfMonth(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
-export function endOfMonth(date: Date): Date {
+function endOfMonth(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0);
 }
 
@@ -33,11 +33,6 @@ export function daysInMonth(date: Date): number {
 export function addDays(date: Date, days: number): Date {
   const next = new Date(date);
   next.setDate(next.getDate() + days);
-  return next;
-}
-
-export function addMonths(date: Date, months: number): Date {
-  const next = new Date(date.getFullYear(), date.getMonth() + months, 1);
   return next;
 }
 

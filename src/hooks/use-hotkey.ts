@@ -86,8 +86,3 @@ export function useHotkey(
   }, [combo, handler, allowInInput, enabled]);
 }
 
-/** True on Apple platforms — used to render ⌘ vs Ctrl in hints. */
-export function useIsApplePlatform(): boolean {
-  if (typeof navigator === "undefined") return true;
-  return /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
-}

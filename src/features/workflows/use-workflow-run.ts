@@ -55,7 +55,7 @@ export function criticalPathMs(workflow: Workflow): number {
 }
 
 /** Execution order: left to right by column, top to bottom within a column. */
-export function runOrder(workflow: Workflow): WorkflowNode[] {
+function runOrder(workflow: Workflow): WorkflowNode[] {
   return [...workflow.nodes].sort((a, b) => a.column - b.column || a.row - b.row);
 }
 

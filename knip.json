@@ -1,0 +1,9 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/app/**/{page,layout,not-found}.tsx", "scripts/*.mjs", "src/**/*.test.{ts,tsx}"],
+  "project": ["src/**/*.{ts,tsx}"],
+  "ignore": ["src/test/**"],
+  "ignoreDependencies": ["tailwindcss", "eslint-config-next"],
+  "ignoreExportsUsedInFile": true,
+  "includeEntryExports": false
+}

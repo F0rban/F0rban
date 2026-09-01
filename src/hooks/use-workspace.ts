@@ -21,7 +21,3 @@ export function useWorkspace(): { workspace: Workspace | null; ready: boolean } 
 
   return { workspace, ready: status === "ready" && workspace !== null };
 }
-
-export function useWorkspaceActions() {
-  return useWorkspaceStore((s) => s);
-}

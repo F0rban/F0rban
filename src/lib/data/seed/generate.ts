@@ -16,7 +16,7 @@ import type {
 } from "../types";
 
 /** mulberry32 — small, fast, good enough for plausible-looking noise. */
-export function makeRng(seed: number): () => number {
+function makeRng(seed: number): () => number {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;
@@ -309,4 +309,3 @@ export function generateActivity(now: Date, count = 64): ActivityEvent[] {
   return events;
 }
 
-export const SPEND_HISTORY_DAYS = HISTORY_DAYS;

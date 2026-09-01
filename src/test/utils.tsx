@@ -1,6 +1,6 @@
 import { render, type RenderOptions } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { TooltipProvider } from "@radix-ui/react-tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { vi } from "vitest";
 import type { ReactElement } from "react";
 import { useWorkspaceStore } from "@/lib/store/workspace";

@@ -43,7 +43,6 @@ import { matchesQuery } from "@/lib/search";
 import { formatNumber } from "@/lib/utils/format";
 import { relativeTime } from "@/lib/utils/date";
 import { cn } from "@/lib/utils/cn";
-import type { Prompt } from "@/lib/data/types";
 
 type SortKey = "recent" | "used" | "created" | "title";
 

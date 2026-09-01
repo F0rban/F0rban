@@ -1,9 +1,6 @@
 import type { EntityType, Workspace } from "../data/types";
 import { fuzzyMatchFields } from "./fuzzy";
 
-export type { FuzzyMatch } from "./fuzzy";
-export { fuzzyMatch, fuzzyMatchFields, highlightSegments } from "./fuzzy";
-
 export interface SearchRecord {
   id: string;
   type: EntityType;

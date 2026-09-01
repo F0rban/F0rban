@@ -63,25 +63,3 @@ export function PageContainer({
   );
 }
 
-/** Section heading used inside pages, below the page header. */
-export function SectionHeader({
-  title,
-  description,
-  actions,
-  className,
-}: {
-  title: string;
-  description?: string;
-  actions?: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={cn("mb-3 flex items-end justify-between gap-4", className)}>
-      <div className="min-w-0">
-        <h2 className="text-[13px] font-semibold tracking-[-0.005em] text-ink">{title}</h2>
-        {description && <p className="mt-0.5 text-xs text-ink-3">{description}</p>}
-      </div>
-      {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
-    </div>
-  );
-}

@@ -20,7 +20,3 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
 };
 
 export const PROVIDER_LIST: Provider[] = Object.values(PROVIDERS).filter((p) => p.id !== "other");
-
-export function providerName(id: ProviderId): string {
-  return PROVIDERS[id]?.name ?? "Unknown";
-}

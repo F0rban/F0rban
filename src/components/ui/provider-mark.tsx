@@ -73,14 +73,3 @@ function hash(value: string): number {
   for (let i = 0; i < value.length; i++) h = (h * 31 + value.charCodeAt(i)) >>> 0;
   return h;
 }
-
-/** A small colour chip used in legends and series keys. */
-export function SeriesDot({ series, className }: { series: number; className?: string }) {
-  return (
-    <span
-      aria-hidden
-      className={cn("inline-block size-2 shrink-0 rounded-[3px]", className)}
-      style={{ backgroundColor: `var(--series-${((series - 1) % 8) + 1})` }}
-    />
-  );
-}

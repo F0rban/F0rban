@@ -15,7 +15,7 @@ import { addDays, generateActivity, generateSpend, toDayKey } from "./generate";
 
 export const WORKSPACE_VERSION = 1;
 
-export const DEFAULT_PREFERENCES: Preferences = {
+const DEFAULT_PREFERENCES: Preferences = {
   theme: "system",
   monthlyBudget: 420,
   currency: "USD",
@@ -99,5 +99,4 @@ export function createSeedWorkspace(now: Date = new Date()): Workspace {
   };
 }
 
-export { SEED_MODELS, SEED_TOOLS, SEED_PROMPTS, SEED_PROJECTS, SEED_WORKFLOWS };
 export * from "./providers";

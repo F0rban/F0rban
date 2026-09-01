@@ -2,7 +2,7 @@ import type { WorkspaceAdapter } from "./adapter";
 import type { Workspace } from "./types";
 import { WORKSPACE_VERSION } from "./seed";
 
-export const STORAGE_KEY = "acc.workspace.v1";
+const STORAGE_KEY = "acc.workspace.v1";
 
 /**
  * Browser-local persistence. Writes are debounced by the caller (the store),

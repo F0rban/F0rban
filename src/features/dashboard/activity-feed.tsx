@@ -13,7 +13,7 @@ import {
   Workflow as WorkflowIcon,
 } from "lucide-react";
 import type { ActivityEvent, ActivityKind } from "@/lib/data/types";
-import { activityBucket, formatTime, relativeTime } from "@/lib/utils/date";
+import { activityBucket, formatTime } from "@/lib/utils/date";
 import { formatCurrency } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 
@@ -151,4 +151,3 @@ export function ActivityFeed({
   );
 }
 
-export { relativeTime };

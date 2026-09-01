@@ -58,10 +58,6 @@ export function formatPercent(value: number, digits = 0): string {
   return `${value >= 0 ? "" : "-"}${Math.abs(value).toFixed(digits)}%`;
 }
 
-export function formatSigned(value: number, digits = 1): string {
-  return `${value > 0 ? "+" : value < 0 ? "−" : ""}${Math.abs(value).toFixed(digits)}`;
-}
-
 export function formatDuration(ms: number): string {
   if (ms < 1000) return `${Math.round(ms)}ms`;
   if (ms < 60_000) return `${(ms / 1000).toFixed(ms < 10_000 ? 1 : 0)}s`;
@@ -72,8 +68,4 @@ export function formatDuration(ms: number): string {
 
 export function pluralize(count: number, singular: string, plural = `${singular}s`): string {
   return `${count} ${count === 1 ? singular : plural}`;
-}
-
-export function titleCase(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1);
 }

@@ -10,7 +10,7 @@ export const RANGES: Array<{ key: RangeKey; label: string; days: number; grain: 
   { key: "12m", label: "12 months", days: 365, grain: "month" },
 ];
 
-export function rangeDays(range: RangeKey): number {
+function rangeDays(range: RangeKey): number {
   return RANGES.find((r) => r.key === range)?.days ?? 30;
 }
 
@@ -220,7 +220,7 @@ export function monthToDate(entries: SpendEntry[], now: Date = new Date()): numb
  * to day 1..N of last month, which is the only honest early-month delta.
  */
 /** Minimum prior-period spend before a percentage comparison means anything. */
-export const PACE_FLOOR = 5;
+const PACE_FLOOR = 5;
 
 export function monthToDatePace(
   entries: SpendEntry[],
@@ -254,11 +254,6 @@ export function trailing(entries: SpendEntry[], days: number, now: Date = new Da
   return total(entries.filter((e) => e.date >= from && e.date <= to));
 }
 
-export function previousMonthTotal(entries: SpendEntry[], now: Date = new Date()): number {
-  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const key = monthKey(prev);
-  return total(entries.filter((e) => e.date.slice(0, 7) === key));
-}
 
 /**
  * Month-end projection.

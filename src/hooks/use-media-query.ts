@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
  * Starts false so server and first client render agree, then corrects after
  * mount — layout that depends on it must be safe in the false state.
  */
-export function useMediaQuery(query: string): boolean {
+function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false);
 
   useEffect(() => {

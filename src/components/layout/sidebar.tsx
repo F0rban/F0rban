@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PanelLeftClose, PanelLeftOpen, Plus, Search } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
 import { NAVIGATION } from "@/lib/navigation";
 import { useUiStore } from "@/lib/store/ui";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -228,4 +228,3 @@ export function Sidebar() {
   );
 }
 
-export { Plus };

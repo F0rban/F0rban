@@ -1,6 +1,6 @@
 import type { ThemeMode } from "./data/types";
 
-export const THEME_KEY = "acc.theme";
+const THEME_KEY = "acc.theme";
 
 /**
  * Applies a theme to the document.
