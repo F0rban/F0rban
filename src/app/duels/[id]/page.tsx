@@ -1,12 +1,11 @@
-"use client";
-
-import { use } from "react";
 import { DuelDetail } from "@/features/duels/duel-detail";
+import { generateDuels } from "@/lib/data/seed/duels";
 
-/**
- * Route wrapper only. The view takes a plain id so it can be rendered — and
- * tested — without a params promise to suspend on.
- */
-export default function DuelPage({ params }: { params: Promise<{ id: string }> }) {
-  return <DuelDetail id={use(params).id} />;
+export function generateStaticParams() {
+  return generateDuels(new Date()).map((duel) => ({ id: duel.id }));
+}
+
+export default async function DuelPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <DuelDetail id={id} />;
 }

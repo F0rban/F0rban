@@ -58,7 +58,7 @@ export default function ErrorBoundary({
             } catch {
               // Nothing more we can do; the reload will still try a fresh seed.
             }
-            window.location.href = "/";
+            window.location.href = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/`;
           }}
         >
           Reset workspace data
