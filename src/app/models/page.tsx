@@ -24,6 +24,7 @@ import { MAX_COMPARE, MODALITIES, MODALITY_LABEL } from "@/features/models/model
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useWorkspaceStore } from "@/lib/store/workspace";
 import { fuzzyMatch } from "@/lib/search/fuzzy";
+import { matchesQuery } from "@/lib/search";
 import { blendedRate } from "@/lib/analytics/spend";
 import { PROVIDERS } from "@/lib/data/seed/providers";
 import { formatCompact } from "@/lib/utils/format";
@@ -99,14 +100,11 @@ function ModelsPageInner() {
 
     if (query.trim()) {
       return list
-        .map((model) => {
-          const match =
-            fuzzyMatch(query, model.name) ??
-            fuzzyMatch(query, `${model.family} ${model.tags.join(" ")} ${model.notes}`);
-          return match ? { model, score: match.score } : null;
-        })
-        .filter((row): row is { model: Model; score: number } => row !== null)
-        .sort((a, b) => b.score - a.score)
+        .filter((model) =>
+          matchesQuery(query, model.name, model.family, model.tags.join(" "), model.notes),
+        )
+        .map((model) => ({ model, score: fuzzyMatch(query, model.name)?.score ?? 0 }))
+        .sort((a, b) => b.score - a.score || a.model.name.localeCompare(b.model.name))
         .map((row) => row.model);
     }
 

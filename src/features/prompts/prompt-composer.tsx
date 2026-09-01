@@ -94,12 +94,17 @@ export function PromptComposer({ prompt }: { prompt: Prompt }) {
               const filled = Boolean(values[variable.name]?.trim());
               return (
                 <div key={variable.name}>
-                  <label
-                    htmlFor={id}
-                    className="mb-1 flex items-baseline justify-between gap-2 text-[11.5px] font-medium text-ink-2"
-                  >
-                    <span className="truncate">{variable.label}</span>
+                  {/* The token sits beside the label, not inside it, so the
+                      field's accessible name is just the human label. */}
+                  <div className="mb-1 flex items-baseline justify-between gap-2">
+                    <label
+                      htmlFor={id}
+                      className="truncate text-[11.5px] font-medium text-ink-2"
+                    >
+                      {variable.label}
+                    </label>
                     <span
+                      aria-hidden
                       className={cn(
                         "shrink-0 font-mono text-[10px]",
                         filled ? "text-positive" : "text-ink-4",
@@ -107,7 +112,7 @@ export function PromptComposer({ prompt }: { prompt: Prompt }) {
                     >
                       {`{{${variable.name}}}`}
                     </span>
-                  </label>
+                  </div>
 
                   {variable.type === "select" ? (
                     <Select

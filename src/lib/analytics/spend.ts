@@ -37,9 +37,16 @@ export function total(entries: SpendEntry[]): number {
   return round(entries.reduce((sum, e) => sum + e.amount, 0));
 }
 
+/**
+ * Rounds half-up on the decimal value the user typed, not on its binary
+ * approximation. Without the nudge, round(1.005) returns 1 because 1.005 * 100
+ * is 100.49999999999999 in IEEE-754 — a visible off-by-a-cent in money columns.
+ */
 export function round(value: number, digits = 2): number {
   const factor = 10 ** digits;
-  return Math.round(value * factor) / factor;
+  const scaled = value * factor;
+  const nudged = scaled + (scaled >= 0 ? 1 : -1) * Number.EPSILON * Math.abs(scaled);
+  return Math.round(nudged) / factor;
 }
 
 export interface SeriesPoint {

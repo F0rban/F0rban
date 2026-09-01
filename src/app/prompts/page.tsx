@@ -38,6 +38,7 @@ import { useWorkspace } from "@/hooks/use-workspace";
 import { useWorkspaceStore } from "@/lib/store/workspace";
 import { useUiStore } from "@/lib/store/ui";
 import { fuzzyMatch } from "@/lib/search/fuzzy";
+import { matchesQuery } from "@/lib/search";
 import { formatNumber } from "@/lib/utils/format";
 import { relativeTime } from "@/lib/utils/date";
 import { cn } from "@/lib/utils/cn";
@@ -102,15 +103,11 @@ function PromptsPageInner() {
 
     if (query.trim()) {
       return list
-        .map((prompt) => {
-          const match =
-            fuzzyMatch(query, prompt.title) ??
-            fuzzyMatch(query, `${prompt.description} ${prompt.tags.join(" ")}`) ??
-            fuzzyMatch(query, prompt.body);
-          return match ? { prompt, score: match.score } : null;
-        })
-        .filter((row): row is { prompt: Prompt; score: number } => row !== null)
-        .sort((a, b) => b.score - a.score)
+        .filter((prompt) =>
+          matchesQuery(query, prompt.title, prompt.description, prompt.tags.join(" "), prompt.body),
+        )
+        .map((prompt) => ({ prompt, score: fuzzyMatch(query, prompt.title)?.score ?? 0 }))
+        .sort((a, b) => b.score - a.score || a.prompt.title.localeCompare(b.prompt.title))
         .map((row) => row.prompt);
     }
 

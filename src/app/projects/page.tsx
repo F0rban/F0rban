@@ -18,6 +18,7 @@ import {
 } from "@/features/projects/project-meta";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { fuzzyMatch } from "@/lib/search/fuzzy";
+import { matchesQuery } from "@/lib/search";
 import { addDays, toDayKey } from "@/lib/utils/date";
 import { formatCurrency } from "@/lib/utils/format";
 import type { Project, ProviderId } from "@/lib/data/types";
@@ -90,14 +91,17 @@ function ProjectsPageInner() {
 
     if (query.trim()) {
       return list
-        .map((project) => {
-          const match =
-            fuzzyMatch(query, project.name) ??
-            fuzzyMatch(query, `${project.code} ${project.description} ${project.tags.join(" ")}`);
-          return match ? { project, score: match.score } : null;
-        })
-        .filter((row): row is { project: Project; score: number } => row !== null)
-        .sort((a, b) => b.score - a.score)
+        .filter((project) =>
+          matchesQuery(
+            query,
+            project.name,
+            project.code,
+            project.description,
+            project.tags.join(" "),
+          ),
+        )
+        .map((project) => ({ project, score: fuzzyMatch(query, project.name)?.score ?? 0 }))
+        .sort((a, b) => b.score - a.score || a.project.name.localeCompare(b.project.name))
         .map((row) => row.project);
     }
 

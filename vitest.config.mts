@@ -6,6 +6,9 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
+      // Component tests run outside the Next runtime, so the router hooks come
+      // from a controllable double instead.
+      "next/navigation": fileURLToPath(new URL("./src/test/next-navigation.ts", import.meta.url)),
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },

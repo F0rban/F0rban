@@ -133,6 +133,22 @@ export function buildSearchIndex(workspace: Workspace): SearchRecord[] {
   return records;
 }
 
+/**
+ * Predicate for list-page filtering.
+ *
+ * The palette wants fuzzy subsequence matching because its job is to rank.
+ * A list filter's job is to exclude, and subsequence matching excludes almost
+ * nothing — typing "cursor" would leave 14 of 16 tools on screen. So here every
+ * whitespace-separated token must appear as a substring somewhere in the
+ * record, which is what people actually expect from a filter box.
+ */
+export function matchesQuery(query: string, ...fields: Array<string | undefined | null>): boolean {
+  const tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return true;
+  const haystack = fields.filter(Boolean).join(" ").toLowerCase();
+  return tokens.every((token) => haystack.includes(token));
+}
+
 export interface SearchOptions {
   limit?: number;
   types?: EntityType[];
@@ -167,16 +183,21 @@ export function searchRecords(
   return hits.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title)).slice(0, limit);
 }
 
-/** Groups hits by entity type, preserving relevance order within each group. */
+/**
+ * Groups hits by entity type.
+ *
+ * Groups are ordered by their strongest hit, not by a fixed type order: the
+ * palette activates whatever is first on Enter, so the best overall match has
+ * to lead. Within a group, relevance order is preserved.
+ */
 export function groupHits(hits: SearchHit[]): Array<{ type: EntityType; label: string; hits: SearchHit[] }> {
-  const order: EntityType[] = ["prompt", "project", "tool", "model", "workflow", "spend"];
   const groups = new Map<EntityType, SearchHit[]>();
   for (const hit of hits) {
     const list = groups.get(hit.type);
     if (list) list.push(hit);
     else groups.set(hit.type, [hit]);
   }
-  return order
-    .filter((type) => groups.has(type))
-    .map((type) => ({ type, label: TYPE_LABELS[type], hits: groups.get(type)! }));
+  return [...groups.entries()]
+    .map(([type, groupHits]) => ({ type, label: TYPE_LABELS[type], hits: groupHits }))
+    .sort((a, b) => (b.hits[0]?.score ?? 0) - (a.hits[0]?.score ?? 0));
 }

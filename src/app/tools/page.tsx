@@ -27,10 +27,10 @@ import {
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useWorkspaceStore } from "@/lib/store/workspace";
 import { fuzzyMatch } from "@/lib/search/fuzzy";
+import { matchesQuery } from "@/lib/search";
 import { formatCurrency, formatNumber } from "@/lib/utils/format";
 import { relativeTime } from "@/lib/utils/date";
 import { cn } from "@/lib/utils/cn";
-import type { Tool } from "@/lib/data/types";
 
 type SortKey = "name" | "cost" | "usage" | "recent" | "efficiency";
 
@@ -85,16 +85,13 @@ function ToolsPageInner() {
     });
 
     if (query.trim()) {
-      const scored = list
-        .map((tool) => {
-          const match =
-            fuzzyMatch(query, tool.name) ??
-            fuzzyMatch(query, `${tool.description} ${tool.tags.join(" ")} ${tool.notes}`);
-          return match ? { tool, score: match.score } : null;
-        })
-        .filter((row): row is { tool: Tool; score: number } => row !== null)
-        .sort((a, b) => b.score - a.score);
-      return scored.map((row) => row.tool);
+      return list
+        .filter((tool) =>
+          matchesQuery(query, tool.name, tool.description, tool.tags.join(" "), tool.notes),
+        )
+        .map((tool) => ({ tool, score: fuzzyMatch(query, tool.name)?.score ?? 0 }))
+        .sort((a, b) => b.score - a.score || a.tool.name.localeCompare(b.tool.name))
+        .map((row) => row.tool);
     }
 
     return [...list].sort((a, b) => {
@@ -220,8 +217,8 @@ function ToolsPageInner() {
             value={view}
             onChange={setView}
             options={[
-              { value: "grid", label: "", icon: <LayoutGrid className="size-3.5" /> },
-              { value: "table", label: "", icon: <List className="size-3.5" /> },
+              { value: "grid", label: "", ariaLabel: "Grid view", icon: <LayoutGrid className="size-3.5" /> },
+              { value: "table", label: "", ariaLabel: "Table view", icon: <List className="size-3.5" /> },
             ]}
             className="w-[68px]"
           />

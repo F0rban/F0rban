@@ -7,6 +7,8 @@ export interface SegmentedOption<T extends string> {
   value: T;
   label: string;
   icon?: React.ReactNode;
+  /** Required when `label` is empty, so an icon-only segment still has a name. */
+  ariaLabel?: string;
 }
 
 /**
@@ -57,6 +59,8 @@ export function Segmented<T extends string>({
             type="button"
             role="radio"
             aria-checked={active}
+            aria-label={option.ariaLabel}
+            title={option.ariaLabel}
             onClick={() => onChange(option.value)}
             className={cn(
               "relative z-10 flex-1 whitespace-nowrap rounded-[6px] font-medium transition-colors duration-150",
