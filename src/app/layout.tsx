@@ -7,18 +7,18 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "AI Command Center",
-    template: "%s · AI Command Center",
+    default: "Bench",
+    template: "%s · Bench",
   },
   description:
-    "A personal cockpit for AI work: tools, models, prompts, projects and spend in one place.",
-  applicationName: "AI Command Center",
-  authors: [{ name: "AI Command Center" }],
-  keywords: ["AI tools", "prompt library", "model comparison", "AI spend", "workflows"],
+    "Which model actually wins your work. Blind head-to-heads on your own tasks, compounded into a routing table and the number your guessing costs.",
+  applicationName: "Bench",
+  authors: [{ name: "Bench" }],
+  keywords: ["model evaluation", "blind comparison", "model routing", "LLM cost", "AI spend"],
   openGraph: {
-    title: "AI Command Center",
+    title: "Bench",
     description:
-      "A personal cockpit for AI work: tools, models, prompts, projects and spend in one place.",
+      "Which model actually wins your work. Blind head-to-heads on your own tasks, compounded into a routing table.",
     type: "website",
   },
 };

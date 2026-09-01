@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { EqualApproximately, Gavel, Swords, Trophy } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
@@ -22,10 +23,13 @@ import { cn } from "@/lib/utils/cn";
 
 type View = "all" | "pending" | "decided";
 
-export default function DuelsPage() {
+function DuelsInner() {
   const { workspace, ready } = useWorkspace();
+  const params = useSearchParams();
   const [query, setQuery] = useState("");
-  const [view, setView] = useState<View>("all");
+  // `?status=pending` is what Today and the attention list link to: land on
+  // the queue, not on everything.
+  const [view, setView] = useState<View>(params.get("status") === "pending" ? "pending" : "all");
   const [taskFilter, setTaskFilter] = useState<string[]>([]);
 
   const now = useMemo(() => new Date(), []);
@@ -244,5 +248,13 @@ export default function DuelsPage() {
         </ul>
       )}
     </PageContainer>
+  );
+}
+
+export default function DuelsPage() {
+  return (
+    <Suspense fallback={null}>
+      <DuelsInner />
+    </Suspense>
   );
 }

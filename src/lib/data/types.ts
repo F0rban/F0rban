@@ -1,5 +1,5 @@
 /**
- * Domain model for AI Command Center.
+ * Domain model for Bench.
  *
  * Every entity is a plain, serialisable object with a string `id`. Nothing in
  * here imports React or touches storage — the same types are reused by the

@@ -12,7 +12,7 @@ export function usePageTitle(title: string | null) {
 
   useEffect(() => {
     setPageTitle(title);
-    if (title) document.title = `${title} · AI Command Center`;
+    if (title) document.title = `${title} · Bench`;
     return () => {
       setPageTitle(null);
     };

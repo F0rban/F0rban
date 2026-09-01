@@ -65,9 +65,8 @@ evidence".
 
 ## Why the rest of the seed data is generated, not written
 
-The hand-written content (16 tools, 14 models, 12 prompts, 6 projects, 4
-workflows) is real prose, because "Lorem ipsum" makes a product demo feel like a
-template. But 400 days of spend and a 64-event timeline are generated from a
+The hand-written content (16 tools, 14 models, 12 prompts, 6 projects) is real
+prose, because "Lorem ipsum" makes a product demo feel like a template. But 400 days of spend and a 64-event timeline are generated from a
 seeded PRNG (`src/lib/data/seed/generate.ts`), relative to the day the app is
 opened.
 
@@ -165,8 +164,8 @@ route in both themes and exits non-zero on any violation.
 
 ## What this is not
 
-There is no server, no authentication, no provider integration and no execution
-engine. The workflow runner replays recorded timings and computes real costs from
-current model prices, but it never issues a request. Those are the honest edges
-of a prototype, and they are the same edges the code is structured to remove
-later.
+There is no server, no authentication and no provider integration. Duels are run
+by hand — you paste the answers, or just record who won — and costs are computed
+from the catalogue prices, never from a request Bench made. Those are the honest
+edges of a prototype, and they are the same edges the code is structured to
+remove later.

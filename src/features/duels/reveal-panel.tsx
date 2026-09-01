@@ -161,7 +161,7 @@ export function RevealPanel({
   return (
     <section
       aria-label="The reveal"
-      className="mt-5 overflow-hidden rounded-xl border border-accent-line/60 bg-surface-1 shadow-xs"
+      className="mt-5 animate-rise overflow-hidden rounded-xl border border-accent-line/60 bg-surface-1 shadow-xs"
     >
       <div className="p-4 sm:p-5">
         <p className="flex items-center gap-1.5 text-[10.5px] font-medium uppercase tracking-[0.08em] text-accent">

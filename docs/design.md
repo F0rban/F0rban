@@ -72,9 +72,9 @@ Subtlety over spectacle, and no animation library — CSS only.
 - Hover states move one pixel and change a border colour. Nothing scales.
 - The segmented control's active pill is a real element that slides between
   positions, so it reads as one control rather than four buttons.
-- The only animation that draws attention to itself is the workflow run: edges
-  flow, completed steps turn accent, pending steps dim. It is showing you
-  something happening, which is the one case where motion is the message.
+- The only entrance allowed to announce itself is the reveal on the judging
+  screen, which rises in the moment a verdict is recorded. Something just
+  changed, and that is the one case where motion is the message.
 
 Both the OS `prefers-reduced-motion` setting and the in-app preference collapse
 every duration to nothing.
@@ -87,11 +87,11 @@ inside a card, so the first card the eye lands on is content.
 
 Mobile is a different design, not a narrower desktop. The five most-used
 destinations move to a thumb-reachable bottom bar; the full navigation is a
-slide-over. Master-detail views (Prompt Vault) become a list that drills into a
+slide-over. Master-detail views (Prompts) become a list that drills into a
 detail with a back button, rather than auto-selecting a record and hiding the
-list. Dashboard KPI tiles become a 2×2 grid with supporting detail dropped. The
-model comparison moves into a sheet behind a floating selection bar rather than
-being squeezed into a column.
+list. The Verdicts summary tiles become a 2×2 grid; Today stacks its three
+blocks. The model comparison moves into a sheet behind a floating selection bar
+rather than being squeezed into a column.
 
 ## The signature device
 
@@ -119,9 +119,11 @@ Not a spark, a brain or a hexagon.
   question without navigating.
 - The prompt preview marks filled values green and unfilled placeholders amber,
   and copying leaves unfilled placeholders visible rather than blanking them.
-- The budget bar carries a second marker for the month-end forecast, so you can
-  see the projection against the ceiling in one glance.
+- On Spend, the budget bar carries a second marker for the month-end forecast,
+  so you can see the projection against the ceiling in one glance. It used to
+  sit in the sidebar too, and was removed from there: a spend gauge in every
+  screen's corner is what a cost dashboard looks like.
 - Cost-per-use turns amber above $1.50 — the number that actually decides whether
   a subscription survives.
-- The spec table in the Model Lab highlights the winner in each row.
+- The spec table on Models highlights the winner in each row.
 - Empty states use a faint dotted field and say what to do, not "No data".

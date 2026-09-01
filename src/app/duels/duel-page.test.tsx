@@ -28,6 +28,14 @@ describe("duels list", () => {
     expect(within(rows[pending]!).queryByText("Judge this")).not.toBeInTheDocument();
   });
 
+  it("lands on the queue when linked with ?status=pending", async () => {
+    setRoute("/duels", { status: "pending" });
+    renderApp(<DuelsPage />);
+    const expected = currentWorkspace().duels.filter((d) => d.status === "pending").length;
+    await waitFor(() => expect(screen.getAllByRole("listitem")).toHaveLength(expected));
+    expect(screen.getByRole("radio", { name: /Waiting/ })).toBeChecked();
+  });
+
   it("filters to the ones still waiting", async () => {
     const { user } = renderApp(<DuelsPage />);
     await screen.findAllByRole("listitem");

@@ -62,8 +62,10 @@ left in place as secondary (not removed, not prioritised).
 4. Confidence labels + "why this" line. — **done** (`confidenceLabel`,
    `explainVerdict`, `chanceSentence` moved to the lib; a11y + responsive after
    cycle 3 were both clean)
-5. Branding/stale-text sweep. — **in progress**
-6. Provider seam (`DuelRunner`, registry, `priceRun`).
+5. Branding/stale-text sweep. — **done** (metadata, palette, settings, seed
+   prompt, package.json → Bench 0.2.0; `/duels?status=pending` wired; reveal
+   rises in; docs de-workflowed)
+6. Provider seam (`DuelRunner`, registry, `priceRun`). — **in progress**
 7. Quality gate, screenshots, docs, push.
 
 ## Decisions taken

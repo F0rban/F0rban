@@ -99,6 +99,14 @@ describe("top bar", () => {
     expect(screen.queryByRole("heading")).not.toBeInTheDocument();
   });
 
+  it("falls back to the product name on a route outside the navigation", async () => {
+    setRoute("/projects");
+    const { Topbar } = await import("./topbar");
+    renderApp(<Topbar />);
+    const crumb = screen.getByRole("navigation", { name: "Breadcrumb" });
+    expect(within(crumb).getByText("Bench")).toHaveAttribute("aria-current", "page");
+  });
+
   it("shows the section and the record name on a detail route", async () => {
     setRoute("/duels/d-abc");
     useUiStore.setState({ pageTitle: "Billing service refund path" });

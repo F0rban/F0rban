@@ -72,7 +72,7 @@ export default function SettingsPage() {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `command-center-workspace-${new Date().toISOString().slice(0, 10)}.json`;
+    anchor.download = `bench-workspace-${new Date().toISOString().slice(0, 10)}.json`;
     anchor.click();
     URL.revokeObjectURL(url);
     toast({ title: "Workspace exported", tone: "success" });
@@ -98,7 +98,7 @@ export default function SettingsPage() {
     } catch {
       toast({
         title: "Could not import that file",
-        description: "It does not look like a Command Center export.",
+        description: "It does not look like a Bench export.",
         tone: "danger",
       });
     }
@@ -220,7 +220,7 @@ export default function SettingsPage() {
             <div className="h-px bg-line-subtle" />
             <SwitchField
               label="Reduce motion"
-              description="Turns off entrance animations and the workflow run animation. Your OS setting is respected either way."
+              description="Turns off entrance animations, including the reveal. Your OS setting is respected either way."
               checked={prefs.reduceMotion}
               onCheckedChange={(checked) => updatePreferences({ reduceMotion: checked })}
             />
@@ -301,10 +301,11 @@ export default function SettingsPage() {
           </CardHeader>
           <CardBody className="space-y-2.5 text-[12.5px] leading-relaxed text-ink-3">
             <p>
-              AI Command Center is a working prototype. Everything you see runs locally: there is
-              no account, no server, and no provider API is called. Model prices, capability scores
-              and spend history are illustrative seed data, generated from a fixed seed so the same
-              day always produces the same workspace.
+              Bench is a working prototype. Everything you see runs locally: there is no account,
+              no server, and no provider API is called — you run each prompt yourself and record
+              who won. Model prices, capability scores and spend history are illustrative seed
+              data, and the workspace opens on a labelled worked example until your first own duel
+              replaces it.
             </p>
             <p className="flex items-start gap-2">
               <Database className="mt-0.5 size-3.5 shrink-0 text-ink-4" />

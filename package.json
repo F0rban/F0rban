@@ -1,8 +1,8 @@
 {
-  "name": "ai-command-center",
-  "version": "0.1.0",
+  "name": "bench",
+  "version": "0.2.0",
   "private": true,
-  "description": "A personal cockpit for AI tools, models, prompts, projects and spend.",
+  "description": "Which model actually wins your work: blind head-to-heads on your own tasks, compounded into a routing table.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

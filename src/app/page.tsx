@@ -314,7 +314,7 @@ function Queue({ pending, now }: { pending: Duel[]; now: Date }) {
           </ul>
           {pending.length > QUEUE_LIMIT && (
             <Link
-              href="/duels"
+              href="/duels?status=pending"
               className="block border-t border-line-subtle px-4 py-2.5 text-[11.5px] text-ink-3 transition-colors hover:text-ink"
             >
               {pending.length - QUEUE_LIMIT} more waiting

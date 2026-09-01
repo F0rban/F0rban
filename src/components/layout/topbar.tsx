@@ -72,7 +72,7 @@ export function Topbar() {
                 aria-current="page"
                 className="block truncate text-[13px] font-semibold tracking-[-0.005em] text-ink"
               >
-                {item?.label ?? "Command Center"}
+                {item?.label ?? "Bench"}
               </span>
             </li>
           )}

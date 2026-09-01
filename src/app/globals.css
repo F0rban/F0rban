@@ -3,7 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ------------------------------------------------------------------ *
- *  AI COMMAND CENTER — DESIGN TOKENS
+ *  BENCH — DESIGN TOKENS
  *
  *  Direction: instrument panel. Graphite surfaces, hairline borders,
  *  one warm signal colour (amber) reserved for intent, a cool teal for
@@ -361,7 +361,7 @@
   .stack-in > *:nth-child(7) { animation-delay: 210ms; }
   .stack-in > *:nth-child(8) { animation-delay: 245ms; }
 
-  /* The faint dotted field behind the workflow canvas + empty states. */
+  /* The faint dotted field behind empty states. */
   .dot-field {
     background-image: radial-gradient(var(--line) 1px, transparent 1px);
     background-size: 16px 16px;

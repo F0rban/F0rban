@@ -264,7 +264,7 @@ Rules:
     category: "marketing",
     tags: ["copy", "positioning", "launch"],
     variables: [
-      { name: "product", label: "Product", description: "", type: "text", defaultValue: "AI Command Center — one place for every AI tool, model, prompt and invoice" },
+      { name: "product", label: "Product", description: "", type: "text", defaultValue: "Bench — blind head-to-heads between models on your own work, compounded into a routing table" },
       { name: "audience", label: "Audience", description: "", type: "text", defaultValue: "Solo builders and small teams paying for six AI subscriptions" },
       { name: "pain", label: "Painful status quo", description: "", type: "longtext", defaultValue: "Prompts live in notes apps, spend is invisible until the card statement, and nobody remembers which model was best for what." },
     ],

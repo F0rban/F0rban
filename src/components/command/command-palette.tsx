@@ -225,7 +225,7 @@ export function CommandPalette() {
           const url = URL.createObjectURL(blob);
           const anchor = document.createElement("a");
           anchor.href = url;
-          anchor.download = `command-center-workspace-${new Date().toISOString().slice(0, 10)}.json`;
+          anchor.download = `bench-workspace-${new Date().toISOString().slice(0, 10)}.json`;
           anchor.click();
           URL.revokeObjectURL(url);
           toast({ title: "Workspace exported", description: "Downloaded as JSON", tone: "success" });
@@ -297,7 +297,7 @@ export function CommandPalette() {
         >
           <DialogPrimitive.Title className="sr-only">Search and commands</DialogPrimitive.Title>
           <DialogPrimitive.Description className="sr-only">
-            Search prompts, projects, tools, models and workflows, or type an angle bracket to run a
+            Search duels, prompts, models, projects and tools, or type an angle bracket to run a
             command.
           </DialogPrimitive.Description>
 
