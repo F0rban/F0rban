@@ -204,7 +204,7 @@ export function ComparisonPanel({
                         spec.label
                       )}
                     </th>
-                    {models.map((model, index) => {
+                    {models.map((model) => {
                       const isBest = models.length > 1 && spec.score(model) === target;
                       return (
                         <td

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils/cn";
-import { formatMoneyCompact } from "@/lib/utils/format";
+import { formatAxisMoney, formatMoneyCompact } from "@/lib/utils/format";
 import { useMeasure } from "./use-measure";
 import { linearPath, monotonePath, niceMax, ticks, type Point } from "./path";
 
@@ -146,7 +146,7 @@ export function TrendChart({
                   textAnchor="end"
                   className="fill-[var(--ink-4)] font-mono text-[9.5px] tabular-nums"
                 >
-                  {value === 0 ? "0" : formatValue(value)}
+                  {formatAxisMoney(value)}
                 </text>
               </g>
             ))}

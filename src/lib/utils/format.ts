@@ -25,6 +25,17 @@ export function formatMoneyCompact(value: number): string {
   return formatCurrency(value);
 }
 
+/** Axis-tick money: never wider than five glyphs. "$8" · "$450" · "$1.2k". */
+export function formatAxisMoney(value: number): string {
+  const abs = Math.abs(value);
+  const sign = value < 0 ? "-" : "";
+  if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(abs >= 10_000_000 ? 0 : 1)}M`;
+  if (abs >= 1_000) return `${sign}$${(abs / 1000).toFixed(abs >= 10_000 ? 0 : 1)}k`;
+  if (abs >= 10) return `${sign}$${Math.round(abs)}`;
+  if (abs === 0) return "0";
+  return `${sign}$${abs.toFixed(abs < 1 ? 2 : 1)}`;
+}
+
 export function formatNumber(value: number, maximumFractionDigits = 0): string {
   return new Intl.NumberFormat(LOCALE, { maximumFractionDigits }).format(value);
 }

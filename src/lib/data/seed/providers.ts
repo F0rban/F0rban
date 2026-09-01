@@ -12,7 +12,7 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
   midjourney: { id: "midjourney", name: "Midjourney", monogram: "MJ", series: 7, website: "https://midjourney.com" },
   runway: { id: "runway", name: "Runway", monogram: "RW", series: 4, website: "https://runwayml.com" },
   elevenlabs: { id: "elevenlabs", name: "ElevenLabs", monogram: "EL", series: 3, website: "https://elevenlabs.io" },
-  cursor: { id: "cursor", name: "Anysphere", monogram: "CU", series: 8, website: "https://cursor.com" },
+  cursor: { id: "cursor", name: "Cursor", monogram: "CU", series: 8, website: "https://cursor.com" },
   github: { id: "github", name: "GitHub", monogram: "GH", series: 6, website: "https://github.com" },
   stability: { id: "stability", name: "Stability AI", monogram: "ST", series: 7, website: "https://stability.ai" },
   cohere: { id: "cohere", name: "Cohere", monogram: "CO", series: 5, website: "https://cohere.com" },

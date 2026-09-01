@@ -77,7 +77,7 @@ function ToolsPageInner() {
   }, [params, router]);
 
   const filtered = useMemo(() => {
-    let list = tools.filter((tool) => {
+    const list = tools.filter((tool) => {
       if (statuses.length && !statuses.includes(tool.status)) return false;
       if (categories.length && !categories.includes(tool.category)) return false;
       if (starredOnly && !tool.favorite) return false;
@@ -94,8 +94,7 @@ function ToolsPageInner() {
         })
         .filter((row): row is { tool: Tool; score: number } => row !== null)
         .sort((a, b) => b.score - a.score);
-      list = scored.map((row) => row.tool);
-      return list;
+      return scored.map((row) => row.tool);
     }
 
     return [...list].sort((a, b) => {
@@ -360,7 +359,6 @@ function ToolsPageInner() {
 
       <ToolDetail
         tool={selected}
-        model={selected?.primaryModelId ? modelById.get(selected.primaryModelId) : undefined}
         open={Boolean(selected)}
         onOpenChange={(open) => !open && closeDetail()}
       />

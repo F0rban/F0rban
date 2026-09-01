@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ExternalLink, Star, Trash2 } from "lucide-react";
-import type { Model, Tool, ToolStatus } from "@/lib/data/types";
+import type { Tool, ToolStatus } from "@/lib/data/types";
 import { useWorkspaceStore } from "@/lib/store/workspace";
 import { useUiStore } from "@/lib/store/ui";
 import {
@@ -42,12 +42,10 @@ function Stat({ label, value, tone }: { label: string; value: React.ReactNode; t
 
 export function ToolDetail({
   tool,
-  model,
   open,
   onOpenChange,
 }: {
   tool: Tool | null;
-  model?: Model;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {

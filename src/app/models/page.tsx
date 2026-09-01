@@ -88,7 +88,7 @@ function ModelsPageInner() {
     );
 
   const filtered = useMemo(() => {
-    let list = models.filter((model) => {
+    const list = models.filter((model) => {
       if (providers.length && !providers.includes(model.provider)) return false;
       if (modalities.length && !modalities.some((m) => model.modalities.includes(m as never)))
         return false;
