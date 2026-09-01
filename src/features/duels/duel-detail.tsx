@@ -61,6 +61,11 @@ export function DuelDetail({ id }: { id: string }) {
     [workspace],
   );
   const order = useMemo(() => (duel ? blindOrder(duel) : []), [duel]);
+  // Participants in the order the user picked them, not the display order.
+  const contenders = useMemo(
+    () => (duel ? duel.entries.map((e) => models.get(e.modelId)) : []),
+    [duel, models],
+  );
   const prompt = duel?.promptId ? workspace?.prompts.find((p) => p.id === duel.promptId) : null;
 
   if (!ready) {
@@ -187,6 +192,53 @@ export function DuelDetail({ id }: { id: string }) {
         </section>
       )}
 
+      {/* How to actually run it.
+          Blindness means you do not know which column is which — not that you
+          do not know who is competing. You chose the models; hiding that would
+          only make the thing unusable. */}
+      {!decided && (
+        <section className="mt-5 rounded-xl border border-line bg-surface-1 shadow-xs">
+          <header className="flex flex-wrap items-center gap-2 border-b border-line-subtle px-4 py-2.5">
+            <h2 className="text-[12.5px] font-semibold text-ink">Run it</h2>
+            <p className="text-[11.5px] text-ink-3">
+              on {contenders.map((m) => m?.name).filter(Boolean).join(" and ")} — the answers below
+              are in a random order
+            </p>
+            {prompt && (
+              <Button
+                variant="secondary"
+                size="xs"
+                className="ml-auto"
+                onClick={async () => {
+                  await copy(prompt.body);
+                  setCopiedIndex(-1);
+                  setTimeout(() => setCopiedIndex(null), 1600);
+                }}
+              >
+                {copied && copiedIndex === -1 ? (
+                  <Check className="size-3 text-positive" strokeWidth={3} />
+                ) : (
+                  <Copy className="size-3" />
+                )}
+                Copy the prompt
+              </Button>
+            )}
+          </header>
+          <div className="px-4 py-3">
+            {prompt ? (
+              <pre className="mask-fade-b max-h-28 overflow-hidden whitespace-pre-wrap break-words font-mono text-[11px] leading-relaxed text-ink-3">
+                {prompt.body}
+              </pre>
+            ) : (
+              <p className="text-[12px] leading-relaxed text-ink-3">
+                Run the task in whichever apps you already use, then come back. Pasting the answers
+                is optional — if you remember which was better, just record the verdict.
+              </p>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* The entries. */}
       <div
         className={cn(
@@ -255,7 +307,7 @@ export function DuelDetail({ id }: { id: string }) {
                     aria-label={`Paste the answer from model ${blindLabel(position)}`}
                     placeholder={`Paste answer ${blindLabel(position)} here — optional. You can judge from memory and just record the verdict.`}
                     onChange={(event) => updateDuelEntry(duel.id, entry.modelId, event.target.value)}
-                    className="min-h-48 flex-1 font-mono text-[11.5px]"
+                    className="min-h-64 flex-1 font-mono text-[11.5px]"
                   />
                 )}
 
@@ -285,30 +337,12 @@ export function DuelDetail({ id }: { id: string }) {
                     <Button
                       variant={pendingChoice === entry.modelId ? "primary" : "secondary"}
                       size="sm"
-                      className="flex-1"
+                      className="w-full"
                       onClick={() => setPendingChoice(entry.modelId)}
                     >
                       {pendingChoice === entry.modelId && <Check className="size-3.5" strokeWidth={3} />}
                       This one won
                     </Button>
-                    {prompt && (
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        aria-label={`Copy the prompt for answer ${blindLabel(position)}`}
-                        onClick={async () => {
-                          await copy(prompt.body);
-                          setCopiedIndex(position);
-                          setTimeout(() => setCopiedIndex(null), 1600);
-                        }}
-                      >
-                        {copied && copiedIndex === position ? (
-                          <Check className="size-3.5 text-positive" />
-                        ) : (
-                          <Copy className="size-3.5" />
-                        )}
-                      </Button>
-                    )}
                   </div>
                 )}
               </div>

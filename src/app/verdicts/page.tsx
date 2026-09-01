@@ -110,12 +110,12 @@ export default function VerdictsPage() {
 
       {/* The number the product exists to produce. */}
       <section className="mt-5 overflow-hidden rounded-xl border border-line bg-surface-1 shadow-xs">
-        <div className="grid gap-px bg-line-subtle sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-px bg-line-subtle lg:grid-cols-4">
           <div className="bg-surface-1 p-4">
             <p className="text-[10.5px] font-medium uppercase tracking-[0.07em] text-ink-4">
               Routing you can change today
             </p>
-            <p className="mt-1.5 font-mono text-[30px] font-semibold leading-9 tabular-nums tracking-[-0.03em] text-positive">
+            <p className="mt-1.5 font-mono text-[24px] font-semibold leading-8 tabular-nums tracking-[-0.03em] text-positive sm:text-[30px] sm:leading-9">
               {formatCurrency(summary.actionableSaving, { maximumFractionDigits: 0 })}
               <span className="text-[13px] font-normal text-ink-4"> / mo</span>
             </p>
@@ -129,7 +129,7 @@ export default function VerdictsPage() {
             <p className="text-[10.5px] font-medium uppercase tracking-[0.07em] text-ink-4">
               Current routing costs
             </p>
-            <p className="mt-1.5 font-mono text-[30px] font-semibold leading-9 tabular-nums tracking-[-0.03em] text-ink">
+            <p className="mt-1.5 font-mono text-[24px] font-semibold leading-8 tabular-nums tracking-[-0.03em] text-ink sm:text-[30px] sm:leading-9">
               {formatCurrency(summary.currentMonthlyCost, { maximumFractionDigits: 0 })}
               <span className="text-[13px] font-normal text-ink-4"> / mo</span>
             </p>
@@ -144,7 +144,7 @@ export default function VerdictsPage() {
             <p className="text-[10.5px] font-medium uppercase tracking-[0.07em] text-ink-4">
               Waiting on evidence
             </p>
-            <p className="mt-1.5 font-mono text-[30px] font-semibold leading-9 tabular-nums tracking-[-0.03em] text-ink">
+            <p className="mt-1.5 font-mono text-[24px] font-semibold leading-8 tabular-nums tracking-[-0.03em] text-ink sm:text-[30px] sm:leading-9">
               {formatCurrency(summary.pendingSaving, { maximumFractionDigits: 0 })}
               <span className="text-[13px] font-normal text-ink-4"> / mo</span>
             </p>
@@ -158,7 +158,7 @@ export default function VerdictsPage() {
             <p className="text-[10.5px] font-medium uppercase tracking-[0.07em] text-ink-4">
               Evidence
             </p>
-            <p className="mt-1.5 font-mono text-[30px] font-semibold leading-9 tabular-nums tracking-[-0.03em] text-ink">
+            <p className="mt-1.5 font-mono text-[24px] font-semibold leading-8 tabular-nums tracking-[-0.03em] text-ink sm:text-[30px] sm:leading-9">
               {coverage.totalDuels}
             </p>
             <p className="mt-1 text-[11.5px] text-ink-3">

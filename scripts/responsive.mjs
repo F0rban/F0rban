@@ -12,13 +12,16 @@ import { chromium } from "playwright";
 
 const ROUTES = [
   "/",
+  "/duels",
+  "/duels/new",
+  "/duels/d-code-review-0",
+  "/verdicts",
   "/prompts",
-  "/tools",
   "/models",
+  "/spend",
+  "/tools",
   "/projects",
   "/projects/pr-atlas",
-  "/spending",
-  "/workflows",
   "/settings",
 ];
 
