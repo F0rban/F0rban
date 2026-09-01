@@ -130,17 +130,22 @@ export function FilterToggle({
   onClick,
   children,
   className,
+  label,
 }: {
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
   className?: string;
+  /** Required when the content is icon-only, so the control has a name. */
+  label?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
+      aria-label={label}
+      title={label}
       className={cn(
         "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2.5 text-[12.5px] font-medium",
         "transition-colors duration-150",

@@ -47,6 +47,42 @@ export function renderTemplate(body: string, values: Record<string, string>): Re
   return { text, missing, filled: names.length - missing.length, total: names.length };
 }
 
+export type SegmentKind = "text" | "filled" | "missing";
+
+export interface RenderSegment {
+  text: string;
+  kind: SegmentKind;
+  name?: string;
+}
+
+/**
+ * Renders to segments instead of a string, so the preview can show which parts
+ * came from a variable and which placeholders are still empty.
+ */
+export function renderSegments(
+  body: string,
+  values: Record<string, string>,
+): RenderSegment[] {
+  const segments: RenderSegment[] = [];
+  let cursor = 0;
+
+  for (const match of body.matchAll(VARIABLE_PATTERN)) {
+    const start = match.index!;
+    if (start > cursor) segments.push({ text: body.slice(cursor, start), kind: "text" });
+    const name = match[1]!;
+    const value = values[name];
+    if (value !== undefined && value.trim() !== "") {
+      segments.push({ text: value, kind: "filled", name });
+    } else {
+      segments.push({ text: match[0], kind: "missing", name });
+    }
+    cursor = start + match[0].length;
+  }
+
+  if (cursor < body.length) segments.push({ text: body.slice(cursor), kind: "text" });
+  return segments;
+}
+
 /** Character offsets of every placeholder, for editor highlighting. */
 export function variableRanges(body: string): Array<{ start: number; end: number; name: string }> {
   const ranges: Array<{ start: number; end: number; name: string }> = [];
