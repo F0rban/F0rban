@@ -707,6 +707,9 @@ a.carte-planche:hover { transform: translate(2px, -2px); }
 /* Bascule nocturne : même boîte, calques permutés, jamais la hauteur. */
 .cadran-cadre.est-nuit { background: var(--nuit); }
 .cadran-cadre.est-nuit .cadran-svg { filter: none; }
+/* Sur le mur de nuit, les textes du cadran passent en encre de nuit
+   (le CSS l'emporte sur les attributs de présentation SVG). */
+.cadran-cadre.est-nuit .cadran-svg text { fill: var(--encre-seconde-nuit); }
 .cadran-etiquettes {
   display: flex;
   flex-wrap: wrap;

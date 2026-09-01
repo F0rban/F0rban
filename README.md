@@ -39,7 +39,7 @@ servis par `npm run dev` (`http-server -g`).
 ├── assets/
 │   ├── css/             fonts.css (auto-hébergement) + styles.css (design system)
 │   ├── js/              gnomonique.js (moteur), main.js, cadran.js, simulateur.js
-│   ├── vendor/          gsap, ScrollTrigger, lenis (minifiés, versions figées)
+│   ├── vendor/          lenis (minifié, version figée)
 │   ├── fonts/           woff2 variables auto-hébergés
 │   ├── img/generated/   SVG générés par le moteur (cadran héros, 5 planches)
 │   ├── textures/        grain d'enduit (tuile PNG précalculée, seed 1841)

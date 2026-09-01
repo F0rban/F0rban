@@ -76,12 +76,13 @@ Voir `docs/brand/visual-bible.md` §4 et §8. Points non négociables :
 |---|---|---|---|
 | lenis | 1.3.26 | scroll lissé (lerp 0.095) **et** écriture de `--sun-angle` (la valeur `e.scroll` est déjà interpolée) | copier `dist/lenis.min.js` depuis npm dans `assets/vendor/` |
 
+| Fraunces variable | v38 | tout le verbe (axes opsz/SOFT/WONK) | re-télécharger via l'API css2 de Google Fonts, régénérer `fonts.css` |
+| Spline Sans Mono | v13 | tout le chiffré | idem |
+
 > GSAP/ScrollTrigger ont été retirés après audit de performance : une seule
 > variable scrubée ne justifiait pas 46 Ko gzip par page. La doctrine
 > « une écriture par frame » de la visual bible est tenue par le listener
 > scroll de Lenis (une écriture par frame de scroll, aucune en dehors).
-| Fraunces variable | v38 | tout le verbe (axes opsz/SOFT/WONK) | re-télécharger via l'API css2 de Google Fonts, régénérer `fonts.css` |
-| Spline Sans Mono | v13 | tout le chiffré | idem |
 
 ## Vérifications avant merge
 

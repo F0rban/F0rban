@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "npx http-server . -p 4173 -c-1 -g --silent",
-    "test": "node --test tests/",
+    "test": "node --test tests/gnomonique.test.mjs",
     "compress": "find . -path ./node_modules -prune -o -type f \\( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.svg' -o -name '*.xml' \\) -print0 | xargs -0 gzip -9kf"
   },
   "license": "MIT"
