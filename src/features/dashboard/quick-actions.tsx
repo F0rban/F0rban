@@ -1,28 +1,102 @@
 "use client";
 
 import Link from "next/link";
-import { Command, Cpu, Play, SquarePen, Wallet } from "lucide-react";
+import { useMemo } from "react";
+import { Boxes, Command, Cpu, Play, SquarePen } from "lucide-react";
+import type { Workspace } from "@/lib/data/types";
 import { useUiStore } from "@/lib/store/ui";
 import { Kbd } from "@/components/ui/kbd";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency, formatNumber } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 
 interface Action {
+  key: string;
   label: string;
   detail: string;
   icon: React.ElementType;
-  href?: string;
+  href: string;
   keys?: string[];
 }
 
-const ACTIONS: Action[] = [
-  { label: "Run a prompt", detail: "Fill variables and copy", icon: Play, href: "/prompts" },
-  { label: "New prompt", detail: "Start from blank", icon: SquarePen, href: "/prompts?new=1", keys: ["N"] },
-  { label: "Compare models", detail: "Price, speed, capability", icon: Cpu, href: "/models" },
-  { label: "Review spend", detail: "Budget and forecast", icon: Wallet, href: "/spending" },
-];
+/**
+ * Shortcuts that point at this workspace, not at section landing pages.
+ *
+ * A generic "Compare models" tile is a nav link with a picture on it. Naming
+ * the prompt you actually run, the trial that is actually expiring and the
+ * models you actually starred makes the block worth its space.
+ */
+function deriveActions(workspace: Workspace): Action[] {
+  const actions: Action[] = [];
 
-export function QuickActions({ className }: { className?: string }) {
+  const topPrompt = [...workspace.prompts].sort((a, b) => b.useCount - a.useCount)[0];
+  if (topPrompt) {
+    actions.push({
+      key: "prompt",
+      label: `Run ${topPrompt.title}`,
+      detail: `Your most-used · ${formatNumber(topPrompt.useCount)} runs`,
+      icon: Play,
+      href: `/prompts?prompt=${topPrompt.id}`,
+    });
+  }
+
+  // Whatever is most urgent about the stack: an expiring trial first, then the
+  // most expensive tool nobody is opening.
+  const trial = workspace.tools.find((t) => t.status === "trial");
+  const idle = [...workspace.tools]
+    .filter((t) => t.status === "active" && t.monthlyCost > 0 && t.usage30d < 12)
+    .sort((a, b) => b.monthlyCost - a.monthlyCost)[0];
+
+  if (trial) {
+    actions.push({
+      key: "trial",
+      label: `Decide on ${trial.name}`,
+      detail: `Trial · ${formatCurrency(trial.monthlyCost)}/mo if kept`,
+      icon: Boxes,
+      href: `/tools?tool=${trial.id}`,
+    });
+  } else if (idle) {
+    actions.push({
+      key: "idle",
+      label: `Review ${idle.name}`,
+      detail: `${formatCurrency(idle.monthlyCost)}/mo · ${idle.usage30d} uses in 30 days`,
+      icon: Boxes,
+      href: `/tools?tool=${idle.id}`,
+    });
+  }
+
+  const starred = workspace.models.filter((m) => m.favorite);
+  if (starred.length >= 2) {
+    actions.push({
+      key: "models",
+      label: `Compare ${starred[0]!.name.split(" ").slice(-2).join(" ")} vs ${starred[1]!.name.split(" ").slice(-2).join(" ")}`,
+      detail: "Price, speed and capability side by side",
+      icon: Cpu,
+      href: `/models?model=${starred[0]!.id}`,
+    });
+  }
+
+  actions.push({
+    key: "new",
+    label: "New prompt",
+    detail: "Start from a blank template",
+    icon: SquarePen,
+    href: "/prompts?new=1",
+    keys: ["N"],
+  });
+
+  return actions.slice(0, 4);
+}
+
+export function QuickActions({
+  workspace,
+  className,
+}: {
+  workspace: Workspace | null;
+  className?: string;
+}) {
   const setPaletteOpen = useUiStore((s) => s.setPaletteOpen);
+  const actions = useMemo(() => (workspace ? deriveActions(workspace) : []), [workspace]);
 
   return (
     <div className={cn("grid grid-cols-2 gap-2", className)}>
@@ -50,34 +124,40 @@ export function QuickActions({ className }: { className?: string }) {
         </span>
       </button>
 
-      {ACTIONS.map((action) => (
-        <Link
-          key={action.label}
-          href={action.href ?? "#"}
-          className={cn(
-            "group flex flex-col gap-2 rounded-xl border border-line bg-surface-1 p-3",
-            "shadow-xs transition-[border-color,box-shadow,transform] duration-200",
-            "hover:-translate-y-px hover:border-line-strong hover:shadow-md",
-          )}
-        >
-          <span className="flex items-center justify-between">
-            <action.icon className="size-4 text-ink-4 transition-colors group-hover:text-accent" />
-            {action.keys && (
-              <span className="flex gap-1">
-                {action.keys.map((key) => (
-                  <Kbd key={key}>{key}</Kbd>
-                ))}
+      {actions.length === 0
+        ? Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-[86px] rounded-xl" />
+          ))
+        : actions.map((action) => (
+            <Link
+              key={action.key}
+              href={action.href}
+              className={cn(
+                "group flex flex-col gap-2 rounded-xl border border-line bg-surface-1 p-3",
+                "shadow-xs transition-[border-color,box-shadow,transform] duration-200",
+                "hover:-translate-y-px hover:border-line-strong hover:shadow-md",
+              )}
+            >
+              <span className="flex items-center justify-between">
+                <action.icon className="size-4 text-ink-4 transition-colors group-hover:text-accent" />
+                {action.keys && (
+                  <span className="flex gap-1">
+                    {action.keys.map((key) => (
+                      <Kbd key={key}>{key}</Kbd>
+                    ))}
+                  </span>
+                )}
               </span>
-            )}
-          </span>
-          <span>
-            <span className="block text-[12.5px] font-medium leading-snug text-ink">
-              {action.label}
-            </span>
-            <span className="mt-0.5 block text-[11px] leading-snug text-ink-4">{action.detail}</span>
-          </span>
-        </Link>
-      ))}
+              <span>
+                <span className="line-clamp-2 block text-[12.5px] font-medium leading-snug text-ink">
+                  {action.label}
+                </span>
+                <span className="mt-0.5 line-clamp-2 block text-[11px] leading-snug text-ink-4">
+                  {action.detail}
+                </span>
+              </span>
+            </Link>
+          ))}
     </div>
   );
 }

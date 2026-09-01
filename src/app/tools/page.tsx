@@ -16,6 +16,7 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { ToolCard } from "@/features/tools/tool-card";
 import { ToolDetail } from "@/features/tools/tool-detail";
 import { ToolForm } from "@/features/tools/tool-form";
+import { StackInsight } from "@/features/tools/stack-insight";
 import {
   TOOL_CATEGORIES,
   TOOL_CATEGORY_LABEL,
@@ -177,7 +178,21 @@ function ToolsPageInner() {
         }
       />
 
-      <div className="mt-5 flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
+      {ready && (
+        <StackInsight
+          tools={tools}
+          onReview={() => {
+            setQuery("");
+            setStatuses([]);
+            setCategories([]);
+            setStarredOnly(false);
+            setSort("efficiency");
+            setView("table");
+          }}
+        />
+      )}
+
+      <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
         <SearchField
           value={query}
           onChange={setQuery}

@@ -367,7 +367,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="min-w-0 space-y-4">
-          <QuickActions />
+          <QuickActions workspace={workspace} />
 
           {!ready || !data ? (
             <Card className="p-4">

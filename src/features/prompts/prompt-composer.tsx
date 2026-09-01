@@ -185,7 +185,7 @@ export function PromptComposer({ prompt }: { prompt: Prompt }) {
           </div>
         </div>
 
-        <div className="relative min-h-64 flex-1 overflow-auto rounded-lg border border-line bg-surface-2/40 p-3">
+        <div className="relative min-h-64 flex-1 overflow-auto rounded-lg border border-line bg-surface-2/40 p-3 lg:min-h-[26rem]">
           <pre className="whitespace-pre-wrap break-words font-mono text-[11.5px] leading-[1.65] text-ink-2">
             {segments.map((segment, index) =>
               segment.kind === "text" ? (

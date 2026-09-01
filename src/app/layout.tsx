@@ -15,6 +15,12 @@ export const metadata: Metadata = {
   applicationName: "AI Command Center",
   authors: [{ name: "AI Command Center" }],
   keywords: ["AI tools", "prompt library", "model comparison", "AI spend", "workflows"],
+  openGraph: {
+    title: "AI Command Center",
+    description:
+      "A personal cockpit for AI work: tools, models, prompts, projects and spend in one place.",
+    type: "website",
+  },
 };
 
 export const viewport: Viewport = {
