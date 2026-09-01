@@ -81,7 +81,7 @@ export const SEED_TOOLS: Array<Omit<Tool, "addedAt" | "lastUsedAt" | "renewsOn">
     notes: "Overlaps heavily with Cursor. Only still here for the PR review bot.",
     favorite: false,
     tags: ["completion", "review"],
-    usage30d: 34,
+    usage30d: 6,
     addedDaysAgo: 640,
     lastUsedDaysAgo: 4,
     renewsInDays: 22,

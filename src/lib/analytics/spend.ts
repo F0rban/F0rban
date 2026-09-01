@@ -205,6 +205,40 @@ export function monthToDate(entries: SpendEntry[], now: Date = new Date()): numb
   return total(entries.filter((e) => e.date >= from && e.date <= to));
 }
 
+/**
+ * Month-to-date against the same span of the previous month.
+ *
+ * Comparing a partial month to a whole one is the classic dashboard lie — on
+ * the 3rd it would always read "down 90%". This compares day 1..N of this month
+ * to day 1..N of last month, which is the only honest early-month delta.
+ */
+export function monthToDatePace(
+  entries: SpendEntry[],
+  now: Date = new Date(),
+): { current: number; previous: number; delta: number | null } {
+  const day = now.getDate();
+  const thisMonth = monthKey(now);
+  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const prevMonth = monthKey(prev);
+  const prevDays = daysInMonth(prev);
+  const cutoff = Math.min(day, prevDays);
+
+  const current = total(entries.filter((e) => e.date.slice(0, 7) === thisMonth));
+  const previous = total(
+    entries.filter(
+      (e) => e.date.slice(0, 7) === prevMonth && Number(e.date.slice(8, 10)) <= cutoff,
+    ),
+  );
+  return { current, previous, delta: percentChange(current, previous) };
+}
+
+/** Rolling window total — always populated, unlike month-to-date on the 1st. */
+export function trailing(entries: SpendEntry[], days: number, now: Date = new Date()): number {
+  const from = toDayKey(addDays(now, -(days - 1)));
+  const to = toDayKey(now);
+  return total(entries.filter((e) => e.date >= from && e.date <= to));
+}
+
 export function previousMonthTotal(entries: SpendEntry[], now: Date = new Date()): number {
   const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const key = monthKey(prev);

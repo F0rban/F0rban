@@ -78,7 +78,20 @@ export function TrendChart({
   const yFor = (v: number) => padding.top + innerH - (v / max) * innerH;
   const draw = smooth ? monotonePath : linearPath;
 
-  const labelEvery = Math.max(1, Math.ceil(data.length / (width > 640 ? 8 : 4)));
+  // Pick evenly spaced label slots that always include the first and last
+  // point, then drop any that would collide with a neighbour.
+  const labelIndices = (() => {
+    if (data.length === 0) return [];
+    const slots = Math.max(2, Math.min(data.length, Math.floor(width / (width > 640 ? 120 : 90))));
+    const step = (data.length - 1) / (slots - 1);
+    const picked = new Set<number>();
+    for (let i = 0; i < slots; i++) picked.add(Math.round(i * step));
+    const sorted = [...picked].sort((a, b) => a - b);
+    const minGap = Math.max(1, Math.floor((data.length - 1) / (slots + 1)));
+    return sorted.filter(
+      (index, i) => i === 0 || index === data.length - 1 || index - sorted[i - 1]! >= minGap,
+    );
+  })();
   const active = hover !== null ? data[hover] : null;
   const activeTotal = active
     ? series.reduce((sum, s) => sum + (active.values[s.key] ?? 0), 0)
@@ -155,19 +168,17 @@ export function TrendChart({
               );
             })}
 
-            {data.map((d, i) =>
-              i % labelEvery === 0 || i === data.length - 1 ? (
-                <text
-                  key={`${d.label}-${i}`}
-                  x={xFor(i)}
-                  y={height - 6}
-                  textAnchor={i === 0 ? "start" : i === data.length - 1 ? "end" : "middle"}
-                  className="fill-[var(--ink-4)] text-[9.5px]"
-                >
-                  {d.label}
-                </text>
-              ) : null,
-            )}
+            {labelIndices.map((i) => (
+              <text
+                key={`${data[i]!.label}-${i}`}
+                x={xFor(i)}
+                y={height - 6}
+                textAnchor={i === 0 ? "start" : i === data.length - 1 ? "end" : "middle"}
+                className="fill-[var(--ink-4)] text-[9.5px]"
+              >
+                {data[i]!.label}
+              </text>
+            ))}
 
             {hover !== null && (
               <g pointerEvents="none">
