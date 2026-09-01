@@ -1,0 +1,67 @@
+/** Display formatting. Pure, locale-stable (en-US) so SSR and CSR agree. */
+
+const LOCALE = "en-US";
+
+export function formatCurrency(
+  value: number,
+  opts: { maximumFractionDigits?: number; minimumFractionDigits?: number; currency?: string } = {},
+): string {
+  const abs = Math.abs(value);
+  const max = opts.maximumFractionDigits ?? (abs >= 1000 ? 0 : abs >= 1 ? 2 : 3);
+  return new Intl.NumberFormat(LOCALE, {
+    style: "currency",
+    currency: opts.currency ?? "USD",
+    minimumFractionDigits: opts.minimumFractionDigits ?? Math.min(max, 2),
+    maximumFractionDigits: max,
+  }).format(value);
+}
+
+/** Money for dense tables: no cents above $1,000, always a leading $. */
+export function formatMoneyCompact(value: number): string {
+  const abs = Math.abs(value);
+  if (abs >= 10_000) {
+    return `${value < 0 ? "-" : ""}$${(abs / 1000).toFixed(abs >= 100_000 ? 0 : 1)}k`;
+  }
+  return formatCurrency(value);
+}
+
+export function formatNumber(value: number, maximumFractionDigits = 0): string {
+  return new Intl.NumberFormat(LOCALE, { maximumFractionDigits }).format(value);
+}
+
+/** 1_240_000 → "1.24M". Used for context windows and token counts. */
+export function formatCompact(value: number): string {
+  if (value >= 1_000_000) {
+    const m = value / 1_000_000;
+    return `${m % 1 === 0 ? m.toFixed(0) : m.toFixed(m < 10 ? 2 : 1)}M`;
+  }
+  if (value >= 1_000) {
+    const k = value / 1_000;
+    return `${k % 1 === 0 ? k.toFixed(0) : k.toFixed(k < 10 ? 1 : 0)}K`;
+  }
+  return String(value);
+}
+
+export function formatPercent(value: number, digits = 0): string {
+  return `${value >= 0 ? "" : "-"}${Math.abs(value).toFixed(digits)}%`;
+}
+
+export function formatSigned(value: number, digits = 1): string {
+  return `${value > 0 ? "+" : value < 0 ? "−" : ""}${Math.abs(value).toFixed(digits)}`;
+}
+
+export function formatDuration(ms: number): string {
+  if (ms < 1000) return `${Math.round(ms)}ms`;
+  if (ms < 60_000) return `${(ms / 1000).toFixed(ms < 10_000 ? 1 : 0)}s`;
+  const minutes = Math.floor(ms / 60_000);
+  const seconds = Math.round((ms % 60_000) / 1000);
+  return seconds ? `${minutes}m ${seconds}s` : `${minutes}m`;
+}
+
+export function pluralize(count: number, singular: string, plural = `${singular}s`): string {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+export function titleCase(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}

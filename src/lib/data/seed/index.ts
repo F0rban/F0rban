@@ -1,0 +1,103 @@
+import type {
+  Preferences,
+  Project,
+  Prompt,
+  Tool,
+  Workflow,
+  Workspace,
+} from "../types";
+import { SEED_MODELS } from "./models";
+import { SEED_PROJECTS } from "./projects";
+import { SEED_PROMPTS } from "./prompts";
+import { SEED_TOOLS } from "./tools";
+import { SEED_WORKFLOWS } from "./workflows";
+import { addDays, generateActivity, generateSpend, toDayKey } from "./generate";
+
+export const WORKSPACE_VERSION = 1;
+
+export const DEFAULT_PREFERENCES: Preferences = {
+  theme: "system",
+  monthlyBudget: 420,
+  currency: "USD",
+  displayName: "",
+  onboardingComplete: false,
+  focusModelIds: [],
+  compactDensity: false,
+  reduceMotion: false,
+};
+
+function isoAt(now: Date, daysAgo: number): string {
+  return addDays(now, -daysAgo).toISOString();
+}
+
+function resolveTools(now: Date): Tool[] {
+  return SEED_TOOLS.map(({ addedDaysAgo, lastUsedDaysAgo, renewsInDays, ...rest }) => ({
+    ...rest,
+    addedAt: isoAt(now, addedDaysAgo),
+    lastUsedAt: lastUsedDaysAgo === null ? null : isoAt(now, lastUsedDaysAgo),
+    renewsOn: renewsInDays === null ? null : toDayKey(addDays(now, renewsInDays)),
+  }));
+}
+
+function resolvePrompts(now: Date): Prompt[] {
+  return SEED_PROMPTS.map(
+    ({ createdDaysAgo, updatedDaysAgo, lastUsedDaysAgo, versionHistory, ...rest }) => ({
+      ...rest,
+      createdAt: isoAt(now, createdDaysAgo),
+      updatedAt: isoAt(now, updatedDaysAgo),
+      lastUsedAt: lastUsedDaysAgo === null ? null : isoAt(now, lastUsedDaysAgo),
+      versions: versionHistory.map((v, i) => ({
+        id: `${rest.id}-v${i + 1}`,
+        body: v.body,
+        createdAt: isoAt(now, v.daysAgo),
+        note: v.note,
+      })),
+    }),
+  );
+}
+
+function resolveProjects(now: Date): Project[] {
+  return SEED_PROJECTS.map(
+    ({ createdDaysAgo, updatedDaysAgo, dueInDays, taskList, ...rest }) => ({
+      ...rest,
+      createdAt: isoAt(now, createdDaysAgo),
+      updatedAt: isoAt(now, updatedDaysAgo),
+      dueDate: dueInDays === null ? null : toDayKey(addDays(now, dueInDays)),
+      tasks: taskList.map((task, i) => ({
+        id: `${rest.id}-t${i + 1}`,
+        title: task.title,
+        done: task.done,
+        dueDate: task.dueInDays === null ? null : toDayKey(addDays(now, task.dueInDays)),
+      })),
+    }),
+  );
+}
+
+function resolveWorkflows(now: Date): Workflow[] {
+  return SEED_WORKFLOWS.map(({ createdDaysAgo, lastRunDaysAgo, ...rest }) => ({
+    ...rest,
+    createdAt: isoAt(now, createdDaysAgo),
+    lastRunAt: lastRunDaysAgo === null ? null : isoAt(now, lastRunDaysAgo),
+  }));
+}
+
+/**
+ * Builds a complete workspace relative to `now`, so a freshly opened app always
+ * shows a live-looking 13 months of history. Deterministic for a given date.
+ */
+export function createSeedWorkspace(now: Date = new Date()): Workspace {
+  return {
+    version: WORKSPACE_VERSION,
+    tools: resolveTools(now),
+    models: SEED_MODELS.map((m) => ({ ...m })),
+    prompts: resolvePrompts(now),
+    projects: resolveProjects(now),
+    workflows: resolveWorkflows(now),
+    spend: generateSpend(now),
+    activity: generateActivity(now),
+    preferences: { ...DEFAULT_PREFERENCES },
+  };
+}
+
+export { SEED_MODELS, SEED_TOOLS, SEED_PROMPTS, SEED_PROJECTS, SEED_WORKFLOWS };
+export * from "./providers";

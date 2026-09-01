@@ -1,0 +1,182 @@
+import type { EntityType, Workspace } from "../data/types";
+import { fuzzyMatchFields } from "./fuzzy";
+
+export type { FuzzyMatch } from "./fuzzy";
+export { fuzzyMatch, fuzzyMatchFields, highlightSegments } from "./fuzzy";
+
+export interface SearchRecord {
+  id: string;
+  type: EntityType;
+  title: string;
+  subtitle: string;
+  /** Extra text folded into matching but never displayed. */
+  keywords: string;
+  href: string;
+  /** Ranking nudge for things the user touches often. */
+  boost: number;
+  meta?: string;
+  favorite?: boolean;
+}
+
+export interface SearchHit extends SearchRecord {
+  score: number;
+  positions: number[];
+}
+
+const TYPE_LABELS: Record<EntityType, string> = {
+  tool: "Tool",
+  model: "Model",
+  prompt: "Prompt",
+  project: "Project",
+  workflow: "Workflow",
+  spend: "Spend",
+};
+
+export function typeLabel(type: EntityType): string {
+  return TYPE_LABELS[type];
+}
+
+/**
+ * Flattens the workspace into one searchable list. Rebuilt whenever the
+ * workspace changes — cheap at this scale (a few hundred records) and keeps
+ * the palette honest about what actually exists.
+ */
+export function buildSearchIndex(workspace: Workspace): SearchRecord[] {
+  const modelName = new Map(workspace.models.map((m) => [m.id, m.name]));
+  const records: SearchRecord[] = [];
+
+  for (const tool of workspace.tools) {
+    records.push({
+      id: tool.id,
+      type: "tool",
+      title: tool.name,
+      subtitle: tool.description,
+      keywords: [tool.category, tool.provider, tool.status, ...tool.tags, tool.notes].join(" "),
+      href: `/tools?tool=${tool.id}`,
+      boost: (tool.favorite ? 24 : 0) + Math.min(30, tool.usage30d / 10),
+      meta: tool.status,
+      favorite: tool.favorite,
+    });
+  }
+
+  for (const model of workspace.models) {
+    records.push({
+      id: model.id,
+      type: "model",
+      title: model.name,
+      subtitle: model.notes,
+      keywords: [model.family, model.provider, ...model.tags, ...model.modalities].join(" "),
+      href: `/models?model=${model.id}`,
+      boost: (model.favorite ? 24 : 0) + (model.personalScore ?? 0) * 2,
+      meta: model.family,
+      favorite: model.favorite,
+    });
+  }
+
+  for (const prompt of workspace.prompts) {
+    records.push({
+      id: prompt.id,
+      type: "prompt",
+      title: prompt.title,
+      subtitle: prompt.description,
+      keywords: [
+        prompt.category,
+        ...prompt.tags,
+        ...prompt.variables.map((v) => v.name),
+        ...prompt.modelIds.map((id) => modelName.get(id) ?? ""),
+        prompt.body,
+      ].join(" "),
+      href: `/prompts?prompt=${prompt.id}`,
+      boost: (prompt.favorite ? 24 : 0) + Math.min(40, prompt.useCount / 3),
+      meta: prompt.category,
+      favorite: prompt.favorite,
+    });
+  }
+
+  for (const project of workspace.projects) {
+    records.push({
+      id: project.id,
+      type: "project",
+      title: project.name,
+      subtitle: project.description,
+      keywords: [
+        project.code,
+        project.status,
+        ...project.tags,
+        ...project.objectives,
+        ...project.tasks.map((t) => t.title),
+        project.notes,
+      ].join(" "),
+      href: `/projects/${project.id}`,
+      boost: project.status === "active" ? 20 : 0,
+      meta: project.code,
+    });
+  }
+
+  for (const workflow of workspace.workflows) {
+    records.push({
+      id: workflow.id,
+      type: "workflow",
+      title: workflow.name,
+      subtitle: workflow.description,
+      keywords: [
+        workflow.status,
+        ...workflow.tags,
+        ...workflow.nodes.map((n) => `${n.title} ${n.subtitle}`),
+      ].join(" "),
+      href: `/workflows?workflow=${workflow.id}`,
+      boost: workflow.status === "ready" ? 16 : 0,
+      meta: workflow.status,
+    });
+  }
+
+  return records;
+}
+
+export interface SearchOptions {
+  limit?: number;
+  types?: EntityType[];
+}
+
+export function searchRecords(
+  records: SearchRecord[],
+  query: string,
+  options: SearchOptions = {},
+): SearchHit[] {
+  const { limit = 30, types } = options;
+  const pool = types?.length ? records.filter((r) => types.includes(r.type)) : records;
+
+  if (!query.trim()) {
+    return [...pool]
+      .sort((a, b) => b.boost - a.boost || a.title.localeCompare(b.title))
+      .slice(0, limit)
+      .map((r) => ({ ...r, score: r.boost, positions: [] }));
+  }
+
+  const hits: SearchHit[] = [];
+  for (const record of pool) {
+    const match = fuzzyMatchFields(query, [
+      { text: record.title, weight: 1, primary: true },
+      { text: record.subtitle, weight: 0.35 },
+      { text: record.keywords, weight: 0.18 },
+    ]);
+    if (!match) continue;
+    hits.push({ ...record, score: match.score + record.boost, positions: match.positions });
+  }
+
+  return hits.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title)).slice(0, limit);
+}
+
+/** Groups hits by entity type, preserving relevance order within each group. */
+export function groupHits(hits: SearchHit[]): Array<{ type: EntityType; label: string; hits: SearchHit[] }> {
+  const order: EntityType[] = ["prompt", "project", "tool", "model", "workflow", "spend"];
+  const groups = new Map<EntityType, SearchHit[]>();
+  for (const hit of hits) {
+    const list = groups.get(hit.type);
+    if (list) list.push(hit);
+    else groups.set(hit.type, [hit]);
+  }
+  return order
+    .filter((type) => groups.has(type))
+    .map((type) => ({ type, label: TYPE_LABELS[type], hits: groups.get(type)! }));
+}

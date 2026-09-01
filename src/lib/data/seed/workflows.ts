@@ -1,0 +1,132 @@
+import type { Workflow } from "../types";
+
+type SeedWorkflow = Omit<Workflow, "createdAt" | "lastRunAt"> & {
+  createdDaysAgo: number;
+  lastRunDaysAgo: number | null;
+};
+
+export const SEED_WORKFLOWS: SeedWorkflow[] = [
+  {
+    id: "w-signal-brief",
+    name: "Weekly market brief",
+    description:
+      "Research the week, draft the brief, fact-check every claim against its source, then publish text and audio. Runs Monday 06:00.",
+    status: "scheduled",
+    projectId: "pr-signal",
+    tags: ["content", "weekly", "automated"],
+    runCount: 21,
+    lastRunCost: 3.42,
+    createdDaysAgo: 145,
+    lastRunDaysAgo: 3,
+    nodes: [
+      { id: "n1", kind: "input", title: "Watchlist", subtitle: "42 sources · RSS + changelogs", modelId: null, toolId: null, column: 0, row: 1, durationMs: 900, tokensIn: 0, tokensOut: 0, note: "Provider blogs, pricing pages and release feeds." },
+      { id: "n2", kind: "tool", title: "Sourced search", subtitle: "Perplexity", modelId: null, toolId: "t-perplexity", column: 1, row: 1, durationMs: 11400, tokensIn: 0, tokensOut: 0, note: "Three queries. Citations required — uncited results are dropped." },
+      { id: "n3", kind: "model", title: "Draft the brief", subtitle: "Claude Opus 4.5", modelId: "m-claude-opus-45", toolId: null, column: 2, row: 1, durationMs: 24800, tokensIn: 38_000, tokensOut: 2_400, note: "Long context — the whole week's material goes in at once." },
+      { id: "n4", kind: "review", title: "Fact-check pass", subtitle: "Claude Sonnet 4.5", modelId: "m-claude-sonnet-45", toolId: null, column: 3, row: 0, durationMs: 14200, tokensIn: 12_000, tokensOut: 900, note: "Every claim re-checked against its source. Caught 3 hallucinated funding rounds in month one." },
+      { id: "n5", kind: "transform", title: "Format for web", subtitle: "Markdown + frontmatter", modelId: null, toolId: null, column: 3, row: 2, durationMs: 400, tokensIn: 0, tokensOut: 0, note: "Deterministic. No model involved." },
+      { id: "n6", kind: "tool", title: "Audio digest", subtitle: "ElevenLabs", modelId: null, toolId: "t-elevenlabs", column: 4, row: 2, durationMs: 18600, tokensIn: 0, tokensOut: 0, note: "Cloned voice. Gets more engagement than the written version." },
+      { id: "n7", kind: "output", title: "Publish", subtitle: "Newsletter + podcast feed", modelId: null, toolId: null, column: 5, row: 1, durationMs: 2100, tokensIn: 0, tokensOut: 0, note: "Holds if the fact-check pass flags anything unresolved." },
+    ],
+    edges: [
+      { id: "e1", from: "n1", to: "n2", label: "" },
+      { id: "e2", from: "n2", to: "n3", label: "sources" },
+      { id: "e3", from: "n3", to: "n4", label: "draft" },
+      { id: "e4", from: "n3", to: "n5", label: "draft" },
+      { id: "e5", from: "n4", to: "n7", label: "verified" },
+      { id: "e6", from: "n5", to: "n6", label: "" },
+      { id: "e7", from: "n6", to: "n7", label: "" },
+    ],
+  },
+  {
+    id: "w-atlas-answer",
+    name: "Atlas answer pipeline",
+    description:
+      "The live request path for knowledge-base questions: retrieve, rerank, answer with citations, and refuse when the evidence is thin.",
+    status: "ready",
+    projectId: "pr-atlas",
+    tags: ["rag", "production", "latency-critical"],
+    runCount: 41_882,
+    lastRunCost: 0.014,
+    createdDaysAgo: 88,
+    lastRunDaysAgo: 0,
+    nodes: [
+      { id: "a1", kind: "input", title: "Question", subtitle: "From search or support widget", modelId: null, toolId: null, column: 0, row: 1, durationMs: 20, tokensIn: 0, tokensOut: 0, note: "" },
+      { id: "a2", kind: "transform", title: "Vector retrieve", subtitle: "top-40 · pgvector", modelId: null, toolId: "t-openai-api", column: 1, row: 1, durationMs: 180, tokensIn: 60, tokensOut: 0, note: "Embedding + ANN search over 14k pages." },
+      { id: "a3", kind: "model", title: "Rerank", subtitle: "Claude Haiku 4.5", modelId: "m-claude-haiku-45", toolId: null, column: 2, row: 1, durationMs: 640, tokensIn: 9_400, tokensOut: 120, note: "40 candidates down to 6. Beat embedding-only by a wide margin on the eval set." },
+      { id: "a4", kind: "model", title: "Answer", subtitle: "Claude Sonnet 4.5", modelId: "m-claude-sonnet-45", toolId: null, column: 3, row: 1, durationMs: 1420, tokensIn: 7_200, tokensOut: 380, note: "Cited or refused — never an uncited claim." },
+      { id: "a5", kind: "review", title: "Citation gate", subtitle: "Deterministic check", modelId: null, toolId: null, column: 4, row: 0, durationMs: 30, tokensIn: 0, tokensOut: 0, note: "Every claim must map to a retrieved paragraph, or the answer is withheld." },
+      { id: "a6", kind: "output", title: "Answer + sources", subtitle: "p95 2.3s", modelId: null, toolId: null, column: 5, row: 1, durationMs: 40, tokensIn: 0, tokensOut: 0, note: "" },
+      { id: "a7", kind: "output", title: "Fallback to search", subtitle: "When evidence is thin", modelId: null, toolId: null, column: 5, row: 2, durationMs: 20, tokensIn: 0, tokensOut: 0, note: "Roughly 7% of questions land here. That is the intended behaviour." },
+    ],
+    edges: [
+      { id: "ae1", from: "a1", to: "a2", label: "" },
+      { id: "ae2", from: "a2", to: "a3", label: "40 chunks" },
+      { id: "ae3", from: "a3", to: "a4", label: "6 chunks" },
+      { id: "ae4", from: "a4", to: "a5", label: "" },
+      { id: "ae5", from: "a5", to: "a6", label: "pass" },
+      { id: "ae6", from: "a5", to: "a7", label: "fail" },
+    ],
+  },
+  {
+    id: "w-brand-set",
+    name: "Key art generation set",
+    description:
+      "From a written brief to a consistent set of key art: expand the brief, generate variants, upscale the keepers, then cut a motion test.",
+    status: "draft",
+    projectId: "pr-northstar",
+    tags: ["design", "image", "manual-gate"],
+    runCount: 6,
+    lastRunCost: 8.9,
+    createdDaysAgo: 64,
+    lastRunDaysAgo: 19,
+    nodes: [
+      { id: "b1", kind: "input", title: "Creative brief", subtitle: "One paragraph + references", modelId: null, toolId: null, column: 0, row: 1, durationMs: 0, tokensIn: 0, tokensOut: 0, note: "" },
+      { id: "b2", kind: "model", title: "Expand to shot list", subtitle: "GPT-5.1", modelId: "m-gpt-51", toolId: null, column: 1, row: 1, durationMs: 9200, tokensIn: 1_100, tokensOut: 1_800, note: "Shared lighting and palette across variants — that is what makes it a set." },
+      { id: "b3", kind: "tool", title: "Generate variants", subtitle: "Midjourney · 4 × 4", modelId: null, toolId: "t-midjourney", column: 2, row: 1, durationMs: 148000, tokensIn: 0, tokensOut: 0, note: "Style reference locked from batch 3." },
+      { id: "b4", kind: "review", title: "Human selection", subtitle: "Manual gate", modelId: null, toolId: null, column: 3, row: 1, durationMs: 0, tokensIn: 0, tokensOut: 0, note: "Nothing continues without a person choosing. Deliberate." },
+      { id: "b5", kind: "tool", title: "Upscale keepers", subtitle: "Midjourney", modelId: null, toolId: "t-midjourney", column: 4, row: 0, durationMs: 42000, tokensIn: 0, tokensOut: 0, note: "" },
+      { id: "b6", kind: "tool", title: "Motion test", subtitle: "Runway", modelId: null, toolId: "t-runway", column: 4, row: 2, durationMs: 96000, tokensIn: 0, tokensOut: 0, note: "Paused with the rest of the project." },
+      { id: "b7", kind: "output", title: "Asset set", subtitle: "1:1 → 21:9 crops", modelId: null, toolId: null, column: 5, row: 1, durationMs: 1200, tokensIn: 0, tokensOut: 0, note: "" },
+    ],
+    edges: [
+      { id: "be1", from: "b1", to: "b2", label: "" },
+      { id: "be2", from: "b2", to: "b3", label: "16 prompts" },
+      { id: "be3", from: "b3", to: "b4", label: "" },
+      { id: "be4", from: "b4", to: "b5", label: "selected" },
+      { id: "be5", from: "b4", to: "b6", label: "selected" },
+      { id: "be6", from: "b5", to: "b7", label: "" },
+      { id: "be7", from: "b6", to: "b7", label: "" },
+    ],
+  },
+  {
+    id: "w-support-triage",
+    name: "Support triage",
+    description:
+      "Classify inbound tickets, hard-block the sensitive categories, draft a reply for everything else, and escalate low-confidence cases to a human.",
+    status: "ready",
+    projectId: "pr-harbor",
+    tags: ["support", "agent", "production"],
+    runCount: 12_408,
+    lastRunCost: 0.006,
+    createdDaysAgo: 196,
+    lastRunDaysAgo: 0,
+    nodes: [
+      { id: "s1", kind: "input", title: "Inbound ticket", subtitle: "Email · widget · Slack", modelId: null, toolId: null, column: 0, row: 1, durationMs: 15, tokensIn: 0, tokensOut: 0, note: "" },
+      { id: "s2", kind: "model", title: "Classify", subtitle: "Claude Haiku 4.5", modelId: "m-claude-haiku-45", toolId: null, column: 1, row: 1, durationMs: 380, tokensIn: 1_400, tokensOut: 60, note: "12 categories plus a confidence score. 93% routing accuracy." },
+      { id: "s3", kind: "review", title: "Sensitive category?", subtitle: "Billing · security · legal", modelId: null, toolId: null, column: 2, row: 1, durationMs: 5, tokensIn: 0, tokensOut: 0, note: "Hard block. No draft is generated, ever. Eleven weeks with no escapes." },
+      { id: "s4", kind: "output", title: "Straight to human", subtitle: "No draft generated", modelId: null, toolId: null, column: 3, row: 0, durationMs: 10, tokensIn: 0, tokensOut: 0, note: "" },
+      { id: "s5", kind: "model", title: "Draft reply", subtitle: "Claude Sonnet 4.5", modelId: "m-claude-sonnet-45", toolId: null, column: 3, row: 2, durationMs: 2100, tokensIn: 4_800, tokensOut: 320, note: "Tone matched to the customer's own register." },
+      { id: "s6", kind: "review", title: "Confidence gate", subtitle: "≥ 0.82 to auto-send", modelId: null, toolId: null, column: 4, row: 2, durationMs: 5, tokensIn: 0, tokensOut: 0, note: "Threshold is being tuned down — currently over-escalating." },
+      { id: "s7", kind: "output", title: "Send", subtitle: "Median 3m41s first response", modelId: null, toolId: null, column: 5, row: 2, durationMs: 60, tokensIn: 0, tokensOut: 0, note: "" },
+    ],
+    edges: [
+      { id: "se1", from: "s1", to: "s2", label: "" },
+      { id: "se2", from: "s2", to: "s3", label: "" },
+      { id: "se3", from: "s3", to: "s4", label: "sensitive" },
+      { id: "se4", from: "s3", to: "s5", label: "routine" },
+      { id: "se5", from: "s5", to: "s6", label: "" },
+      { id: "se6", from: "s6", to: "s7", label: "confident" },
+      { id: "se7", from: "s6", to: "s4", label: "unsure" },
+    ],
+  },
+];
