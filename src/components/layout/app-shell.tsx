@@ -23,7 +23,7 @@ function GlobalHotkeys() {
   const setShortcutsOpen = useUiStore((s) => s.setShortcutsOpen);
 
   useHotkey("mod+k", togglePalette, { allowInInput: true });
-  useHotkey("shift+/", () => setShortcutsOpen(true));
+  useHotkey("?", () => setShortcutsOpen(true));
   useHotkey("[", toggleSidebar);
   useHotkey("g d", useCallback(() => router.push("/"), [router]));
   useHotkey("g r", useCallback(() => router.push("/projects"), [router]));

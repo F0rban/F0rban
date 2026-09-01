@@ -13,6 +13,9 @@ function isEditable(target: EventTarget | null): boolean {
   );
 }
 
+/** Single punctuation characters carry their shift state in `event.key`. */
+const SHIFT_ENCODED = /^[^a-z0-9]$/;
+
 export interface HotkeyOptions {
   /** Fire even when focus is inside a field. Needed for ⌘K. */
   allowInInput?: boolean;
@@ -42,12 +45,19 @@ export function useHotkey(
       const needMod = parts.includes("mod");
       const needShift = parts.includes("shift");
       const needAlt = parts.includes("alt");
-      const isApple = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+      const isApple =
+        typeof navigator !== "undefined" &&
+        /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
       const modPressed = isApple ? event.metaKey : event.ctrlKey;
 
       if (needMod !== modPressed) return false;
-      if (needShift !== event.shiftKey) return false;
       if (needAlt !== event.altKey) return false;
+
+      // A punctuation key already encodes its own shift state: pressing shift
+      // and "/" reports "?", never "/" with shiftKey. Requiring a shift match
+      // on top of that can never be satisfied, so bind "?" and ignore shift.
+      if (!SHIFT_ENCODED.test(key) && needShift !== event.shiftKey) return false;
+
       const pressed = event.key.toLowerCase();
       return pressed === key || (key === "escape" && pressed === "esc");
     };
