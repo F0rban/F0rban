@@ -1,0 +1,960 @@
+/* ==========================================================================
+   ATELIER MÉRIDIENNE — feuille de style unique
+   Transcription exécutable de docs/brand/visual-bible.md.
+   Principe : le site est un mur de chaux au soleil. Tout ce qui est clair est
+   enduit, tout ce qui est sombre est peint, tout ce qui est doré est éclairé.
+
+   Sommaire
+   1. Tokens (palette validée WCAG — voir visual-bible §1.4, tout couple
+      non listé là-bas est interdit)
+   2. Base (reset, fond de chaux, grain, focus, sélection)
+   3. Typographie (7 styles nommés, aucun style orphelin)
+   4. Layout (conteneur, grille, sections, filets d'horizon)
+   5. Système d'ombre solaire --sun-angle (pivots inventoriés par page)
+   6. Composants (header, footer, boutons, liens, cartes, tableaux,
+      formulaires, glossaire, fil d'Ariane)
+   7. Pages (accueil, savoir-faire, créations, atelier, méthode, contact, 404)
+   8. Motion & reduced-motion
+   ========================================================================== */
+
+/* ==== 1. TOKENS ========================================================= */
+:root {
+  /* Jour */
+  --chaux: #F5F0E6;
+  --chaux-creuse: #EDE6D6;
+  --bistre: #1C1A17;
+  --ocre-lumiere: #C8951F;   /* DÉCORATIF SEULEMENT (2,37:1) */
+  --ocre-encre: #715208;     /* CTA, liens — 6,34:1 sur chaux */
+  --sang: #A63D2F;           /* 5,55:1 sur chaux : AA texte */
+  --sang-encre: #8F3325;     /* réserve 6,92:1 */
+  --bleu-charrette: #35566B; /* 6,86:1 sur chaux : AA texte */
+  --gris-ombre: #7A756B;     /* DÉCORATIF SEULEMENT (4,03:1) */
+  --encre-seconde: #5C5648;  /* textes secondaires 6,42:1 */
+
+  /* Nuit (footer, hero nocturne) */
+  --nuit: #14161A;
+  --nuit-elevee: #1C1F25;
+  --ocre-desat: #B08A3E;
+  --ocre-nuit: #D4AF5E;      /* 8,70:1 sur nuit */
+  --sang-nuit: #DC7B66;      /* 6,09:1 */
+  --bleu-nuit: #8FB0C4;      /* 7,91:1 */
+  --bleu-nuit-filet: #4A7086;/* 3,40:1 ≥ 3:1 UI */
+  --encre-seconde-nuit: #B5AE9F; /* 8,21:1 */
+
+  /* Échelle typographique (visual-bible §2.1) */
+  --t-display: clamp(2.75rem, 1.29rem + 6.48vw, 7.125rem);
+  --t-titre: clamp(2rem, 1.33rem + 2.96vw, 4rem);
+  --t-soustitre: clamp(1.5rem, 1.25rem + 1.11vw, 2.25rem);
+  --t-devise: clamp(1.375rem, 1.17rem + 0.93vw, 2rem);
+  --t-courant: clamp(1.0625rem, 1.04rem + 0.12vw, 1.145rem);
+  --t-petit: 0.9375rem;
+  --t-mono-data: clamp(0.875rem, 0.85rem + 0.12vw, 0.9375rem);
+  --t-mono-label: 0.75rem;
+
+  --f-serif: "Fraunces", Georgia, serif;
+  --f-mono: "Spline Sans Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Espace (unité 8 px, suite ~Fibonacci) */
+  --esp-1: 8px; --esp-2: 16px; --esp-3: 24px; --esp-4: 40px;
+  --esp-5: 64px; --esp-6: 104px; --esp-7: clamp(112px, 16vh, 168px);
+  --gouttiere: clamp(16px, 2.5vw, 32px);
+  --marge: clamp(20px, 5vw, 72px);
+  --mesure: 62ch;
+
+  /* Filets */
+  --filet-fin: 1px; --filet-trace: 1.5px; --filet-peint: 3px;
+
+  /* Motion (visual-bible §8.1) */
+  --ease-ombre: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-micro: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-instrument: cubic-bezier(0.4, 0, 0.2, 1);
+  --d-reveal: 850ms; --d-micro: 200ms;
+
+  /* Ombre solaire : angle en degrés SANS unité (−52 → +52), écrit par main.js.
+     Défaut : +31 (≈ 15 h solaires), l'état figé de reduced-motion. */
+  --sun-angle: 31;
+
+  color-scheme: light;
+}
+
+/* ==== 2. BASE =========================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--f-serif);
+  font-size: var(--t-courant);
+  font-weight: 400;
+  font-optical-sizing: none;
+  font-variation-settings: "opsz" 14, "SOFT" 0, "WONK" 0;
+  line-height: 1.6;
+  letter-spacing: 0.002em;
+  color: var(--bistre);
+  background-color: var(--chaux);
+  /* Nuages de taloche : trois radial-gradients quasi invisibles isolément. */
+  background-image:
+    radial-gradient(120% 90% at 15% 8%, rgba(200, 149, 31, 0.05), transparent 60%),
+    radial-gradient(140% 100% at 85% 30%, rgba(122, 117, 107, 0.06), transparent 55%),
+    radial-gradient(100% 120% at 50% 100%, rgba(53, 86, 107, 0.04), transparent 65%);
+  min-height: 100vh;
+  text-rendering: optimizeLegibility;
+}
+
+/* Grain d'enduit : un seul calque fixe pleine page, inerte, au-dessus de tout. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  pointer-events: none;
+  background: url(../textures/grain-256.png) repeat 0 0 / 256px 256px;
+}
+
+::selection { background: var(--ocre-lumiere); color: var(--bistre); }
+
+:focus-visible {
+  outline: 2px solid var(--bleu-charrette);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--esp-2);
+  top: -100px;
+  z-index: 1001;
+  padding: 10px 18px;
+  background: var(--bistre);
+  color: var(--chaux);
+  font-family: var(--f-mono);
+  font-size: var(--t-mono-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: top var(--d-micro) var(--ease-micro);
+}
+.skip-link:focus-visible { top: var(--esp-2); }
+
+img, svg { max-width: 100%; height: auto; }
+
+/* L'attribut hidden gagne toujours — même contre un display de classe. */
+[hidden] { display: none !important; }
+
+/* ==== 3. TYPOGRAPHIE ==================================================== */
+.t-display {
+  font-family: var(--f-serif);
+  font-size: var(--t-display);
+  font-weight: 560;
+  font-optical-sizing: none;
+  font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 1;
+  line-height: 0.98;
+  letter-spacing: -0.015em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.t-titre {
+  font-family: var(--f-serif);
+  font-size: var(--t-titre);
+  font-weight: 540;
+  font-optical-sizing: none;
+  font-variation-settings: "opsz" 72, "SOFT" 0, "WONK" 0;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--esp-3);
+  text-wrap: balance;
+}
+
+.t-soustitre {
+  font-family: var(--f-serif);
+  font-size: var(--t-soustitre);
+  font-weight: 500;
+  font-optical-sizing: none;
+  font-variation-settings: "opsz" 40, "SOFT" 0, "WONK" 0;
+  line-height: 1.2;
+  margin: 0 0 var(--esp-2);
+}
+
+.t-devise {
+  font-family: var(--f-serif);
+  font-style: italic;
+  font-size: var(--t-devise);
+  font-weight: 480;
+  font-optical-sizing: none;
+  font-variation-settings: "opsz" 40, "SOFT" 50, "WONK" 0;
+  line-height: 1.25;
+  max-width: 38ch;
+}
+
+.romain {
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.08em;
+}
+
+.mono-label {
+  font-family: var(--f-mono);
+  font-size: var(--t-mono-label);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-variation-settings: normal;
+}
+
+.mono-data {
+  font-family: var(--f-mono);
+  font-size: var(--t-mono-data);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  font-variation-settings: normal;
+}
+
+p { max-width: var(--mesure); margin: 0 0 var(--esp-3); }
+.t-petit { font-size: var(--t-petit); }
+.t-seconde { color: var(--encre-seconde); }
+
+/* Typo interne des SVG générés */
+.svg-romain text, text.svg-romain {
+  font-family: var(--f-serif);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+.svg-mono, .svg-mono text { font-family: var(--f-mono); letter-spacing: 0.1em; }
+
+/* ==== 4. LAYOUT ========================================================= */
+.conteneur {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: var(--marge);
+}
+
+.section { padding-block: var(--esp-7) 0; }
+.section > .conteneur > :last-child { margin-bottom: 0; }
+.section-pied { padding-bottom: var(--esp-7); }
+
+/* Filet d'horizon : la ligne qui sépare chaque section. */
+.filet-horizon {
+  border: 0;
+  border-top: var(--filet-fin) solid var(--bleu-charrette);
+  margin: var(--esp-7) 0 0;
+  opacity: 0.55;
+}
+
+.grille {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--gouttiere);
+  align-items: start;
+}
+.col-5 { grid-column: span 5; }
+.col-6 { grid-column: span 6; }
+.col-7 { grid-column: span 7; }
+.col-12 { grid-column: 1 / -1; }
+
+@media (max-width: 900px) {
+  .grille { grid-template-columns: 1fr; }
+  .col-5, .col-6, .col-7 { grid-column: 1 / -1; }
+}
+
+.eyebrow {
+  color: var(--encre-seconde);
+  display: block;
+  margin-bottom: var(--esp-2);
+}
+
+/* ==== 5. SYSTÈME D'OMBRE SOLAIRE ======================================= */
+/* Chaque page inventorie ses pivots en tête de sa section §7 (max 5–6).
+   Technique : transforms uniquement, origine explicite « au gnomon ».
+   INTERDITS : box-shadow animé, filter animé, feTurbulence live. */
+
+/* Ombre portée d'un titre display : le texte se duplique en ocre-lumière
+   et se couche selon l'heure. attr(data-ombre) = même texte, décoratif. */
+.porte-ombre { position: relative; }
+.porte-ombre::after {
+  content: attr(data-ombre);
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  color: var(--ocre-lumiere);
+  opacity: 0.32;
+  transform: translate(0.035em, 0.05em) skewX(calc(var(--sun-angle) * -0.5deg));
+  transform-origin: bottom left;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Gnomon décoratif de marge : un trait vertical dont l'ombre pivote. */
+.gnomon-marge {
+  position: relative;
+  width: var(--filet-peint);
+  height: 72px;
+  background: var(--bistre);
+}
+.gnomon-marge::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: var(--filet-trace);
+  height: 64px;
+  background: var(--ocre-lumiere);
+  opacity: 0.55;
+  transform-origin: top center;
+  transform: rotate(calc(180deg - var(--sun-angle) * 1deg));
+  will-change: transform;
+}
+
+/* L'ombre du style du cadran héros et des planches (SVG) est pilotée
+   par main.js/cadran.js sur l'attribut style (rotate), même variable. */
+
+/* ==== 6. COMPOSANTS ===================================================== */
+
+/* --- Header --------------------------------------------------------- */
+.entete {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: color-mix(in srgb, var(--chaux) 94%, transparent);
+  border-bottom: var(--filet-fin) solid color-mix(in srgb, var(--bleu-charrette) 45%, transparent);
+}
+.entete-barre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+  padding-block: 14px;
+}
+.marque {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-decoration: none;
+  color: var(--bistre);
+}
+.marque-nom {
+  font-family: var(--f-serif);
+  font-size: 1.25rem;
+  font-weight: 560;
+  font-variation-settings: "opsz" 40, "SOFT" 0, "WONK" 1;
+  line-height: 1;
+  white-space: nowrap;
+}
+.marque-base { color: var(--encre-seconde); font-size: 0.6875rem; white-space: nowrap; }
+@media (max-width: 479px) { .marque-base { display: none; } }
+
+.nav-principale ul {
+  display: flex;
+  gap: var(--esp-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.nav-principale a {
+  font-family: var(--f-mono);
+  font-size: var(--t-mono-label);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  color: var(--bleu-charrette);
+  padding-block: 6px;
+  border-bottom: var(--filet-peint) solid transparent;
+  transition: color var(--d-micro) var(--ease-micro);
+}
+.nav-principale a:hover { color: var(--bistre); }
+.nav-principale a[aria-current="page"] {
+  color: var(--bistre);
+  border-bottom-color: var(--ocre-lumiere);
+}
+
+.bouton-menu {
+  display: none;
+  background: none;
+  border: var(--filet-trace) solid var(--bistre);
+  padding: 9px 14px;
+  font-family: var(--f-mono);
+  font-size: var(--t-mono-label);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bistre);
+  cursor: pointer;
+}
+
+/* 1024–1279 px : la nav reste, le CTA descend dans la page (hero + footer). */
+@media (max-width: 1279px) {
+  .entete .btn { display: none; }
+}
+@media (max-width: 1023px) {
+  .nav-principale { display: none; }
+  .bouton-menu { display: inline-block; }
+}
+
+/* Nav mobile : un contrevent qui glisse. */
+.nav-mobile {
+  border: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  background: var(--chaux);
+  color: var(--bistre);
+}
+.nav-mobile::backdrop { background: rgba(28, 26, 23, 0.35); }
+.nav-mobile-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-4);
+  padding: var(--esp-4) var(--marge) var(--esp-5);
+  min-height: 100%;
+}
+.nav-mobile-haut { display: flex; justify-content: space-between; align-items: center; }
+.nav-mobile ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--esp-3); }
+.nav-mobile ul a {
+  font-family: var(--f-serif);
+  font-size: var(--t-soustitre);
+  font-weight: 540;
+  font-variation-settings: "opsz" 72, "SOFT" 0, "WONK" 0;
+  color: var(--bistre);
+  text-decoration: none;
+}
+.nav-mobile ul a[aria-current="page"] { color: var(--ocre-encre); }
+
+/* --- Boutons --------------------------------------------------------- */
+.btn {
+  display: inline-block;
+  padding: 14px 28px;
+  font-family: var(--f-mono);
+  font-size: var(--t-mono-label);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 0;
+  position: relative;
+  transition: background-color var(--d-micro) var(--ease-micro),
+              color var(--d-micro) var(--ease-micro);
+}
+.btn-plein {
+  background: var(--ocre-encre);
+  color: var(--chaux);
+  border-bottom: var(--filet-peint) solid var(--bistre); /* le socle du gnomon */
+}
+.btn-plein::after { /* le seul bouton du site qui possède une ombre */
+  content: "";
+  position: absolute;
+  left: 8px;
+  bottom: calc(-1 * var(--filet-peint) - 2px);
+  width: 36%;
+  height: 2px;
+  background: var(--ocre-lumiere);
+  transform-origin: left center;
+  transform: rotate(calc(var(--sun-angle) * 0.06deg));
+  transition: width var(--d-micro) var(--ease-micro);
+}
+.btn-plein:hover { background: var(--bistre); }
+.btn-plein:hover::after { width: 62%; }
+.btn-fantome {
+  background: transparent;
+  color: var(--bistre);
+  border: var(--filet-trace) solid var(--bistre);
+}
+.btn-fantome:hover { background: var(--chaux-creuse); }
+
+/* --- Liens ----------------------------------------------------------- */
+a { color: var(--ocre-encre); }
+.corps a, p a {
+  color: var(--ocre-encre);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-thickness var(--d-micro) var(--ease-micro);
+}
+.corps a:hover, p a:hover { text-decoration-thickness: 3px; }
+
+.lien-fleche {
+  display: inline-block;
+  font-family: var(--f-mono);
+  font-size: var(--t-mono-data);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--ocre-encre);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-thickness var(--d-micro) var(--ease-micro);
+}
+.lien-fleche:hover { text-decoration-thickness: 3px; }
+
+/* --- Cartes-planches -------------------------------------------------- */
+.carte-planche {
+  background: var(--chaux-creuse);
+  background-image: radial-gradient(120% 90% at 15% 8%, rgba(200, 149, 31, 0.05), transparent 60%);
+  border: var(--filet-trace) solid var(--bleu-charrette);
+  outline: var(--filet-fin) solid var(--gris-ombre);
+  outline-offset: 4px;
+  padding: var(--esp-3);
+  transition: transform var(--d-micro) var(--ease-micro);
+}
+a.carte-planche { display: block; text-decoration: none; color: var(--bistre); }
+a.carte-planche:hover { transform: translate(2px, -2px); }
+
+/* --- Tableaux de specs ------------------------------------------------ */
+.table-specs { width: 100%; border-collapse: collapse; }
+.table-specs caption {
+  text-align: left;
+  margin-bottom: var(--esp-2);
+  font-size: var(--t-petit);
+  color: var(--encre-seconde);
+}
+.table-specs th {
+  font-family: var(--f-mono);
+  font-size: var(--t-mono-label);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 10px 12px 10px 0;
+  border-bottom: var(--filet-trace) solid var(--bleu-charrette);
+}
+.table-specs td {
+  font-family: var(--f-mono);
+  font-size: var(--t-mono-data);
+  font-variant-numeric: tabular-nums;
+  padding: 10px 12px 10px 0;
+  border-bottom: var(--filet-fin) solid color-mix(in srgb, var(--bleu-charrette) 35%, transparent);
+}
+.table-specs td.nombre, .table-specs th.nombre { text-align: right; padding-right: 0; }
+.defilement-x { overflow-x: auto; }
+
+/* --- Listes mono ------------------------------------------------------ */
+.liste-mono { list-style: none; margin: 0 0 var(--esp-3); padding: 0; display: grid; gap: 6px; }
+.liste-mono li { color: var(--encre-seconde); }
+
+/* --- Formulaires ------------------------------------------------------ */
+.champ { display: grid; gap: 8px; margin-bottom: var(--esp-3); }
+.champ label {
+  font-family: var(--f-mono);
+  font-size: var(--t-mono-label);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bistre);
+}
+.champ input, .champ select, .champ textarea {
+  font-family: var(--f-serif);
+  font-size: var(--t-courant);
+  font-variation-settings: "opsz" 14, "SOFT" 0, "WONK" 0;
+  color: var(--bistre);
+  background: var(--chaux);
+  border: var(--filet-trace) solid var(--bleu-charrette);
+  border-radius: 0;
+  padding: 12px 14px;
+  width: 100%;
+}
+.champ input::placeholder, .champ textarea::placeholder { color: var(--encre-seconde); opacity: 1; }
+.champ input:focus-visible, .champ select:focus-visible, .champ textarea:focus-visible {
+  border-color: var(--ocre-encre);
+  outline: 2px solid var(--bleu-charrette);
+  outline-offset: 2px;
+}
+.champ-erreur {
+  display: none;
+  color: var(--sang);
+  font-size: var(--t-petit);
+  border-left: var(--filet-peint) solid var(--sang);
+  padding-left: 10px;
+}
+.champ.est-invalide input, .champ.est-invalide select, .champ.est-invalide textarea { border-color: var(--sang); }
+.champ.est-invalide .champ-erreur { display: block; }
+.champ-note { font-size: var(--t-petit); color: var(--encre-seconde); margin: 0; }
+.champ-consentement { display: flex; gap: 12px; align-items: flex-start; }
+.champ-consentement input { width: auto; margin-top: 4px; accent-color: var(--ocre-encre); }
+.champ-consentement label { text-transform: none; letter-spacing: 0; font-family: var(--f-serif); font-size: var(--t-petit); font-weight: 400; }
+
+.form-succes {
+  border: var(--filet-trace) solid var(--bleu-charrette);
+  padding: var(--esp-4);
+  background: var(--chaux-creuse);
+}
+
+/* --- Glossaire inline (dfn + tooltip accessible) ---------------------- */
+.glose {
+  font-style: normal;
+  color: var(--ocre-encre);
+  text-decoration: underline dotted 1px;
+  text-underline-offset: 3px;
+  cursor: help;
+  position: relative;
+}
+.infobulle {
+  position: absolute;
+  z-index: 200;
+  max-width: 34ch;
+  background: var(--bistre);
+  color: var(--chaux);
+  border: var(--filet-fin) solid var(--gris-ombre);
+  padding: 12px 14px;
+  font-size: var(--t-petit);
+  font-style: normal;
+  line-height: 1.5;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 160ms var(--ease-micro), transform 160ms var(--ease-micro), visibility 160ms;
+  transform: translateY(4px);
+}
+.infobulle.est-visible { opacity: 1; visibility: visible; transform: translateY(0); }
+.infobulle .mono-label { display: block; color: var(--ocre-nuit); margin-bottom: 4px; }
+
+/* --- Fil d'Ariane ----------------------------------------------------- */
+.ariane { margin-top: var(--esp-3); }
+.ariane ol { display: flex; gap: 8px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap; }
+.ariane li {
+  font-family: var(--f-mono);
+  font-size: var(--t-mono-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--encre-seconde);
+}
+.ariane li + li::before { content: "›"; margin-right: 8px; color: var(--gris-ombre); }
+.ariane a { color: var(--bleu-charrette); text-decoration: none; }
+.ariane a:hover { text-decoration: underline; }
+
+/* --- Footer : le mur nocturne ---------------------------------------- */
+.pied {
+  margin-top: var(--esp-7);
+  background: var(--nuit);
+  background-image:
+    radial-gradient(120% 90% at 15% 8%, rgba(176, 138, 62, 0.05), transparent 60%),
+    radial-gradient(100% 120% at 50% 100%, rgba(74, 112, 134, 0.06), transparent 65%);
+  color: var(--chaux);
+  padding-block: var(--esp-6) var(--esp-4);
+}
+.pied-grille {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: var(--esp-5);
+  align-items: start;
+}
+@media (max-width: 900px) { .pied-grille { grid-template-columns: 1fr; gap: var(--esp-4); } }
+.pied h2 { font-size: var(--t-soustitre); margin: 0 0 var(--esp-2); font-weight: 540; font-variation-settings: "opsz" 72, "SOFT" 0, "WONK" 0; }
+.pied .t-devise { color: var(--encre-seconde-nuit); }
+.pied ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.pied a { color: var(--bleu-nuit); text-decoration: none; }
+.pied a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.pied .btn-plein { background: var(--ocre-nuit); color: var(--nuit); border-bottom-color: var(--ocre-desat); }
+.pied .btn-plein:hover { background: var(--chaux); }
+.pied .mono-label { color: var(--encre-seconde-nuit); }
+.pied .mono-data { color: var(--encre-seconde-nuit); }
+.pied-bas {
+  margin-top: var(--esp-5);
+  padding-top: var(--esp-3);
+  border-top: var(--filet-fin) solid var(--bleu-nuit-filet);
+  display: grid;
+  gap: 8px;
+}
+.analemme-footer { width: 120px; height: auto; margin-bottom: var(--esp-2); }
+
+/* ==== 7. PAGES ========================================================== */
+
+/* --- 7.1 Accueil ------------------------------------------------------
+   PIVOTS : (1) #cadran-ombre [JS temps réel — PAS --sun-angle],
+   (2) h1 .porte-ombre::after, (3) .gnomon-marge::after (manifeste),
+   (4) .btn-plein::after du CTA final. Total : 4. */
+.hero { padding-block: var(--esp-5) var(--esp-6); }
+.hero-grille {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--esp-5) var(--esp-4);
+  align-items: center;
+}
+@media (max-width: 900px) { .hero-grille { grid-template-columns: 1fr; } }
+.hero-titre .t-display { margin-block: var(--esp-3); }
+.hero-sous {
+  font-size: var(--t-soustitre);
+  font-weight: 460;
+  font-optical-sizing: none;
+  font-variation-settings: "opsz" 40, "SOFT" 20, "WONK" 0;
+  line-height: 1.35;
+  max-width: 46ch;
+}
+.hero-actions { display: flex; gap: var(--esp-2); flex-wrap: wrap; margin-top: var(--esp-4); align-items: center; }
+
+.cadran-cadre { position: relative; }
+.cadran-cadre .cadran-svg { display: block; width: 100%; aspect-ratio: 760 / 600; }
+/* Bascule nocturne : même boîte, calques permutés, jamais la hauteur. */
+.cadran-cadre.est-nuit { background: var(--nuit); }
+.cadran-cadre.est-nuit .cadran-svg { filter: none; }
+.cadran-etiquettes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px var(--esp-3);
+  margin-top: var(--esp-2);
+  color: var(--encre-seconde);
+}
+.cadran-etiquettes [data-live] { min-width: 26ch; }
+.cadran-legende { font-size: var(--t-petit); color: var(--encre-seconde); margin-top: var(--esp-2); }
+.cadran-outils { display: flex; flex-wrap: wrap; gap: var(--esp-2); margin-top: var(--esp-2); align-items: baseline; }
+.cadran-outils .champ-note { max-width: 40ch; }
+.lien-discret {
+  background: none; border: 0; padding: 0; cursor: pointer;
+  font-family: var(--f-mono); font-size: var(--t-mono-label); font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--bleu-charrette); text-decoration: underline; text-underline-offset: 3px;
+}
+.lien-discret:hover { color: var(--bistre); }
+
+.manifeste-mono { display: grid; gap: 6px; margin-top: var(--esp-4); }
+
+.vitrines { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gouttiere); margin-block: var(--esp-4); }
+@media (max-width: 900px) { .vitrines { grid-template-columns: 1fr; } }
+.vitrine h3 { font-size: var(--t-soustitre); margin: 0 0 var(--esp-1); font-weight: 540; font-variation-settings: "opsz" 72, "SOFT" 0, "WONK" 0; }
+.vitrine .mono-data { color: var(--encre-seconde); display: block; margin-bottom: var(--esp-2); }
+.vitrine p { margin-bottom: 0; font-size: var(--t-petit); }
+
+.parcours-jalons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-2) var(--esp-3);
+  padding: 0;
+  margin: var(--esp-4) 0;
+  list-style: none;
+}
+.parcours-jalons li { color: var(--bleu-charrette); }
+.parcours-jalons li::after { content: "→"; margin-left: var(--esp-3); color: var(--gris-ombre); }
+.parcours-jalons li:last-child::after { content: ""; }
+
+.cta-final { text-align: left; }
+.cta-final .mono-label { display: block; color: var(--encre-seconde); margin-block: var(--esp-3) var(--esp-2); }
+
+/* --- 7.2 Savoir-faire --------------------------------------------------
+   PIVOTS : (1) h1 .porte-ombre::after, (2) .gnomon-marge::after,
+   (3) ombre du geste actif (barre latérale), (4) CTA. Total : 4. */
+.gestes { display: grid; gap: var(--esp-6); margin-top: var(--esp-5); }
+.geste {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--esp-4);
+  align-items: start;
+}
+@media (max-width: 900px) { .geste { grid-template-columns: 1fr; } }
+.geste-numero {
+  font-family: var(--f-mono);
+  font-size: var(--t-mono-label);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--encre-seconde);
+  display: block;
+  margin-bottom: var(--esp-2);
+}
+.geste h3 { margin: 0 0 var(--esp-2); }
+.geste-legende { display: block; margin-top: var(--esp-2); color: var(--encre-seconde); }
+.geste-figure { border-left: var(--filet-trace) solid var(--bleu-charrette); padding-left: var(--esp-3); }
+.geste-figure svg { width: 100%; height: auto; }
+
+.simulateur {
+  border: var(--filet-trace) solid var(--bleu-charrette);
+  outline: var(--filet-fin) solid var(--gris-ombre);
+  outline-offset: 4px;
+  background: var(--chaux-creuse);
+  padding: var(--esp-4);
+  margin-top: var(--esp-4);
+}
+.simulateur-grille { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--esp-4); align-items: start; }
+@media (max-width: 900px) { .simulateur-grille { grid-template-columns: 1fr; } }
+.simulateur svg { width: 100%; height: auto; display: block; }
+.simulateur-lectures { display: grid; gap: 10px; margin-top: var(--esp-3); }
+.simulateur-lectures .valeur { color: var(--sang); }
+.curseur-bloc { display: grid; gap: 10px; margin-block: var(--esp-3); }
+input[type="range"].curseur {
+  width: 100%;
+  appearance: none;
+  height: 2px;
+  background: var(--bleu-charrette);
+  outline-offset: 6px;
+}
+input[type="range"].curseur::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--ocre-encre);
+  border: 2px solid var(--chaux);
+  cursor: ew-resize;
+}
+input[type="range"].curseur::-moz-range-thumb {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--ocre-encre);
+  border: 2px solid var(--chaux);
+  cursor: ew-resize;
+}
+
+.honnetete {
+  border-left: var(--filet-peint) solid var(--sang);
+  padding-left: var(--esp-3);
+}
+.honnetete .mono-label { color: var(--sang); }
+
+.glossaire dl { margin: 0; display: grid; gap: var(--esp-3); grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 900px) { .glossaire dl { grid-template-columns: 1fr; } }
+.glossaire dt { font-weight: 560; font-variation-settings: "opsz" 40, "SOFT" 0, "WONK" 0; }
+.glossaire dt .mono-label { color: var(--encre-seconde); margin-left: 8px; }
+.glossaire dd { margin: 4px 0 0; font-size: var(--t-petit); max-width: 52ch; }
+.glossaire-entree { break-inside: avoid; }
+
+/* --- 7.3 Créations -----------------------------------------------------
+   PIVOTS : (1) h1 .porte-ombre::after, (2) ombre du style de la planche
+   survolée (SVG, rotation lente), (3) CTA. Total : 3. */
+.fiches { display: grid; gap: var(--esp-7); margin-top: var(--esp-5); }
+.fiche {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--esp-4);
+  align-items: start;
+}
+.fiche:nth-child(even) { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+.fiche:nth-child(even) .fiche-planche { order: 2; }
+@media (max-width: 900px) {
+  .fiche, .fiche:nth-child(even) { grid-template-columns: 1fr; }
+  .fiche:nth-child(even) .fiche-planche { order: 0; }
+}
+.fiche-planche {
+  background: var(--chaux-creuse);
+  border: var(--filet-trace) solid var(--bleu-charrette);
+  outline: var(--filet-fin) solid var(--gris-ombre);
+  outline-offset: 4px;
+  padding: var(--esp-2);
+}
+.fiche-planche svg { display: block; width: 100%; height: auto; }
+.fiche h2 { margin-bottom: var(--esp-1); }
+.fiche-typologie { display: block; color: var(--encre-seconde); margin-bottom: var(--esp-3); }
+.fiche-devise { margin: var(--esp-3) 0 var(--esp-1); }
+.fiche-traduction { display: block; color: var(--encre-seconde); margin-bottom: var(--esp-3); }
+.fiche-specs { display: grid; gap: 5px; margin-block: var(--esp-3); padding: 0; list-style: none; color: var(--encre-seconde); }
+
+/* --- 7.4 L'Atelier -----------------------------------------------------
+   PIVOTS : (1) h1, (2) gnomon de marge du récit, (3) CTA. Total : 3. */
+.recit { max-width: var(--mesure); }
+.recit-mono { display: grid; gap: 6px; margin-top: var(--esp-4); color: var(--encre-seconde); }
+.doctrine { font-weight: 600; }
+
+.mains { display: grid; grid-template-columns: 1fr 1fr; gap: var(--esp-5); margin-top: var(--esp-5); }
+@media (max-width: 900px) { .mains { grid-template-columns: 1fr; } }
+.main-portrait h3 { margin: 0 0 4px; }
+.main-portrait .mono-label { display: block; color: var(--encre-seconde); margin-bottom: var(--esp-2); }
+.mains-ligne { margin-top: var(--esp-4); font-style: italic; }
+
+.carnet { display: grid; gap: var(--esp-4); margin-top: var(--esp-4); }
+.carnet-extrait {
+  border-left: var(--filet-trace) solid var(--bleu-charrette);
+  padding-left: var(--esp-3);
+}
+.carnet-extrait .mono-label { display: block; color: var(--encre-seconde); margin-bottom: var(--esp-2); }
+.carnet-extrait p { font-style: italic; margin-bottom: 0; }
+
+/* --- 7.5 Méthode & tarifs ---------------------------------------------
+   PIVOTS : (1) h1, (2) CTA. Total : 2 — page de confiance, pas de spectacle. */
+.etapes { counter-reset: etape; display: grid; gap: var(--esp-5); margin-top: var(--esp-5); }
+.etape {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: var(--esp-3) var(--esp-4);
+}
+@media (max-width: 900px) { .etape { grid-template-columns: 1fr; } }
+.etape-entete .mono-label { color: var(--encre-seconde); display: block; margin-bottom: var(--esp-1); }
+.etape h3 { margin: 0; }
+.etape-livrable { display: block; margin-top: var(--esp-2); color: var(--bleu-charrette); }
+
+.demarches { display: grid; grid-template-columns: 1fr 1fr; gap: var(--esp-4) var(--esp-5); margin-top: var(--esp-4); }
+@media (max-width: 900px) { .demarches { grid-template-columns: 1fr; } }
+.demarches h3 { margin: 0 0 var(--esp-2); }
+.demarches p { margin-bottom: 0; font-size: var(--t-petit); }
+
+.prix { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gouttiere); margin-top: var(--esp-4); }
+@media (max-width: 900px) { .prix { grid-template-columns: 1fr; } }
+.prix-carte {
+  border: var(--filet-trace) solid var(--bleu-charrette);
+  outline: var(--filet-fin) solid var(--gris-ombre);
+  outline-offset: 4px;
+  background: var(--chaux-creuse);
+  padding: var(--esp-3);
+  display: grid;
+  gap: var(--esp-2);
+  align-content: start;
+}
+.prix-carte h3 { margin: 0; font-size: var(--t-soustitre); }
+.prix-carte .mono-label { color: var(--encre-seconde); }
+.prix-carte p { font-size: var(--t-petit); margin: 0; }
+.prix-montant { color: var(--ocre-encre); font-weight: 500; }
+.prix-note { margin-top: var(--esp-3); font-size: var(--t-petit); color: var(--encre-seconde); }
+
+.faq { display: grid; gap: var(--esp-4); margin-top: var(--esp-4); max-width: var(--mesure); }
+.faq h3 { margin: 0 0 var(--esp-1); font-size: 1.25rem; font-weight: 560; font-variation-settings: "opsz" 40, "SOFT" 0, "WONK" 0; }
+.faq p { margin-bottom: 0; }
+
+/* --- 7.6 Contact -------------------------------------------------------
+   PIVOTS : (1) h1, (2) bouton d'envoi. Total : 2 — quasi statique. */
+.contact-grille { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--esp-6); margin-top: var(--esp-5); }
+@media (max-width: 900px) { .contact-grille { grid-template-columns: 1fr; } }
+.contact-coordonnees { display: grid; gap: 6px; margin-block: var(--esp-3); }
+.mention-fictive {
+  border: var(--filet-trace) solid var(--sang);
+  padding: var(--esp-3);
+  margin-top: var(--esp-4);
+  font-size: var(--t-petit);
+  max-width: 52ch;
+}
+.mention-fictive strong { color: var(--sang); }
+
+/* --- 7.7 404 & Mentions ----------------------------------------------- */
+.page-seule { min-height: 60vh; padding-block: var(--esp-6); }
+.page-seule .liste-liens { list-style: none; padding: 0; display: grid; gap: var(--esp-2); margin-top: var(--esp-4); }
+
+/* ==== 8. MOTION ========================================================= */
+/* États initiaux des reveals — appliqués SEULEMENT si le JS est là
+   (html.a-js) pour ne jamais servir une page vide sans JavaScript. */
+html.a-js [data-reveal] {
+  opacity: 0;
+  clip-path: polygon(-14% 0, 100% 0, 114% 100%, 0 100%);
+}
+html.a-js [data-reveal].est-revele {
+  opacity: 1;
+  clip-path: polygon(-14% -20%, 114% -20%, 114% 120%, -14% 120%);
+  transition: opacity var(--d-reveal) var(--ease-ombre),
+              clip-path var(--d-reveal) var(--ease-ombre);
+}
+html.a-js [data-reveal="2"].est-revele { transition-delay: 90ms; }
+html.a-js [data-reveal="3"].est-revele { transition-delay: 180ms; }
+html.a-js [data-reveal="4"].est-revele { transition-delay: 270ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --sun-angle: 31; }
+  html { scroll-behavior: auto; }
+  html.a-js [data-reveal] { opacity: 1; clip-path: none; transition: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 900px) {
+  body { background-attachment: scroll; }
+  .section { padding-block: var(--esp-6) 0; }
+}
+
+/* Impression : le grain et les ombres ne s'impriment pas. */
+@media print {
+  body::after { display: none; }
+  .entete, .pied, .skip-link { display: none; }
+}

@@ -1,0 +1,12 @@
+# Atelier Méridienne — site fictif (projet d'étude).
+# Le crawl reste OUVERT à dessein : la désindexation est portée par la balise
+# <meta name="robots" content="noindex"> présente sur chaque page.
+# Ne JAMAIS remplacer ce dispositif par « Disallow: / » : un crawl bloqué
+# empêcherait les moteurs de lire la directive noindex, et des URLs pourraient
+# rester indexées « à l'aveugle » (sans description) via des liens externes.
+# Ne jamais bloquer /assets/ : JS et CSS sont nécessaires au rendu des pages.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://atelier-meridienne.fr/sitemap.xml
