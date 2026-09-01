@@ -66,11 +66,12 @@ describe("sidebar", () => {
     expect(useUiStore.getState().sidebarCollapsed).toBe(false);
   });
 
-  it("shows month-to-date spend against the budget", async () => {
+  it("carries no spend meter — that gauge belongs to Spend, not to every screen", () => {
     renderApp(<Sidebar />);
-    expect(await screen.findByText("This month")).toBeInTheDocument();
-    const meter = screen.getByRole("progressbar");
-    expect(Number(meter.getAttribute("aria-valuenow"))).toBeGreaterThanOrEqual(0);
+    expect(screen.queryByText("This month")).not.toBeInTheDocument();
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+    // The one action in the chrome is the product's action.
+    expect(screen.getByRole("button", { name: /run a duel|create/i })).toBeInTheDocument();
   });
 });
 

@@ -57,8 +57,9 @@ left in place as secondary (not removed, not prioritised).
    duel clears sample corpus (announced), `evidenceMode()` helper, conditional
    wording everywhere, computed counts. — **done** (319 tests)
 2. Reveal + loop closure on judging screen; `d` hotkey (Today moved to `g t`). — **done**
-3. Calm Today; remove sidebar budget meter. — **in progress**
-4. Confidence labels + "why this" line.
+3. Calm Today; remove sidebar budget meter. — **done** (a11y/responsive sweep
+   was still running at commit time; result recorded in the next commit)
+4. Confidence labels + "why this" line. — **in progress**
 5. Branding/stale-text sweep.
 6. Provider seam (`DuelRunner`, registry, `priceRun`).
 7. Quality gate, screenshots, docs, push.
@@ -80,27 +81,32 @@ left in place as secondary (not removed, not prioritised).
 
 ## Tests / build status
 
-After cycle 2: 329 tests green, typecheck clean, lint clean. The duels-list
-test that timed out twice under load now queries list items instead of
-computing 72 accessible link names. Build/a11y/responsive re-run after cycle 3
-(layout changes) and in cycle 7.
+After cycle 3: 335 tests green, typecheck clean, lint clean. Today verified
+visually at 1440 dark/light and 390 mobile (model names truncate beside the
+money column; cards no longer stretch to match). a11y + responsive sweep was
+running when cycle 3 was committed — see the next commit for the result.
+Dev server: `npx next dev -p 3000` (log in /tmp/dev.log).
 
-Visual check done on `/duels/d-code-review-1` (cheaper winner) and
-`/duels/d-classification-1` (tie): reveal reads "You picked X, blind." → price
-line → record 8–2 → 9–2 → confidence Leaning → Settled → routing swap + $/mo →
-next-duel buttons. Dev server: `npx next dev -p 3000` (log in /tmp/dev.log).
+Cycle 3 removed `features/dashboard/activity-feed.tsx` (no longer imported)
+and the `formatTime` / `activityBucket` date helpers that only it used.
 
 ## Next action
 
-Cycle 3 — rewrite `src/app/page.tsx` (Today) around three questions:
-1. *What can I do now* — pending queue (max 3 rows) with "Judge", plus the
-   primary "Run a duel" in the header. Empty queue → one calm line + button.
-2. *What has Bench learned* — keep the headline card (mode-aware wording), then
-   ONE list: top 3 actionable routing changes + any reversal. No separate
-   "latest verdicts", no activity feed, no spend tile.
-3. *Does it change how I work* — one line: "N of M kinds of work settled ·
-   $X/mo already avoidable" linking to /verdicts; unsettled task types as
-   inline "run one" links (max 3).
-Also: remove `BudgetMeter` from `src/components/layout/sidebar.tsx` (and now-
-unused imports); add `src/app/today.test.tsx` (example vs own wording, queue
-rows, CTA present, no "Activity" heading); run a11y + responsive afterwards.
+Cycle 4, all in `src/lib/analytics/verdicts.ts` + `src/features/verdicts/`:
+1. Relabel `CONFIDENCE_LABEL`: insufficient → "Early signal", emerging →
+   "Leaning", clear-winner → "Strong evidence", too-close → "No difference".
+   Only consumers are `ConfidenceChip` and `RevealPanel`; tests check
+   truthiness only.
+2. Add `explainVerdict(verdict, models): string` in `verdicts.ts` — one
+   sentence: "Sonnet won 9 of 11 decisive duels; a record like that comes up
+   by chance about 3 times in 100." / "Level across 12 duels, so the cheaper
+   model is recommended." / "N of 5 results so far." Show it as the first
+   line of the expanded `VerdictRow`, and use it in the Verdicts "Your call"
+   caption so a lean says "is ahead" rather than "wins". Unit-test it.
+3. Cycle 5 inventory (branding) and cycle 6 inventory (six copies of the
+   cost-per-run arithmetic) are already listed in this file's audit; the
+   exact locations: topbar fallback, palette export filename + description,
+   use-page-title suffix, globals.css header, settings (filename, import
+   error, About), layout metadata + "workflows" keyword, seed/prompts.ts
+   default value, types.ts header, package.json name; cost maths in
+   duels/new (×2), task-volumes, seed/duels, verdicts.ts, spend.ts.

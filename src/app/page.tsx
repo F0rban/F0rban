@@ -2,35 +2,35 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import {
-  ArrowRight,
-  EqualApproximately,
-  Gavel,
-  Repeat2,
-  Sparkles,
-  Swords,
-  TrendingUp,
-  Trophy,
-} from "lucide-react";
+import { ArrowRight, Gavel, Repeat2, Sparkles, Swords, TrendingUp } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/layout/page-header";
 import { SampleBanner } from "@/components/layout/sample-banner";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Progress } from "@/components/ui/progress";
-import { ProviderMark } from "@/components/ui/provider-mark";
 import { RecordScore, TallyMarks } from "@/components/ui/record";
-import { ActivityFeed } from "@/features/dashboard/activity-feed";
 import { ModelSwap } from "@/features/verdicts/verdict-parts";
 import { useWorkspace } from "@/hooks/use-workspace";
-import { allVerdicts, evidenceCoverage, routingSummary } from "@/lib/analytics/verdicts";
+import {
+  MIN_SAMPLE,
+  allVerdicts,
+  evidenceCoverage,
+  routingSummary,
+  type RoutingSummary,
+  type Verdict,
+} from "@/lib/analytics/verdicts";
 import { evidenceMode } from "@/lib/analytics/evidence";
-import { budgetStatus } from "@/lib/analytics/spend";
 import { TASK_LABEL, TASK_TYPES } from "@/lib/data/seed/duels";
+import type { Duel, Model } from "@/lib/data/types";
 import { formatCurrency, pluralize } from "@/lib/utils/format";
 import { relativeTime } from "@/lib/utils/date";
 import { cn } from "@/lib/utils/cn";
+
+/** Open duels shown before the list folds into a count. */
+const QUEUE_LIMIT = 3;
+/** Routing changes shown before the rest is left to Verdicts. */
+const CHANGES_LIMIT = 3;
 
 function greeting(hour: number): string {
   if (hour < 5) return "Still up";
@@ -42,9 +42,11 @@ function greeting(hour: number): string {
 /**
  * Today.
  *
- * Not a dashboard of everything — a single question ("what needs judging?") and
- * a single answer ("here is what your evidence now says"). The loop is the
- * page: judge what is waiting, read what changed, act on it.
+ * Three questions, in order, and nothing else: what can I do now (the open
+ * duels), what has the evidence learned (the routing changes it supports), and
+ * does it change how I work (how much of the record is settled, and where the
+ * next result would settle it). Spend, activity and the full verdict table
+ * live on their own pages; a home screen that shows everything answers nothing.
  */
 export default function TodayPage() {
   const { workspace, ready } = useWorkspace();
@@ -58,22 +60,20 @@ export default function TodayPage() {
       workspace.taskProfiles,
       TASK_TYPES,
     );
-    const summary = routingSummary(verdicts);
-    const models = new Map(workspace.models.map((m) => [m.id, m]));
     return {
-      verdicts,
-      summary,
-      models,
+      summary: routingSummary(verdicts),
+      models: new Map(workspace.models.map((m) => [m.id, m])),
       coverage: evidenceCoverage(verdicts),
-      pending: workspace.duels.filter((d) => d.status === "pending"),
-      recent: workspace.duels
-        .filter((d) => d.status === "decided")
-        .sort((a, b) => (b.decidedAt ?? "").localeCompare(a.decidedAt ?? ""))
-        .slice(0, 5),
+      pending: workspace.duels
+        .filter((d) => d.status === "pending")
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt)),
       reversals: verdicts.filter((v) => v.reversal),
-      budget: budgetStatus(workspace.spend, workspace.preferences.monthlyBudget, now),
+      // Closest to a verdict first: these are the duels most worth running.
+      unsettled: verdicts
+        .filter((v) => v.confidence === "insufficient" || v.confidence === "emerging")
+        .sort((a, b) => b.sampleSize - a.sampleSize),
     };
-  }, [workspace, now]);
+  }, [workspace]);
 
   const name = workspace?.preferences.displayName?.trim();
   // Every "your" on this page has to be earned. Until the user's first own
@@ -81,13 +81,15 @@ export default function TodayPage() {
   const example = workspace ? evidenceMode(workspace) === "example" : false;
 
   return (
-    <PageContainer>
+    <PageContainer className="max-w-5xl">
       <PageHeader
         title={name ? `${greeting(now.getHours())}, ${name}` : greeting(now.getHours())}
         description={
           data
-            ? `${pluralize(data.coverage.totalDuels, "duel")} judged · ${data.coverage.covered} of ${data.coverage.total} task types settled`
-            : "Loading your record…"
+            ? data.coverage.totalDuels === 0
+              ? "No duels judged yet."
+              : `${pluralize(data.coverage.totalDuels, "duel")} judged · ${data.coverage.covered} of ${data.coverage.total} kinds of work settled`
+            : "Loading the record…"
         }
         actions={
           <Button variant="primary" size="sm" asChild>
@@ -103,342 +105,362 @@ export default function TodayPage() {
 
       {!ready || !data ? (
         <div className="mt-5 space-y-4">
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-64 w-full rounded-xl" />
+          <Skeleton className="h-28 w-full rounded-xl" />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <Skeleton className="h-56 rounded-xl" />
+            <Skeleton className="h-56 rounded-xl" />
+          </div>
         </div>
       ) : (
         <>
-          {/* The headline. One number, and the way to act on it. */}
-          <Link
-            href="/verdicts"
-            className={cn(
-              "group mt-5 flex flex-col gap-4 rounded-xl border border-line bg-surface-1 p-5 shadow-xs",
-              "transition-[border-color,box-shadow] duration-200 hover:border-accent-line hover:shadow-md",
-              "sm:flex-row sm:items-center",
-            )}
-          >
-            <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-accent-line/60 bg-accent-soft text-accent">
-              <TrendingUp className="size-5" />
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-balance text-[19px] font-semibold leading-snug tracking-[-0.02em] text-ink sm:text-[21px]">
-                {example ? "In this worked example, the record says the habit overpays by" : "Your own results say you are overpaying by"}{" "}
-                <span className="text-positive">
-                  {formatCurrency(data.summary.actionableSaving, { maximumFractionDigits: 0 })}
-                </span>{" "}
-                a month.
-              </span>
-              <span className="mt-1.5 block text-[12.5px] leading-relaxed text-ink-3">
-                Across {data.summary.actionable.length} kind
-                {data.summary.actionable.length === 1 ? "" : "s"} of work where a cheaper model
-                already won {example ? "the sample" : "your"} head-to-heads. That is{" "}
-                {formatCurrency(data.summary.actionableSaving * 12, { maximumFractionDigits: 0 })} a
-                year, out of {formatCurrency(data.summary.currentMonthlyCost)} routed today.
-              </span>
-            </span>
-            <span className="flex shrink-0 items-center gap-1.5 text-[12.5px] font-medium text-accent">
-              See the routing table
-              <ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-            </span>
-          </Link>
+          <Headline
+            example={example}
+            summary={data.summary}
+            coverage={data.coverage}
+            pending={data.pending}
+          />
 
-          <div className="mt-4 grid gap-4 lg:grid-cols-3">
-            <div className="min-w-0 space-y-4 lg:col-span-2">
-              {/* The one thing the product asks of you. */}
-              <Card>
-                <CardHeader>
-                  <div>
-                    <CardTitle>Waiting for a verdict</CardTitle>
-                    <p className="mt-0.5 text-xs text-ink-3">
-                      {data.pending.length === 0
-                        ? "Nothing to judge. Run a duel next time a model choice matters."
-                        : "Names and prices stay hidden until you pick."}
-                    </p>
-                  </div>
-                  {data.pending.length > 0 && <Badge tone="accent" dot>{data.pending.length}</Badge>}
-                </CardHeader>
-
-                {data.pending.length === 0 ? (
-                  <div className="flex items-center gap-3 px-4 py-5">
-                    <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-line bg-surface-2 text-ink-4">
-                      <Gavel className="size-4" />
-                    </span>
-                    <p className="min-w-0 flex-1 text-[12.5px] leading-snug text-ink-3">
-                      Your record only grows when you run comparisons. The next time you are about to
-                      pick a model, run it as a duel instead.
-                    </p>
-                    <Button variant="secondary" size="sm" asChild className="shrink-0">
-                      <Link href="/duels/new">Run one</Link>
-                    </Button>
-                  </div>
-                ) : (
-                  <ul className="divide-y divide-line-subtle">
-                    {data.pending.map((duel) => (
-                      <li key={duel.id}>
-                        <Link
-                          href={`/duels/${duel.id}`}
-                          className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-2/60"
-                        >
-                          <span className="grid size-7 shrink-0 place-items-center rounded-lg border border-accent-line bg-accent-soft text-accent">
-                            <Gavel className="size-3.5" />
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-[12.5px] font-medium text-ink">
-                              {duel.title}
-                            </span>
-                            <span className="mt-0.5 block truncate text-[11px] text-ink-4">
-                              {TASK_LABEL[duel.taskType]} · {duel.entries.length} answers ·{" "}
-                              {relativeTime(duel.createdAt, now)}
-                            </span>
-                          </span>
-                          <span className="flex shrink-0 items-center gap-1.5 text-[12px] font-medium text-accent">
-                            Judge
-                            <ArrowRight className="size-3 transition-transform duration-200 group-hover:translate-x-0.5" />
-                          </span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </Card>
-
-              {/* What the evidence changed. */}
-              <Card>
-                <CardHeader>
-                  <div>
-                    <CardTitle>
-                      {example ? "What the example's evidence says" : "What your evidence says now"}
-                    </CardTitle>
-                    <p className="mt-0.5 text-xs text-ink-3">
-                      The routing changes with the biggest gap between habit and record
-                    </p>
-                  </div>
-                  <Button variant="ghost" size="xs" asChild>
-                    <Link href="/verdicts">
-                      All verdicts
-                      <ArrowRight className="size-3" />
-                    </Link>
-                  </Button>
-                </CardHeader>
-                <ul className="divide-y divide-line-subtle">
-                  {data.summary.actionable.slice(0, 3).map((verdict) => {
-                    const leader = verdict.standings[0]!;
-                    return (
-                      <li key={verdict.taskType}>
-                        <Link
-                          href="/verdicts"
-                          className="grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-2/60"
-                        >
-                          <span className="min-w-0">
-                            <span className="flex items-center gap-2">
-                              <span className="truncate text-[12.5px] font-medium text-ink">
-                                {TASK_LABEL[verdict.taskType]}
-                              </span>
-                              <TallyMarks count={leader.wins} label={`${leader.wins} wins`} />
-                              <RecordScore
-                                wins={leader.wins}
-                                losses={leader.losses}
-                                ties={verdict.ties}
-                                size="sm"
-                              />
-                            </span>
-                            <ModelSwap
-                              className="mt-1"
-                              from={verdict.currentModelId ? data.models.get(verdict.currentModelId) : undefined}
-                              to={verdict.recommendedModelId ? data.models.get(verdict.recommendedModelId) : undefined}
-                            />
-                          </span>
-                          <span className="shrink-0 text-right">
-                            <span className="block font-mono text-[14px] font-semibold tabular-nums text-positive">
-                              +{formatCurrency(verdict.monthlyDelta, { maximumFractionDigits: 0 })}
-                            </span>
-                            <span className="block text-[10px] text-ink-4">saved / mo</span>
-                          </span>
-                        </Link>
-                      </li>
-                    );
-                  })}
-
-                  {data.reversals.map((verdict) => (
-                    <li key={`rev-${verdict.taskType}`}>
-                      <Link
-                        href="/verdicts"
-                        className="flex items-start gap-2.5 px-4 py-3 transition-colors hover:bg-surface-2/60"
-                      >
-                        <Repeat2 className="mt-0.5 size-3.5 shrink-0 text-warning" />
-                        <span className="min-w-0">
-                          <span className="block text-[12.5px] font-medium text-ink">
-                            {TASK_LABEL[verdict.taskType]} has flipped
-                          </span>
-                          <span className="mt-0.5 block text-[11.5px] leading-snug text-ink-3">
-                            {data.models.get(verdict.reversal!.previousLeaderId)?.name} led on the
-                            lifetime record, but{" "}
-                            {data.models.get(verdict.reversal!.leaderId)?.name} has won{" "}
-                            {verdict.reversal!.recentWins} of the last {verdict.reversal!.recentOf}.
-                          </span>
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </Card>
-
-              {/* The nudge: the product is only as good as its corpus. */}
-              <Card>
-                <CardHeader>
-                  <div>
-                    <CardTitle>
-                      {example ? "How settled the example record is" : "How settled your record is"}
-                    </CardTitle>
-                    <p className="mt-0.5 text-xs text-ink-3">
-                      {data.coverage.covered} of {data.coverage.total} kinds of work have enough
-                      evidence to route on
-                    </p>
-                  </div>
-                </CardHeader>
-                <div className="p-4">
-                  <Progress
-                    value={data.coverage.covered}
-                    max={data.coverage.total}
-                    label="Task types with a settled verdict"
-                  />
-                  {/* Evidence count, not win/loss: the question here is how
-                      much more judging it takes, not who is ahead. */}
-                  <ul className="mt-3 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
-                    {data.verdicts
-                      .filter((v) => v.confidence === "insufficient" || v.confidence === "emerging")
-                      .slice(0, 4)
-                      .map((verdict) => (
-                        <li key={verdict.taskType}>
-                          <Link
-                            href={`/duels/new?task=${verdict.taskType}`}
-                            className="group flex items-center gap-2.5"
-                          >
-                            <span className="min-w-0 flex-1">
-                              <span className="flex items-center gap-2">
-                                <span className="truncate text-[12px] text-ink-2 transition-colors group-hover:text-ink">
-                                  {TASK_LABEL[verdict.taskType]}
-                                </span>
-                                <TallyMarks
-                                  count={verdict.sampleSize}
-                                  tone="tie"
-                                  label={`${verdict.sampleSize} results so far`}
-                                />
-                              </span>
-                              <span className="mt-1 block text-[10.5px] text-ink-4">
-                                {verdict.sampleSize < 5
-                                  ? `${5 - verdict.sampleSize} more to get past a guess`
-                                  : "level enough that more results would settle it"}
-                              </span>
-                            </span>
-                            <span className="shrink-0 text-[11px] font-medium text-accent opacity-0 transition-opacity group-hover:opacity-100">
-                              Run one
-                            </span>
-                          </Link>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              </Card>
-            </div>
-
-            <div className="min-w-0 space-y-4">
-              {/* Recent verdicts — the record, in motion. */}
-              <Card>
-                <CardHeader>
-                  <div>
-                    <CardTitle>Latest verdicts</CardTitle>
-                    <p className="mt-0.5 text-xs text-ink-3">What you judged, most recent first</p>
-                  </div>
-                </CardHeader>
-                <ul className="divide-y divide-line-subtle">
-                  {data.recent.map((duel) => {
-                    const winner = duel.winnerModelId ? data.models.get(duel.winnerModelId) : null;
-                    return (
-                      <li key={duel.id}>
-                        <Link
-                          href={`/duels/${duel.id}`}
-                          className="flex items-start gap-2.5 px-4 py-2.5 transition-colors hover:bg-surface-2/60"
-                        >
-                          {duel.tie ? (
-                            <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-[5px] border border-line bg-surface-2 text-ink-4">
-                              <EqualApproximately className="size-3" />
-                            </span>
-                          ) : (
-                            <ProviderMark
-                              provider={winner?.provider ?? "other"}
-                              size="xs"
-                              className="mt-0.5"
-                            />
-                          )}
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-[12px] text-ink-2">
-                              {duel.title}
-                            </span>
-                            <span className="mt-0.5 block truncate text-[11px] text-ink-4">
-                              {duel.tie ? "Indistinguishable" : (winner?.name ?? "—")} ·{" "}
-                              {relativeTime(duel.decidedAt ?? duel.createdAt, now)}
-                            </span>
-                          </span>
-                          {!duel.tie && <Trophy className="mt-0.5 size-3 shrink-0 text-accent" />}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </Card>
-
-              {/* Money, compact — the payoff lives on Spend. */}
-              <Link
-                href="/spend"
-                className="group block rounded-xl border border-line bg-surface-1 p-4 shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-line-strong hover:shadow-md"
-              >
-                <p className="flex items-center justify-between text-[10.5px] font-medium uppercase tracking-[0.07em] text-ink-4">
-                  Spend this month
-                  <ArrowRight className="size-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
-                </p>
-                <p className="mt-1.5 font-mono text-[24px] font-semibold tabular-nums tracking-[-0.02em] text-ink">
-                  {formatCurrency(data.budget.spent, { maximumFractionDigits: 0 })}
-                  <span className="text-[12px] font-normal text-ink-4">
-                    {" "}
-                    / {formatCurrency(data.budget.budget, { maximumFractionDigits: 0 })}
-                  </span>
-                </p>
-                <Progress
-                  className="mt-2"
-                  value={data.budget.spent}
-                  max={data.budget.budget}
-                  tone={data.budget.state === "over" ? "negative" : "accent"}
-                  label="Month-to-date spend against budget"
-                />
-                <p className="mt-2 text-[11.5px] text-ink-3">
-                  Forecast {formatCurrency(data.budget.forecast, { maximumFractionDigits: 0 })} ·{" "}
-                  {data.budget.daysLeft} days left
-                </p>
-              </Link>
-
-              <Card className="overflow-hidden">
-                <CardHeader>
-                  <div>
-                    <CardTitle>Activity</CardTitle>
-                    <p className="mt-0.5 text-xs text-ink-3">Everything that happened, in order</p>
-                  </div>
-                </CardHeader>
-                <div className="max-h-[26rem] overflow-y-auto">
-                  <ActivityFeed events={workspace!.activity} limit={14} />
-                </div>
-              </Card>
-
-              <p className="flex items-start gap-2 px-1 text-[11px] leading-relaxed text-ink-4">
-                <Sparkles className="mt-0.5 size-3 shrink-0" />
-                {example
-                  ? "Everything here is computed from the sample duels. Run one of your own and this page becomes your record."
-                  : "Everything here is computed from duels you judged. No vendor benchmark, no shared leaderboard — your work, your record."}
-              </p>
-            </div>
+          <div className="mt-4 grid gap-4 lg:grid-cols-2 lg:items-start">
+            <Queue pending={data.pending} now={now} />
+            <Learned
+              example={example}
+              summary={data.summary}
+              reversals={data.reversals}
+              unsettled={data.unsettled}
+              models={data.models}
+            />
           </div>
+
+          {/* Does it change how I work? One line, and where the next result lands. */}
+          <div className="mt-4 flex flex-col gap-2 rounded-xl border border-line-subtle bg-surface-2/40 px-4 py-3 text-[12px] text-ink-3 sm:flex-row sm:items-center sm:justify-between">
+            <Link href="/verdicts" className="group inline-flex items-center gap-1.5 hover:text-ink">
+              <span className="font-mono font-semibold tabular-nums text-ink">
+                {data.coverage.covered}
+              </span>{" "}
+              of {data.coverage.total} kinds of work settled
+              <ArrowRight className="size-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </Link>
+            {data.unsettled.length > 0 && (
+              <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="text-ink-4">Closest to a verdict:</span>
+                {data.unsettled.slice(0, 3).map((verdict) => (
+                  <Link
+                    key={verdict.taskType}
+                    href={`/duels/new?task=${verdict.taskType}`}
+                    className="inline-flex items-center gap-1 text-accent hover:underline"
+                  >
+                    {TASK_LABEL[verdict.taskType]}
+                    <span className="font-mono text-[10.5px] tabular-nums text-ink-4">
+                      {verdict.sampleSize}
+                    </span>
+                  </Link>
+                ))}
+              </span>
+            )}
+          </div>
+
+          <p className="mt-3 flex items-start gap-2 px-1 text-[11px] leading-relaxed text-ink-4">
+            <Sparkles className="mt-0.5 size-3 shrink-0" />
+            {example
+              ? "Everything here is computed from the sample duels. Run one of your own and this page becomes your record."
+              : "Everything here is computed from duels you judged. No vendor benchmark, no shared leaderboard — your work, your record."}
+          </p>
         </>
       )}
     </PageContainer>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * The one number, or an honest reason there is not one yet. Never "$0": a
+ * record with nothing to change is a different sentence from a record that has
+ * not started.
+ */
+function Headline({
+  example,
+  summary,
+  coverage,
+  pending,
+}: {
+  example: boolean;
+  summary: RoutingSummary;
+  coverage: ReturnType<typeof evidenceCoverage>;
+  pending: Duel[];
+}) {
+  const saving = summary.actionableSaving;
+
+  let icon = TrendingUp;
+  let href = "/verdicts";
+  let title: React.ReactNode;
+  let detail: string;
+  let cta = "See the routing table";
+
+  if (saving > 0) {
+    title = (
+      <>
+        {example
+          ? "In this worked example, the record says the habit overpays by"
+          : "Your own results say you are overpaying by"}{" "}
+        <span className="text-positive">{formatCurrency(saving, { maximumFractionDigits: 0 })}</span>{" "}
+        a month.
+      </>
+    );
+    detail = `Across ${pluralize(summary.actionable.length, "kind")} of work where a cheaper model already won ${example ? "the sample" : "your"} head-to-heads — ${formatCurrency(saving * 12, { maximumFractionDigits: 0 })} a year, out of ${formatCurrency(summary.currentMonthlyCost, { maximumFractionDigits: 0 })} routed today.`;
+  } else if (coverage.totalDuels === 0) {
+    icon = Gavel;
+    href = pending[0] ? `/duels/${pending[0].id}` : "/duels/new";
+    title = "No verdicts yet.";
+    detail = `Judge a duel and the record starts. A verdict settles after ${MIN_SAMPLE} results for a kind of work.`;
+    cta = pending[0] ? "Judge the first one" : "Run the first duel";
+  } else if (coverage.covered === 0) {
+    icon = Gavel;
+    title = `${pluralize(coverage.totalDuels, "duel")} judged, nothing settled yet.`;
+    detail = `Verdicts settle at ${MIN_SAMPLE} results per kind of work. Keep judging — the routing table builds itself.`;
+  } else {
+    title = example ? "The example record agrees with its habits." : "Your record agrees with your habits.";
+    detail = `${coverage.covered} of ${coverage.total} kinds of work settled, and none of them say to switch models.`;
+  }
+
+  const Icon = icon;
+
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "group mt-5 flex flex-col gap-4 rounded-xl border border-line bg-surface-1 p-5 shadow-xs",
+        "transition-[border-color,box-shadow] duration-200 hover:border-accent-line hover:shadow-md",
+        "sm:flex-row sm:items-center",
+      )}
+    >
+      <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-accent-line/60 bg-accent-soft text-accent">
+        <Icon className="size-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-balance text-[19px] font-semibold leading-snug tracking-[-0.02em] text-ink sm:text-[21px]">
+          {title}
+        </span>
+        <span className="mt-1.5 block text-[12.5px] leading-relaxed text-ink-3">{detail}</span>
+      </span>
+      <span className="flex shrink-0 items-center gap-1.5 text-[12.5px] font-medium text-accent">
+        {cta}
+        <ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+      </span>
+    </Link>
+  );
+}
+
+/** What can I do now. The only thing the product asks of you. */
+function Queue({ pending, now }: { pending: Duel[]; now: Date }) {
+  return (
+    <Card>
+      <CardHeader>
+        <div>
+          <CardTitle>Waiting for a verdict</CardTitle>
+          <p className="mt-0.5 text-xs text-ink-3">
+            {pending.length === 0
+              ? "Nothing to judge right now."
+              : "Names and prices stay hidden until you pick."}
+          </p>
+        </div>
+        {pending.length > 0 && (
+          <Badge tone="accent" dot>
+            {pending.length}
+          </Badge>
+        )}
+      </CardHeader>
+
+      {pending.length === 0 ? (
+        <div className="flex items-center gap-3 px-4 py-5">
+          <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-line bg-surface-2 text-ink-4">
+            <Gavel className="size-4" />
+          </span>
+          <p className="min-w-0 flex-1 text-[12.5px] leading-snug text-ink-3">
+            The next time you are about to pick a model, run it as a duel instead.
+          </p>
+          <Button variant="secondary" size="sm" asChild className="shrink-0">
+            <Link href="/duels/new">Run one</Link>
+          </Button>
+        </div>
+      ) : (
+        <>
+          <ul className="divide-y divide-line-subtle">
+            {pending.slice(0, QUEUE_LIMIT).map((duel) => (
+              <li key={duel.id}>
+                <Link
+                  href={`/duels/${duel.id}`}
+                  className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-2/60"
+                >
+                  <span className="grid size-7 shrink-0 place-items-center rounded-lg border border-accent-line bg-accent-soft text-accent">
+                    <Gavel className="size-3.5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[12.5px] font-medium text-ink">
+                      {duel.title}
+                    </span>
+                    <span className="mt-0.5 block truncate text-[11px] text-ink-4">
+                      {TASK_LABEL[duel.taskType]} · {duel.entries.length} answers ·{" "}
+                      {relativeTime(duel.createdAt, now)}
+                    </span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5 text-[12px] font-medium text-accent">
+                    Judge
+                    <ArrowRight className="size-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {pending.length > QUEUE_LIMIT && (
+            <Link
+              href="/duels"
+              className="block border-t border-line-subtle px-4 py-2.5 text-[11.5px] text-ink-3 transition-colors hover:text-ink"
+            >
+              {pending.length - QUEUE_LIMIT} more waiting
+            </Link>
+          )}
+        </>
+      )}
+    </Card>
+  );
+}
+
+/** What has the evidence learned. Routing changes first; reversals beside them. */
+function Learned({
+  example,
+  summary,
+  reversals,
+  unsettled,
+  models,
+}: {
+  example: boolean;
+  summary: RoutingSummary;
+  reversals: Verdict[];
+  unsettled: Verdict[];
+  models: Map<string, Model>;
+}) {
+  const changes = summary.actionable.slice(0, CHANGES_LIMIT);
+  const hasNews = changes.length > 0 || reversals.length > 0;
+
+  return (
+    <Card>
+      <CardHeader>
+        <div>
+          <CardTitle>
+            {hasNews
+              ? example
+                ? "What the example's evidence says"
+                : "What your evidence says"
+              : "Where the next result lands"}
+          </CardTitle>
+          <p className="mt-0.5 text-xs text-ink-3">
+            {hasNews
+              ? "The routing changes with the biggest gap between habit and record"
+              : "Nothing to change yet — these kinds of work are closest to a verdict"}
+          </p>
+        </div>
+        <Button variant="ghost" size="xs" asChild>
+          <Link href="/verdicts">
+            All verdicts
+            <ArrowRight className="size-3" />
+          </Link>
+        </Button>
+      </CardHeader>
+
+      <ul className="divide-y divide-line-subtle">
+        {changes.map((verdict) => {
+          const leader = verdict.standings[0]!;
+          return (
+            <li key={verdict.taskType}>
+              <Link
+                href="/verdicts"
+                className="grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-2/60"
+              >
+                <span className="min-w-0">
+                  <span className="flex items-center gap-2">
+                    <span className="truncate text-[12.5px] font-medium text-ink">
+                      {TASK_LABEL[verdict.taskType]}
+                    </span>
+                    <TallyMarks count={leader.wins} label={`${leader.wins} wins`} />
+                    <RecordScore wins={leader.wins} losses={leader.losses} ties={verdict.ties} size="sm" />
+                  </span>
+                  {/* Block-level and capped, so long model names truncate instead
+                      of running under the money column on a phone. */}
+                  <ModelSwap
+                    className="mt-1 flex max-w-full"
+                    from={verdict.currentModelId ? models.get(verdict.currentModelId) : undefined}
+                    to={verdict.recommendedModelId ? models.get(verdict.recommendedModelId) : undefined}
+                  />
+                </span>
+                <span className="shrink-0 text-right">
+                  <span className="block font-mono text-[14px] font-semibold tabular-nums text-positive">
+                    +{formatCurrency(verdict.monthlyDelta, { maximumFractionDigits: 0 })}
+                  </span>
+                  <span className="block text-[10px] text-ink-4">saved / mo</span>
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+
+        {reversals.map((verdict) => (
+          <li key={`rev-${verdict.taskType}`}>
+            <Link
+              href="/verdicts"
+              className="flex items-start gap-2.5 px-4 py-3 transition-colors hover:bg-surface-2/60"
+            >
+              <Repeat2 className="mt-0.5 size-3.5 shrink-0 text-warning" />
+              <span className="min-w-0">
+                <span className="block text-[12.5px] font-medium text-ink">
+                  {TASK_LABEL[verdict.taskType]} has flipped
+                </span>
+                <span className="mt-0.5 block text-[11.5px] leading-snug text-ink-3">
+                  {models.get(verdict.reversal!.previousLeaderId)?.name} led on the lifetime record,
+                  but {models.get(verdict.reversal!.leaderId)?.name} has won{" "}
+                  {verdict.reversal!.recentWins} of the last {verdict.reversal!.recentOf}.
+                </span>
+              </span>
+            </Link>
+          </li>
+        ))}
+
+        {!hasNews &&
+          unsettled.slice(0, 4).map((verdict) => (
+            <li key={verdict.taskType}>
+              <Link
+                href={`/duels/new?task=${verdict.taskType}`}
+                className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-2/60"
+              >
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-2">
+                    <span className="truncate text-[12.5px] font-medium text-ink">
+                      {TASK_LABEL[verdict.taskType]}
+                    </span>
+                    <TallyMarks
+                      count={verdict.sampleSize}
+                      tone="tie"
+                      label={`${verdict.sampleSize} results so far`}
+                    />
+                  </span>
+                  <span className="mt-0.5 block text-[11px] text-ink-4">
+                    {verdict.sampleSize < MIN_SAMPLE
+                      ? `${MIN_SAMPLE - verdict.sampleSize} more to get past a guess`
+                      : "level enough that more results would settle it"}
+                  </span>
+                </span>
+                <span className="shrink-0 text-[12px] font-medium text-accent">Run one</span>
+              </Link>
+            </li>
+          ))}
+
+        {!hasNews && unsettled.length === 0 && (
+          <li className="px-4 py-5 text-[12.5px] leading-snug text-ink-3">
+            Every kind of work you have judged is settled. Run a duel the next time a model choice
+            matters, and the record keeps checking itself.
+          </li>
+        )}
+      </ul>
+    </Card>
   );
 }

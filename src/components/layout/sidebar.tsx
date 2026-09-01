@@ -5,93 +5,22 @@ import { usePathname } from "next/navigation";
 import { PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
 import { NAVIGATION } from "@/lib/navigation";
 import { useUiStore } from "@/lib/store/ui";
-import { useWorkspace } from "@/hooks/use-workspace";
-import { budgetStatus } from "@/lib/analytics/spend";
-import { formatCurrency } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 import { Logo, Wordmark } from "./logo";
-import { Progress } from "@/components/ui/progress";
 import { Tooltip } from "@/components/ui/tooltip";
 import { KbdGroup } from "@/components/ui/kbd";
-import { Skeleton } from "@/components/ui/skeleton";
 import { QuickCreate } from "./quick-create";
 
 function isActive(pathname: string, href: string): boolean {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
-/** Live budget meter in the sidebar footer — the number you glance at most. */
-function BudgetMeter({ collapsed }: { collapsed: boolean }) {
-  const { workspace, ready } = useWorkspace();
-
-  if (!ready || !workspace) {
-    return collapsed ? null : <Skeleton className="h-11 w-full" />;
-  }
-
-  const status = budgetStatus(workspace.spend, workspace.preferences.monthlyBudget);
-  const tone = status.state === "over" ? "negative" : status.state === "watch" ? "warning" : "accent";
-
-  if (collapsed) {
-    return (
-      <Tooltip
-        side="right"
-        content={
-          <span>
-            {formatCurrency(status.spent)} of {formatCurrency(status.budget)} this month ·{" "}
-            {status.usedPct}%
-          </span>
-        }
-      >
-        <Link
-          href="/spend"
-          aria-label={`Month-to-date spend ${formatCurrency(status.spent)}`}
-          className="mx-auto block w-8"
-        >
-          <Progress
-            value={status.spent}
-            max={status.budget}
-            tone={tone}
-            size="sm"
-            label="Month-to-date spend against budget"
-          />
-        </Link>
-      </Tooltip>
-    );
-  }
-
-  return (
-    <Link
-      href="/spend"
-      className="block rounded-lg border border-line-subtle bg-surface-2/60 px-2.5 py-2 transition-colors hover:border-line hover:bg-surface-2"
-    >
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="text-[10.5px] font-medium uppercase tracking-[0.06em] text-ink-4">
-          This month
-        </span>
-        <span className="font-mono text-[11px] tabular-nums text-ink-3">{status.usedPct}%</span>
-      </div>
-      <div className="mt-1 flex items-baseline gap-1">
-        <span className="font-mono text-[15px] font-semibold tabular-nums tracking-[-0.01em] text-ink">
-          {formatCurrency(status.spent, { maximumFractionDigits: 0 })}
-        </span>
-        <span className="font-mono text-[10.5px] tabular-nums text-ink-4">
-          / {formatCurrency(status.budget, { maximumFractionDigits: 0 })}
-        </span>
-      </div>
-      <Progress
-        className="mt-1.5"
-        value={status.spent}
-        max={status.budget}
-        tone={tone}
-        size="sm"
-        label="Month-to-date spend against budget"
-        marker={status.forecast}
-        markerLabel={`Forecast ${formatCurrency(status.forecast)}`}
-      />
-    </Link>
-  );
-}
-
+/**
+ * The chrome stays quiet: mark, search, the seven destinations, and the one
+ * action. The budget meter that used to sit in the footer belongs to Spend —
+ * a spend gauge in every screen's corner is what a cost dashboard looks like,
+ * and this is not one.
+ */
 export function Sidebar() {
   const pathname = usePathname();
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
@@ -110,7 +39,7 @@ export function Sidebar() {
       <div className={cn("flex h-14 shrink-0 items-center gap-2.5 px-3.5", collapsed && "justify-center px-0")}>
         <Link
           href="/"
-          aria-label="AI Command Center — dashboard"
+          aria-label="Bench — Today"
           className="flex min-w-0 items-center gap-2.5 text-accent"
         >
           <Logo />
@@ -207,8 +136,7 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className={cn("shrink-0 space-y-2 border-t border-line-subtle p-2.5", collapsed && "px-2")}>
-        <BudgetMeter collapsed={collapsed} />
+      <div className={cn("shrink-0 border-t border-line-subtle p-2.5", collapsed && "px-2")}>
         <div className={cn("flex items-center gap-1.5", collapsed && "flex-col")}>
           <QuickCreate collapsed={collapsed} />
           <Tooltip side={collapsed ? "right" : "top"} content={collapsed ? "Expand sidebar" : "Collapse sidebar"}>

@@ -47,11 +47,6 @@ export function formatDate(value: string | Date, style: "short" | "medium" | "da
   return new Intl.DateTimeFormat(LOCALE, { month: "short", day: "numeric", year: "numeric" }).format(date);
 }
 
-export function formatTime(value: string | Date): string {
-  const date = typeof value === "string" ? new Date(value) : value;
-  return new Intl.DateTimeFormat(LOCALE, { hour: "numeric", minute: "2-digit" }).format(date);
-}
-
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
@@ -76,18 +71,6 @@ export function relativeTime(value: string | Date | null, now: Date = new Date()
   if (diff < 7 * DAY) return `${Math.floor(diff / DAY)}d ago`;
   if (diff < 365 * DAY) return formatDate(date, "short");
   return formatDate(date, "medium");
-}
-
-/** Groups a timeline into "Today" / "Yesterday" / "This week" / month buckets. */
-export function activityBucket(value: string, now: Date = new Date()): string {
-  const date = new Date(value);
-  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const diffDays = Math.floor((startToday.getTime() - new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()) / DAY);
-  if (diffDays <= 0) return "Today";
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return "Earlier this week";
-  if (diffDays < 30) return "Earlier this month";
-  return new Intl.DateTimeFormat(LOCALE, { month: "long", year: "numeric" }).format(date);
 }
 
 export function daysBetween(a: Date, b: Date): number {
