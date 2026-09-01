@@ -100,17 +100,14 @@ export function ProjectCard({
               )}
             </p>
           </div>
-          <div className="flex -space-x-1.5">
+          {/* Not overlapped: two-letter monograms are unreadable when a
+              neighbour covers half of them. Overlap is for circular photos. */}
+          <div className="flex gap-1">
             {providers.slice(0, 4).map((provider) => (
-              <ProviderMark
-                key={provider}
-                provider={provider}
-                size="xs"
-                className="ring-2 ring-[var(--surface-1)]"
-              />
+              <ProviderMark key={provider} provider={provider} size="xs" />
             ))}
             {providers.length > 4 && (
-              <span className="grid size-5 place-items-center rounded-[5px] border border-line bg-surface-2 font-mono text-[8.5px] text-ink-4 ring-2 ring-[var(--surface-1)]">
+              <span className="grid size-5 place-items-center rounded-[5px] border border-line bg-surface-2 font-mono text-[8.5px] text-ink-4">
                 +{providers.length - 4}
               </span>
             )}

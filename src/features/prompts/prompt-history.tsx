@@ -55,7 +55,7 @@ export function PromptHistory({ prompt }: { prompt: Prompt }) {
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,15rem)_minmax(0,1fr)]">
+    <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,14rem)_minmax(0,1fr)]">
       <ol className="space-y-1">
         {entries.map((entry) => {
           const entryStat = entry.current

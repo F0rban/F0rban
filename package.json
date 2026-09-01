@@ -14,7 +14,8 @@
     "check": "npm run typecheck && npm run test && npm run build",
     "a11y": "node scripts/a11y.mjs",
     "screenshots": "node scripts/screenshot.mjs",
-    "deadcode": "knip"
+    "deadcode": "knip",
+    "responsive": "node scripts/responsive.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "1.1.23",

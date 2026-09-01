@@ -203,6 +203,7 @@ Settings can export it as JSON, import it back, or reset to the sample data.
 | `npm run lint` | ESLint |
 | `npm run check` | typecheck → tests → build |
 | `npm run a11y` | axe scan over every route, both themes (needs `npm run dev`) |
+| `npm run responsive` | Horizontal-overflow sweep, 8 widths × 9 routes (needs `npm run dev`) |
 | `npm run deadcode` | knip scan for unused files, exports and dependencies |
 | `npm run screenshots` | Regenerate the captures in `screenshots/` |
 

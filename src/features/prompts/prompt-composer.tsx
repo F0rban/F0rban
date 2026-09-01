@@ -51,8 +51,8 @@ export function PromptComposer({ prompt }: { prompt: Prompt }) {
   };
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
-      <div className="space-y-3">
+    <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,19rem)_minmax(0,1fr)]">
+      <div className="min-w-0 space-y-3">
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-[11px] font-semibold uppercase tracking-[0.09em] text-ink-4">
             Variables
@@ -163,7 +163,7 @@ export function PromptComposer({ prompt }: { prompt: Prompt }) {
         )}
       </div>
 
-      <div className="flex min-h-0 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-col">
         <div className="mb-2 flex items-center justify-between gap-2">
           <h3 className="text-[11px] font-semibold uppercase tracking-[0.09em] text-ink-4">
             Preview
@@ -185,7 +185,7 @@ export function PromptComposer({ prompt }: { prompt: Prompt }) {
           </div>
         </div>
 
-        <div className="relative min-h-64 flex-1 overflow-auto rounded-lg border border-line bg-surface-2/40 p-3 lg:min-h-[26rem]">
+        <div className="relative min-h-64 flex-1 overflow-auto rounded-lg border border-line bg-surface-2/40 p-3 xl:min-h-[26rem]">
           <pre className="whitespace-pre-wrap break-words font-mono text-[11.5px] leading-[1.65] text-ink-2">
             {segments.map((segment, index) =>
               segment.kind === "text" ? (
@@ -211,17 +211,17 @@ export function PromptComposer({ prompt }: { prompt: Prompt }) {
           </pre>
         </div>
 
-        <div className="mt-3 flex items-center gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1.5">
           <Button variant="primary" size="sm" onClick={onCopy}>
             {copied ? <Check className="size-3.5" strokeWidth={3} /> : <Copy className="size-3.5" />}
             {copied ? "Copied" : "Copy prompt"}
           </Button>
           {result.missing.length > 0 && (
-            <span className="text-[11.5px] text-warning">
+            <span className="min-w-0 flex-1 truncate text-[11.5px] text-warning">
               {result.missing.map((name) => `{{${name}}}`).join(", ")} still empty
             </span>
           )}
-          <span className="ml-auto flex items-center gap-1.5 text-[11px] text-ink-4">
+          <span className="ml-auto flex shrink-0 items-center gap-1.5 text-[11px] text-ink-4">
             <Play className="size-3" />
             Used {formatNumber(prompt.useCount)}×
           </span>
