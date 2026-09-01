@@ -52,6 +52,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     if (ready && workspace) applyTheme(workspace.preferences.theme);
   }, [ready, workspace?.preferences.theme]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Density and motion preferences are attributes on the root, so a single
+  // CSS rule covers every component rather than threading props everywhere.
+  useEffect(() => {
+    if (!ready || !workspace) return;
+    const root = document.documentElement;
+    root.toggleAttribute("data-reduce-motion", workspace.preferences.reduceMotion);
+    root.dataset.density = workspace.preferences.compactDensity ? "compact" : "default";
+  }, [ready, workspace?.preferences.reduceMotion, workspace?.preferences.compactDensity]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const needsOnboarding = ready && workspace !== null && !workspace.preferences.onboardingComplete;
 
   return (

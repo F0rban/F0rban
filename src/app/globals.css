@@ -286,6 +286,33 @@
       scroll-behavior: auto !important;
     }
   }
+
+  /* Same escape hatch, driven by the in-app preference rather than the OS. */
+  :root[data-reduce-motion] *,
+  :root[data-reduce-motion] *::before,
+  :root[data-reduce-motion] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Compact density: one rule tightens every list row, table cell and card
+     body rather than every component carrying a size prop. */
+  :root[data-density="compact"] {
+    td,
+    th {
+      padding-block: 0.25rem;
+    }
+
+    li > a,
+    li > button,
+    li > div {
+      &.py-2\.5 {
+        padding-block: 0.35rem;
+      }
+    }
+  }
 }
 
 @layer utilities {
