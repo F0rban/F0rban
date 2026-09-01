@@ -8,7 +8,7 @@ import { formatCompact, formatDuration } from "@/lib/utils/format";
 import { cn } from "@/lib/utils/cn";
 import { METRIC_KEYS, compareColor } from "./model-meta";
 import type { Standing } from "@/lib/analytics/verdicts";
-import { FormStrip, RecordScore, TallyMarks } from "@/components/ui/record";
+import { FormStrip, RecordScore, TALLY_LIMIT, TallyMarks } from "@/components/ui/record";
 
 /** Five-bar capability glyph. Reads as a shape before it reads as data. */
 function ScoreBars({ model }: { model: Model }) {
@@ -85,7 +85,10 @@ export function ModelRow({
             <span className="truncate text-[12.5px] font-medium text-ink">{model.name}</span>
             {model.favorite && <Star className="size-3 shrink-0 fill-accent text-accent" />}
             {strengths.length > 0 && (
-              <span className="hidden shrink-0 rounded-[3px] bg-accent-soft px-1 text-[9.5px] font-medium text-accent sm:inline">
+              <span
+                className="hidden shrink-0 rounded-[3px] bg-accent-soft px-1 text-[9.5px] font-medium text-accent sm:inline"
+                title={`Recommended for ${strengths.join(", ").replace(/-/g, " ")}`}
+              >
                 your pick for {strengths.length}
               </span>
             )}
@@ -115,7 +118,12 @@ export function ModelRow({
             }
           >
             <span className="hidden items-center gap-2 sm:flex">
-              <TallyMarks count={record.wins} label={`${record.wins} wins`} />
+              {/* Strokes while a count is small enough to read as strokes;
+                  past that the score alone carries it, without a bare number
+                  sitting beside the same number. */}
+              {record.wins <= TALLY_LIMIT && (
+                <TallyMarks count={record.wins} label={`${record.wins} wins`} />
+              )}
               <RecordScore wins={record.wins} losses={record.losses} ties={record.ties} size="sm" />
               <FormStrip form={record.form} />
             </span>

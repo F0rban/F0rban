@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils/cn";
  */
 
 /** Above this many results, counting strokes stops being legible. */
-const TALLY_LIMIT = 16;
+export const TALLY_LIMIT = 16;
 
 export function TallyMarks({
   count,

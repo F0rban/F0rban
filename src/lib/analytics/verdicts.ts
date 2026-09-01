@@ -375,9 +375,20 @@ export function modelRecord(duels: Duel[], modelId: string): Standing | null {
   return standingsFor(relevant).find((s) => s.modelId === modelId) ?? null;
 }
 
-/** Which task types this model is the recommendation for. */
+/**
+ * Task types this model is the recommendation for.
+ *
+ * Settled verdicts only — a lean is a candidate, not a badge, and counting them
+ * would put "your pick" on almost every model.
+ */
 export function modelStrengths(verdicts: Verdict[], modelId: string): TaskType[] {
-  return verdicts.filter((v) => v.recommendedModelId === modelId).map((v) => v.taskType);
+  return verdicts
+    .filter(
+      (v) =>
+        v.recommendedModelId === modelId &&
+        (v.confidence === "clear-winner" || v.confidence === "too-close"),
+    )
+    .map((v) => v.taskType);
 }
 
 /**

@@ -314,3 +314,16 @@ describe("evidenceCoverage", () => {
     expect(coverage.totalDuels).toBe(workspace.duels.filter((d) => d.status === "decided").length);
   });
 });
+
+describe("modelStrengths", () => {
+  it("counts only settled recommendations, not leans", () => {
+    const strengths = modelStrengths(verdicts, "m-gemini-3-pro");
+    // Gemini leads research synthesis 5-2, which is a lean rather than settled.
+    expect(byType("research-synthesis").confidence).toBe("emerging");
+    expect(strengths).not.toContain("research-synthesis");
+  });
+
+  it("includes a recommendation made on price when the record is level", () => {
+    expect(modelStrengths(verdicts, "m-claude-haiku-45")).toContain("classification");
+  });
+});
