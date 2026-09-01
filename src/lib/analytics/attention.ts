@@ -28,6 +28,22 @@ export function deriveAttention(workspace: Workspace, now: Date = new Date()): A
   const items: AttentionItem[] = [];
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
+  /* Verdicts ---------------------------------------------------------- */
+  const pending = workspace.duels.filter((d) => d.status === "pending");
+  if (pending.length > 0) {
+    items.push({
+      id: "duels-pending",
+      severity: "warning",
+      title: `${pending.length} duel${pending.length === 1 ? "" : "s"} waiting for a verdict`,
+      detail:
+        pending.length === 1
+          ? `"${pending[0]!.title}" — one click and it joins the record.`
+          : "Each one is a click. Unjudged duels are the only work this app asks of you.",
+      href: pending.length === 1 ? `/duels/${pending[0]!.id}` : "/duels?status=pending",
+      rank: SEVERITY_RANK.warning - 50,
+    });
+  }
+
   /* Budget ------------------------------------------------------------ */
   const budget = budgetStatus(workspace.spend, workspace.preferences.monthlyBudget, now);
   if (budget.state === "over") {
@@ -43,7 +59,7 @@ export function deriveAttention(workspace: Workspace, now: Date = new Date()): A
         budget.daysLeft > 0
           ? `${formatCurrency(budget.spent)} spent with ${budget.daysLeft} days left. Staying under means ${formatCurrency(budget.safeDailyRate)}/day from here.`
           : `${formatCurrency(budget.spent)} against a ${formatCurrency(budget.budget)} ceiling.`,
-      href: "/spending",
+      href: "/spend",
       rank: SEVERITY_RANK[budget.spent > budget.budget ? "critical" : "warning"],
     });
   }

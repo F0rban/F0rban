@@ -41,7 +41,7 @@ const HREFS: Record<string, (id: string) => string> = {
   tool: (id) => `/tools?tool=${id}`,
   model: (id) => `/models?model=${id}`,
   duel: (id) => `/duels/${id}`,
-  spend: () => "/spending",
+  spend: () => "/spend",
 };
 
 /**
@@ -87,7 +87,7 @@ export function ActivityFeed({
                 event.entityType && event.entityId
                   ? HREFS[event.entityType]?.(event.entityId)
                   : event.entityType === "spend"
-                    ? "/spending"
+                    ? "/spend"
                     : undefined;
 
               const body = (

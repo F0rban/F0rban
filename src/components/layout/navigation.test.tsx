@@ -22,7 +22,7 @@ describe("findNavItem", () => {
   });
 
   it("does not let the root item swallow every other route", () => {
-    expect(findNavItem("/spending")!.href).toBe("/spending");
+    expect(findNavItem("/spend")!.href).toBe("/spend");
   });
 
   it("returns undefined for an unknown route", () => {
@@ -91,7 +91,7 @@ describe("mobile tab bar", () => {
 
 describe("top bar", () => {
   it("is a breadcrumb landmark, not a second page heading", async () => {
-    setRoute("/spending");
+    setRoute("/spend");
     const { Topbar } = await import("./topbar");
     renderApp(<Topbar />);
     const crumb = screen.getByRole("navigation", { name: "Breadcrumb" });

@@ -43,7 +43,7 @@ function BudgetMeter({ collapsed }: { collapsed: boolean }) {
         }
       >
         <Link
-          href="/spending"
+          href="/spend"
           aria-label={`Month-to-date spend ${formatCurrency(status.spent)}`}
           className="mx-auto block w-8"
         >
@@ -61,7 +61,7 @@ function BudgetMeter({ collapsed }: { collapsed: boolean }) {
 
   return (
     <Link
-      href="/spending"
+      href="/spend"
       className="block rounded-lg border border-line-subtle bg-surface-2/60 px-2.5 py-2 transition-colors hover:border-line hover:bg-surface-2"
     >
       <div className="flex items-baseline justify-between gap-2">

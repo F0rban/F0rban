@@ -103,7 +103,7 @@ describe("command palette", () => {
     const { user, input } = await openPalette();
     await user.type(input, ">go to spending");
     await user.keyboard("{Enter}");
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/spending"));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/spend"));
   });
 
   it("activates a result on click", async () => {

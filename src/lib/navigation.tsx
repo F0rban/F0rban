@@ -1,24 +1,13 @@
-import {
-  Boxes,
-  Cpu,
-  FolderKanban,
-  LayoutDashboard,
-  Library,
-  Settings,
-  Wallet,
-  Workflow,
-} from "lucide-react";
+import { Gavel, Home, Library, Settings, Swords, Wallet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { ModelIcon } from "@/components/ui/model-icon";
 
 export interface NavItem {
   href: string;
   label: string;
-  /** Shown in the collapsed rail tooltip and the shortcuts sheet. */
   description: string;
   icon: LucideIcon;
-  /** Sequence hotkey, e.g. "g p". */
   shortcut?: string;
-  /** Included in the mobile bottom bar. */
   primary?: boolean;
 }
 
@@ -27,24 +16,36 @@ export interface NavGroup {
   items: NavItem[];
 }
 
+/**
+ * Seven destinations, ordered by the loop: judge what is waiting, read what
+ * the evidence says, then the reference material behind it.
+ */
 export const NAVIGATION: NavGroup[] = [
   {
-    label: "Workspace",
+    label: "Evidence",
     items: [
       {
         href: "/",
-        label: "Dashboard",
-        description: "Spend, activity and what needs attention today",
-        icon: LayoutDashboard,
+        label: "Today",
+        description: "What needs a verdict, and what the evidence changed",
+        icon: Home,
         shortcut: "g d",
         primary: true,
       },
       {
-        href: "/projects",
-        label: "Projects",
-        description: "Objectives, tasks, and the tools each project uses",
-        icon: FolderKanban,
-        shortcut: "g r",
+        href: "/duels",
+        label: "Duels",
+        description: "Run a task against several models and judge it blind",
+        icon: Swords,
+        shortcut: "g u",
+        primary: true,
+      },
+      {
+        href: "/verdicts",
+        label: "Verdicts",
+        description: "Which model to use for which work, and what it saves",
+        icon: Gavel,
+        shortcut: "g v",
         primary: true,
       },
     ],
@@ -54,51 +55,36 @@ export const NAVIGATION: NavGroup[] = [
     items: [
       {
         href: "/prompts",
-        label: "Prompt Vault",
-        description: "Reusable prompts with variables and version history",
+        label: "Prompts",
+        description: "Reusable prompts with variables — the inputs to a duel",
         icon: Library,
         shortcut: "g p",
         primary: true,
       },
       {
-        href: "/tools",
-        label: "Tools",
-        description: "Every AI subscription and API, with cost and usage",
-        icon: Boxes,
-        shortcut: "g t",
-        primary: true,
-      },
-      {
         href: "/models",
-        label: "Model Lab",
-        description: "Compare capability, price and latency across models",
-        icon: Cpu,
+        label: "Models",
+        description: "Vendor specs beside your own record",
+        icon: ModelIcon,
         shortcut: "g m",
         primary: true,
-      },
-      {
-        href: "/workflows",
-        label: "Workflows",
-        description: "Multi-step AI pipelines you can step through",
-        icon: Workflow,
-        shortcut: "g w",
       },
     ],
   },
   {
-    label: "Operations",
+    label: "Money",
     items: [
       {
-        href: "/spending",
-        label: "Spending",
-        description: "Budget, forecast and where the money actually goes",
+        href: "/spend",
+        label: "Spend",
+        description: "What routing costs you, and what the verdicts would save",
         icon: Wallet,
         shortcut: "g s",
       },
       {
         href: "/settings",
         label: "Settings",
-        description: "Budget, appearance and workspace data",
+        description: "Volumes, appearance and workspace data",
         icon: Settings,
         shortcut: "g ,",
       },

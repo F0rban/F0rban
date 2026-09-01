@@ -26,12 +26,11 @@ function GlobalHotkeys() {
   useHotkey("?", () => setShortcutsOpen(true));
   useHotkey("[", toggleSidebar);
   useHotkey("g d", useCallback(() => router.push("/"), [router]));
-  useHotkey("g r", useCallback(() => router.push("/projects"), [router]));
+  useHotkey("g u", useCallback(() => router.push("/duels"), [router]));
+  useHotkey("g v", useCallback(() => router.push("/verdicts"), [router]));
   useHotkey("g p", useCallback(() => router.push("/prompts"), [router]));
-  useHotkey("g t", useCallback(() => router.push("/tools"), [router]));
   useHotkey("g m", useCallback(() => router.push("/models"), [router]));
-  useHotkey("g w", useCallback(() => router.push("/workflows"), [router]));
-  useHotkey("g s", useCallback(() => router.push("/spending"), [router]));
+  useHotkey("g s", useCallback(() => router.push("/spend"), [router]));
   useHotkey("g ,", useCallback(() => router.push("/settings"), [router]));
   useHotkey("n", useCallback(() => router.push("/prompts?new=1"), [router]));
 

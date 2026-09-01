@@ -1,36 +1,34 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { ArrowRight, Play, Star } from "lucide-react";
+import {
+  ArrowRight,
+  EqualApproximately,
+  Gavel,
+  Repeat2,
+  Sparkles,
+  Swords,
+  TrendingUp,
+  Trophy,
+} from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/layout/page-header";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Segmented } from "@/components/ui/segmented";
-import { Skeleton, SkeletonText } from "@/components/ui/skeleton";
-import { TrendChart } from "@/components/charts/trend-chart";
-import { KpiSkeleton, KpiTile } from "@/features/dashboard/kpi-tile";
-import { AttentionPanel } from "@/features/dashboard/attention-panel";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
+import { ProviderMark } from "@/components/ui/provider-mark";
+import { RecordScore, TallyMarks } from "@/components/ui/record";
 import { ActivityFeed } from "@/features/dashboard/activity-feed";
-import { QuickActions } from "@/features/dashboard/quick-actions";
-import { ProjectStrip } from "@/features/dashboard/project-strip";
+import { ModelSwap } from "@/features/verdicts/verdict-parts";
 import { useWorkspace } from "@/hooks/use-workspace";
-import { dashboardSummary, deriveAttention } from "@/lib/analytics/attention";
-import {
-  budgetStatus,
-  monthToDatePace,
-  percentChange,
-  previousRange,
-  rangeGrain,
-  spendSeries,
-  total,
-  trailing,
-  withinRange,
-  type RangeKey,
-} from "@/lib/analytics/spend";
-import { formatCurrency, formatNumber, pluralize } from "@/lib/utils/format";
+import { allVerdicts, evidenceCoverage, routingSummary } from "@/lib/analytics/verdicts";
+import { budgetStatus } from "@/lib/analytics/spend";
+import { TASK_LABEL, TASK_TYPES } from "@/lib/data/seed/duels";
+import { formatCurrency, pluralize } from "@/lib/utils/format";
 import { relativeTime } from "@/lib/utils/date";
+import { cn } from "@/lib/utils/cn";
 
 function greeting(hour: number): string {
   if (hour < 5) return "Still up";
@@ -39,63 +37,41 @@ function greeting(hour: number): string {
   return "Good evening";
 }
 
-export default function DashboardPage() {
+/**
+ * Today.
+ *
+ * Not a dashboard of everything — a single question ("what needs judging?") and
+ * a single answer ("here is what your evidence now says"). The loop is the
+ * page: judge what is waiting, read what changed, act on it.
+ */
+export default function TodayPage() {
   const { workspace, ready } = useWorkspace();
-  const [range, setRange] = useState<RangeKey>("30d");
   const now = useMemo(() => new Date(), []);
 
   const data = useMemo(() => {
     if (!workspace) return null;
-
-    const summary = dashboardSummary(workspace, now);
-    const attention = deriveAttention(workspace, now);
-    const budget = budgetStatus(workspace.spend, workspace.preferences.monthlyBudget, now);
-    const pace = monthToDatePace(workspace.spend, now);
-    const trailing30 = trailing(workspace.spend, 30, now);
-
-    const current = withinRange(workspace.spend, range, now);
-    const previous = previousRange(workspace.spend, range, now);
-    const series = spendSeries(workspace.spend, range, now);
-
-    const usageDelta = percentChange(
-      total(current.filter((e) => e.kind === "usage")),
-      total(previous.filter((e) => e.kind === "usage")),
+    const verdicts = allVerdicts(
+      workspace.duels,
+      workspace.models,
+      workspace.taskProfiles,
+      TASK_TYPES,
     );
-
-    const dailySpark = spendSeries(workspace.spend, "30d", now).map((p) => p.value);
-
-    const runSpark = (() => {
-      const buckets = new Array(14).fill(0);
-      for (const event of workspace.activity) {
-        if (event.kind !== "prompt.run") continue;
-        const daysAgo = Math.floor((now.getTime() - new Date(event.at).getTime()) / 86_400_000);
-        if (daysAgo >= 0 && daysAgo < 14) buckets[13 - daysAgo] += 1;
-      }
-      return buckets;
-    })();
-
+    const summary = routingSummary(verdicts);
+    const models = new Map(workspace.models.map((m) => [m.id, m]));
     return {
+      verdicts,
       summary,
-      attention,
-      budget,
-      pace,
-      trailing30,
-      series,
-      rangeTotal: total(current),
-      rangeDelta: percentChange(total(current), total(previous)),
-      usageDelta,
-      dailySpark,
-      runSpark,
-      activeProjects: workspace.projects
-        .filter((p) => p.status === "active" || p.status === "planning")
-        .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+      models,
+      coverage: evidenceCoverage(verdicts),
+      pending: workspace.duels.filter((d) => d.status === "pending"),
+      recent: workspace.duels
+        .filter((d) => d.status === "decided")
+        .sort((a, b) => (b.decidedAt ?? "").localeCompare(a.decidedAt ?? ""))
         .slice(0, 5),
-      recentPrompts: [...workspace.prompts]
-        .filter((p) => p.lastUsedAt)
-        .sort((a, b) => (b.lastUsedAt ?? "").localeCompare(a.lastUsedAt ?? ""))
-        .slice(0, 5),
+      reversals: verdicts.filter((v) => v.reversal),
+      budget: budgetStatus(workspace.spend, workspace.preferences.monthlyBudget, now),
     };
-  }, [workspace, range, now]);
+  }, [workspace, now]);
 
   const name = workspace?.preferences.displayName?.trim();
 
@@ -105,297 +81,352 @@ export default function DashboardPage() {
         title={name ? `${greeting(now.getHours())}, ${name}` : greeting(now.getHours())}
         description={
           data
-            ? `${pluralize(data.summary.activeToolCount, "active tool")} · ${pluralize(data.summary.activeProjects, "active project")} · ${formatCurrency(data.trailing30, { maximumFractionDigits: 0 })} in the last 30 days`
-            : "Loading your workspace…"
+            ? `${pluralize(data.coverage.totalDuels, "duel")} judged · ${data.coverage.covered} of ${data.coverage.total} task types settled`
+            : "Loading your record…"
         }
         actions={
-          <>
-            <Button size="sm" asChild>
-              <Link href="/spending">
-                Spending
-                <ArrowRight className="size-3.5" />
-              </Link>
-            </Button>
-            <Button variant="primary" size="sm" asChild>
-              <Link href="/prompts">
-                <Play className="size-3.5" />
-                Run a prompt
-              </Link>
-            </Button>
-          </>
+          <Button variant="primary" size="sm" asChild>
+            <Link href="/duels/new">
+              <Swords className="size-3.5" />
+              Run a duel
+            </Link>
+          </Button>
         }
       />
 
-      {/* KPI row */}
-      <div className="mt-5 grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
-        {!ready || !data ? (
-          <>
-            <KpiSkeleton />
-            <KpiSkeleton />
-            <KpiSkeleton />
-            <KpiSkeleton />
-          </>
-        ) : (
-          <>
-            <KpiTile
-              label="Spend this month"
-              value={formatCurrency(data.summary.monthToDate, { maximumFractionDigits: 0 })}
-              delta={data.pace.delta}
-              deltaInverted
-              sub="vs last month"
-              spark={data.dailySpark}
-              sparkColor={
-                data.budget.state === "over"
-                  ? "var(--negative)"
-                  : data.budget.state === "watch"
-                    ? "var(--warning)"
-                    : "var(--accent)"
-              }
-              href="/spending"
-              footer={
-                <p className="text-[11.5px] text-ink-3">
-                  Forecast{" "}
-                  <span
-                    className={`font-mono font-medium tabular-nums ${
-                      data.budget.state === "over" ? "text-negative" : "text-ink"
-                    }`}
-                  >
-                    {formatCurrency(data.budget.forecast, { maximumFractionDigits: 0 })}
-                  </span>{" "}
-                  by month end · {data.budget.daysLeft} days left
-                </p>
-              }
-            />
-
-            <KpiTile
-              label="Fixed subscriptions"
-              value={formatCurrency(data.summary.fixedMonthly, { maximumFractionDigits: 0 })}
-              sub="per month, before usage"
-              href="/tools"
-              footer={
-                <p className="text-[11.5px] text-ink-3">
-                  <span className="font-mono font-medium tabular-nums text-ink">
-                    {data.summary.activeToolCount}
-                  </span>{" "}
-                  active of {data.summary.totalToolCount} tracked
-                </p>
-              }
-            />
-
-            <KpiTile
-              label="API usage"
-              value={formatCurrency(data.summary.usageThisMonth, { maximumFractionDigits: 0 })}
-              delta={data.usageDelta}
-              deltaInverted
-              sub="this month"
-              href="/spending"
-              footer={
-                <p className="text-[11.5px] text-ink-3">
-                  Across{" "}
-                  <span className="font-mono font-medium tabular-nums text-ink">
-                    {data.summary.modelsInUse}
-                  </span>{" "}
-                  models in active use
-                </p>
-              }
-            />
-
-            <KpiTile
-              label="Prompt runs"
-              value={formatNumber(data.summary.promptRuns)}
-              sub="last 30 days"
-              spark={data.runSpark}
-              sparkColor="var(--series-2)"
-              href="/prompts"
-              footer={
-                <p className="text-[11.5px] text-ink-3">
-                  <span className="font-mono font-medium tabular-nums text-ink">
-                    {workspace?.prompts.length ?? 0}
-                  </span>{" "}
-                  prompts in the vault
-                </p>
-              }
-            />
-          </>
-        )}
-      </div>
-
-      {/* Main grid */}
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <div className="min-w-0 space-y-4 lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <div>
-                <CardTitle>Spend over time</CardTitle>
-                <p className="mt-0.5 text-xs text-ink-3">
-                  {data ? (
-                    <>
-                      <span className="font-mono font-medium tabular-nums text-ink">
-                        {formatCurrency(data.rangeTotal)}
-                      </span>{" "}
-                      in this window
-                      {data.rangeDelta !== null && (
-                        <>
-                          {" · "}
-                          <span
-                            className={
-                              data.rangeDelta > 0 ? "text-negative" : "text-positive"
-                            }
-                          >
-                            {data.rangeDelta > 0 ? "+" : ""}
-                            {data.rangeDelta}%
-                          </span>{" "}
-                          vs the one before
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    "Subscriptions and usage, stacked"
-                  )}
-                </p>
-              </div>
-              <Segmented
-                ariaLabel="Time range"
-                size="sm"
-                value={range}
-                onChange={setRange}
-                options={[
-                  { value: "7d", label: "7D" },
-                  { value: "30d", label: "30D" },
-                  { value: "3m", label: "3M" },
-                  { value: "12m", label: "12M" },
-                ]}
-              />
-            </CardHeader>
-            <div className="p-4 pt-3">
-              {!ready || !data ? (
-                <Skeleton className="h-[220px] w-full" />
-              ) : (
-                <TrendChart
-                  ariaLabel="Spend over time, subscriptions and usage"
-                  smooth={rangeGrain(range) !== "day"}
-                  data={data.series.map((point) => ({
-                    label: point.label,
-                    values: {
-                      subscription: point.parts.subscription + point.parts["one-off"],
-                      usage: point.parts.usage,
-                    },
-                  }))}
-                  series={[
-                    { key: "usage", label: "Usage", color: "var(--series-2)" },
-                    { key: "subscription", label: "Subscriptions", color: "var(--series-1)" },
-                  ]}
-                />
-              )}
-            </div>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div>
-                <CardTitle>Active projects</CardTitle>
-                <p className="mt-0.5 text-xs text-ink-3">Task progress and spend over the last 30 days</p>
-              </div>
-              <Button variant="ghost" size="xs" asChild>
-                <Link href="/projects">
-                  All projects
-                  <ArrowRight className="size-3" />
-                </Link>
-              </Button>
-            </CardHeader>
-            {!ready || !data ? (
-              <div className="space-y-3 p-4">
-                <SkeletonText lines={4} />
-              </div>
-            ) : (
-              <ProjectStrip projects={data.activeProjects} spend={workspace!.spend} now={now} />
+      {!ready || !data ? (
+        <div className="mt-5 space-y-4">
+          <Skeleton className="h-32 w-full rounded-xl" />
+          <Skeleton className="h-64 w-full rounded-xl" />
+        </div>
+      ) : (
+        <>
+          {/* The headline. One number, and the way to act on it. */}
+          <Link
+            href="/verdicts"
+            className={cn(
+              "group mt-5 flex flex-col gap-4 rounded-xl border border-line bg-surface-1 p-5 shadow-xs",
+              "transition-[border-color,box-shadow] duration-200 hover:border-accent-line hover:shadow-md",
+              "sm:flex-row sm:items-center",
             )}
-          </Card>
+          >
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-accent-line/60 bg-accent-soft text-accent">
+              <TrendingUp className="size-5" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-balance text-[19px] font-semibold leading-snug tracking-[-0.02em] text-ink sm:text-[21px]">
+                Your own results say you are overpaying by{" "}
+                <span className="text-positive">
+                  {formatCurrency(data.summary.actionableSaving, { maximumFractionDigits: 0 })}
+                </span>{" "}
+                a month.
+              </span>
+              <span className="mt-1.5 block text-[12.5px] leading-relaxed text-ink-3">
+                Across {data.summary.actionable.length} kind
+                {data.summary.actionable.length === 1 ? "" : "s"} of work where a cheaper model
+                already won your head-to-heads. That is{" "}
+                {formatCurrency(data.summary.actionableSaving * 12, { maximumFractionDigits: 0 })} a
+                year, out of {formatCurrency(data.summary.currentMonthlyCost)} you route today.
+              </span>
+            </span>
+            <span className="flex shrink-0 items-center gap-1.5 text-[12.5px] font-medium text-accent">
+              See the routing table
+              <ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </span>
+          </Link>
 
-          <Card>
-            <CardHeader>
-              <div>
-                <CardTitle>Recently used prompts</CardTitle>
-                <p className="mt-0.5 text-xs text-ink-3">Jump straight back into one</p>
-              </div>
-              <Button variant="ghost" size="xs" asChild>
-                <Link href="/prompts">
-                  Prompt Vault
-                  <ArrowRight className="size-3" />
-                </Link>
-              </Button>
-            </CardHeader>
-            {!ready || !data ? (
-              <div className="p-4">
-                <SkeletonText lines={4} />
-              </div>
-            ) : (
-              <ul className="divide-y divide-line-subtle">
-                {data.recentPrompts.map((prompt) => (
-                  <li key={prompt.id}>
-                    <Link
-                      href={`/prompts?prompt=${prompt.id}`}
-                      className="group flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-surface-2/60"
-                    >
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-1.5">
-                          <span className="truncate text-[12.5px] font-medium text-ink-2 transition-colors group-hover:text-ink">
-                            {prompt.title}
+          <div className="mt-4 grid gap-4 lg:grid-cols-3">
+            <div className="min-w-0 space-y-4 lg:col-span-2">
+              {/* The one thing the product asks of you. */}
+              <Card>
+                <CardHeader>
+                  <div>
+                    <CardTitle>Waiting for a verdict</CardTitle>
+                    <p className="mt-0.5 text-xs text-ink-3">
+                      {data.pending.length === 0
+                        ? "Nothing to judge. Run a duel next time a model choice matters."
+                        : "Names and prices stay hidden until you pick."}
+                    </p>
+                  </div>
+                  {data.pending.length > 0 && <Badge tone="accent" dot>{data.pending.length}</Badge>}
+                </CardHeader>
+
+                {data.pending.length === 0 ? (
+                  <div className="flex items-center gap-3 px-4 py-5">
+                    <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-line bg-surface-2 text-ink-4">
+                      <Gavel className="size-4" />
+                    </span>
+                    <p className="min-w-0 flex-1 text-[12.5px] leading-snug text-ink-3">
+                      Your record only grows when you run comparisons. The next time you are about to
+                      pick a model, run it as a duel instead.
+                    </p>
+                    <Button variant="secondary" size="sm" asChild className="shrink-0">
+                      <Link href="/duels/new">Run one</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-line-subtle">
+                    {data.pending.map((duel) => (
+                      <li key={duel.id}>
+                        <Link
+                          href={`/duels/${duel.id}`}
+                          className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-2/60"
+                        >
+                          <span className="grid size-7 shrink-0 place-items-center rounded-lg border border-accent-line bg-accent-soft text-accent">
+                            <Gavel className="size-3.5" />
                           </span>
-                          {prompt.favorite && (
-                            <Star className="size-3 shrink-0 fill-accent text-accent" />
-                          )}
-                        </span>
-                        <span className="mt-0.5 block truncate text-[11px] text-ink-4">
-                          {prompt.description}
-                        </span>
-                      </span>
-                      {prompt.variables.length > 0 && (
-                        <Badge tone="outline" className="hidden sm:inline-flex">
-                          {prompt.variables.length} vars
-                        </Badge>
-                      )}
-                      <span className="w-16 shrink-0 text-right font-mono text-[10.5px] tabular-nums text-ink-4">
-                        {relativeTime(prompt.lastUsedAt, now)}
-                      </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-[12.5px] font-medium text-ink">
+                              {duel.title}
+                            </span>
+                            <span className="mt-0.5 block truncate text-[11px] text-ink-4">
+                              {TASK_LABEL[duel.taskType]} · {duel.entries.length} answers ·{" "}
+                              {relativeTime(duel.createdAt, now)}
+                            </span>
+                          </span>
+                          <span className="flex shrink-0 items-center gap-1.5 text-[12px] font-medium text-accent">
+                            Judge
+                            <ArrowRight className="size-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+
+              {/* What the evidence changed. */}
+              <Card>
+                <CardHeader>
+                  <div>
+                    <CardTitle>What your evidence says now</CardTitle>
+                    <p className="mt-0.5 text-xs text-ink-3">
+                      The routing changes with the biggest gap between habit and record
+                    </p>
+                  </div>
+                  <Button variant="ghost" size="xs" asChild>
+                    <Link href="/verdicts">
+                      All verdicts
+                      <ArrowRight className="size-3" />
                     </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-        </div>
+                  </Button>
+                </CardHeader>
+                <ul className="divide-y divide-line-subtle">
+                  {data.summary.actionable.slice(0, 3).map((verdict) => {
+                    const leader = verdict.standings[0]!;
+                    return (
+                      <li key={verdict.taskType}>
+                        <Link
+                          href="/verdicts"
+                          className="grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-2/60"
+                        >
+                          <span className="min-w-0">
+                            <span className="flex items-center gap-2">
+                              <span className="truncate text-[12.5px] font-medium text-ink">
+                                {TASK_LABEL[verdict.taskType]}
+                              </span>
+                              <TallyMarks count={leader.wins} label={`${leader.wins} wins`} />
+                              <RecordScore
+                                wins={leader.wins}
+                                losses={leader.losses}
+                                ties={verdict.ties}
+                                size="sm"
+                              />
+                            </span>
+                            <ModelSwap
+                              className="mt-1"
+                              from={verdict.currentModelId ? data.models.get(verdict.currentModelId) : undefined}
+                              to={verdict.recommendedModelId ? data.models.get(verdict.recommendedModelId) : undefined}
+                            />
+                          </span>
+                          <span className="shrink-0 text-right">
+                            <span className="block font-mono text-[14px] font-semibold tabular-nums text-positive">
+                              +{formatCurrency(verdict.monthlyDelta, { maximumFractionDigits: 0 })}
+                            </span>
+                            <span className="block text-[10px] text-ink-4">saved / mo</span>
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
 
-        <div className="min-w-0 space-y-4">
-          <QuickActions workspace={workspace} />
+                  {data.reversals.map((verdict) => (
+                    <li key={`rev-${verdict.taskType}`}>
+                      <Link
+                        href="/verdicts"
+                        className="flex items-start gap-2.5 px-4 py-3 transition-colors hover:bg-surface-2/60"
+                      >
+                        <Repeat2 className="mt-0.5 size-3.5 shrink-0 text-warning" />
+                        <span className="min-w-0">
+                          <span className="block text-[12.5px] font-medium text-ink">
+                            {TASK_LABEL[verdict.taskType]} has flipped
+                          </span>
+                          <span className="mt-0.5 block text-[11.5px] leading-snug text-ink-3">
+                            {data.models.get(verdict.reversal!.previousLeaderId)?.name} led on the
+                            lifetime record, but{" "}
+                            {data.models.get(verdict.reversal!.leaderId)?.name} has won{" "}
+                            {verdict.reversal!.recentWins} of the last {verdict.reversal!.recentOf}.
+                          </span>
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
 
-          {!ready || !data ? (
-            <Card className="p-4">
-              <SkeletonText lines={5} />
-            </Card>
-          ) : (
-            <AttentionPanel items={data.attention} />
-          )}
+              {/* The nudge: the product is only as good as its corpus. */}
+              <Card>
+                <CardHeader>
+                  <div>
+                    <CardTitle>How settled your record is</CardTitle>
+                    <p className="mt-0.5 text-xs text-ink-3">
+                      {data.coverage.covered} of {data.coverage.total} kinds of work have enough
+                      evidence to route on
+                    </p>
+                  </div>
+                </CardHeader>
+                <div className="p-4">
+                  <Progress
+                    value={data.coverage.covered}
+                    max={data.coverage.total}
+                    label="Task types with a settled verdict"
+                  />
+                  {/* Evidence count, not win/loss: the question here is how
+                      much more judging it takes, not who is ahead. */}
+                  <ul className="mt-3 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
+                    {data.verdicts
+                      .filter((v) => v.confidence === "insufficient" || v.confidence === "emerging")
+                      .slice(0, 4)
+                      .map((verdict) => (
+                        <li key={verdict.taskType}>
+                          <Link
+                            href={`/duels/new?task=${verdict.taskType}`}
+                            className="group flex items-center gap-2.5"
+                          >
+                            <span className="min-w-0 flex-1">
+                              <span className="flex items-center gap-2">
+                                <span className="truncate text-[12px] text-ink-2 transition-colors group-hover:text-ink">
+                                  {TASK_LABEL[verdict.taskType]}
+                                </span>
+                                <TallyMarks
+                                  count={verdict.sampleSize}
+                                  tone="tie"
+                                  label={`${verdict.sampleSize} results so far`}
+                                />
+                              </span>
+                              <span className="mt-1 block text-[10.5px] text-ink-4">
+                                {verdict.sampleSize < 5
+                                  ? `${5 - verdict.sampleSize} more to get past a guess`
+                                  : "level enough that more results would settle it"}
+                              </span>
+                            </span>
+                            <span className="shrink-0 text-[11px] font-medium text-accent opacity-0 transition-opacity group-hover:opacity-100">
+                              Run one
+                            </span>
+                          </Link>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              </Card>
+            </div>
 
-          <Card className="overflow-hidden">
-            <CardHeader>
-              <div>
-                <CardTitle>Activity</CardTitle>
-                <p className="mt-0.5 text-xs text-ink-3">Everything that ran, in order</p>
-              </div>
-            </CardHeader>
-            {!ready || !workspace ? (
-              <div className="p-4">
-                <SkeletonText lines={6} />
-              </div>
-            ) : (
-              <div className="max-h-[32rem] overflow-y-auto">
-                <ActivityFeed events={workspace.activity} limit={18} />
-              </div>
-            )}
-          </Card>
-        </div>
-      </div>
+            <div className="min-w-0 space-y-4">
+              {/* Recent verdicts — the record, in motion. */}
+              <Card>
+                <CardHeader>
+                  <div>
+                    <CardTitle>Latest verdicts</CardTitle>
+                    <p className="mt-0.5 text-xs text-ink-3">What you judged, most recent first</p>
+                  </div>
+                </CardHeader>
+                <ul className="divide-y divide-line-subtle">
+                  {data.recent.map((duel) => {
+                    const winner = duel.winnerModelId ? data.models.get(duel.winnerModelId) : null;
+                    return (
+                      <li key={duel.id}>
+                        <Link
+                          href={`/duels/${duel.id}`}
+                          className="flex items-start gap-2.5 px-4 py-2.5 transition-colors hover:bg-surface-2/60"
+                        >
+                          {duel.tie ? (
+                            <span className="mt-0.5 grid size-5 shrink-0 place-items-center rounded-[5px] border border-line bg-surface-2 text-ink-4">
+                              <EqualApproximately className="size-3" />
+                            </span>
+                          ) : (
+                            <ProviderMark
+                              provider={winner?.provider ?? "other"}
+                              size="xs"
+                              className="mt-0.5"
+                            />
+                          )}
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-[12px] text-ink-2">
+                              {duel.title}
+                            </span>
+                            <span className="mt-0.5 block truncate text-[11px] text-ink-4">
+                              {duel.tie ? "Indistinguishable" : (winner?.name ?? "—")} ·{" "}
+                              {relativeTime(duel.decidedAt ?? duel.createdAt, now)}
+                            </span>
+                          </span>
+                          {!duel.tie && <Trophy className="mt-0.5 size-3 shrink-0 text-accent" />}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </Card>
+
+              {/* Money, compact — the payoff lives on Spend. */}
+              <Link
+                href="/spend"
+                className="group block rounded-xl border border-line bg-surface-1 p-4 shadow-xs transition-[border-color,box-shadow] duration-200 hover:border-line-strong hover:shadow-md"
+              >
+                <p className="flex items-center justify-between text-[10.5px] font-medium uppercase tracking-[0.07em] text-ink-4">
+                  Spend this month
+                  <ArrowRight className="size-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
+                </p>
+                <p className="mt-1.5 font-mono text-[24px] font-semibold tabular-nums tracking-[-0.02em] text-ink">
+                  {formatCurrency(data.budget.spent, { maximumFractionDigits: 0 })}
+                  <span className="text-[12px] font-normal text-ink-4">
+                    {" "}
+                    / {formatCurrency(data.budget.budget, { maximumFractionDigits: 0 })}
+                  </span>
+                </p>
+                <Progress
+                  className="mt-2"
+                  value={data.budget.spent}
+                  max={data.budget.budget}
+                  tone={data.budget.state === "over" ? "negative" : "accent"}
+                  label="Month-to-date spend against budget"
+                />
+                <p className="mt-2 text-[11.5px] text-ink-3">
+                  Forecast {formatCurrency(data.budget.forecast, { maximumFractionDigits: 0 })} ·{" "}
+                  {data.budget.daysLeft} days left
+                </p>
+              </Link>
+
+              <Card className="overflow-hidden">
+                <CardHeader>
+                  <div>
+                    <CardTitle>Activity</CardTitle>
+                    <p className="mt-0.5 text-xs text-ink-3">Everything that happened, in order</p>
+                  </div>
+                </CardHeader>
+                <div className="max-h-[26rem] overflow-y-auto">
+                  <ActivityFeed events={workspace!.activity} limit={14} />
+                </div>
+              </Card>
+
+              <p className="flex items-start gap-2 px-1 text-[11px] leading-relaxed text-ink-4">
+                <Sparkles className="mt-0.5 size-3 shrink-0" />
+                Everything here is computed from duels you judged. No vendor benchmark, no shared
+                leaderboard — your work, your record.
+              </p>
+            </div>
+          </div>
+        </>
+      )}
     </PageContainer>
   );
 }

@@ -187,17 +187,15 @@ export function CommandPalette() {
   const runCommand = useCallback(
     (id: CommandRunId) => {
       const routes: Partial<Record<CommandRunId, string>> = {
-        "nav:dashboard": "/",
-        "nav:projects": "/projects",
+        "nav:today": "/",
+        "nav:duels": "/duels",
+        "nav:verdicts": "/verdicts",
         "nav:prompts": "/prompts",
-        "nav:tools": "/tools",
         "nav:models": "/models",
-        "nav:workflows": "/workflows",
-        "nav:spending": "/spending",
+        "nav:spend": "/spend",
         "nav:settings": "/settings",
+        "create:duel": "/duels/new",
         "create:prompt": "/prompts?new=1",
-        "create:project": "/projects?new=1",
-        "create:tool": "/tools?new=1",
       };
 
       if (routes[id]) {
