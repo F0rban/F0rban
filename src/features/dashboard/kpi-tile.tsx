@@ -41,20 +41,30 @@ export function KpiTile({
 
       <div className="mt-2 flex items-end justify-between gap-3">
         <div className="min-w-0">
-          <StatValue>{value}</StatValue>
+          <StatValue className="text-[22px] leading-7 sm:text-[26px] sm:leading-8">
+            {value}
+          </StatValue>
           {(sub || delta !== undefined) && (
-            <div className="mt-1 flex items-center gap-2">
+            <div className="mt-1 flex flex-wrap items-center gap-x-2">
               {delta !== undefined && <Delta value={delta} inverted={deltaInverted} />}
               {sub && <span className="truncate text-[11.5px] text-ink-3">{sub}</span>}
             </div>
           )}
         </div>
         {spark && spark.length > 1 && (
-          <Sparkline values={spark} color={sparkColor ?? "var(--accent)"} className="mb-1 shrink-0" />
+          <Sparkline
+            values={spark}
+            color={sparkColor ?? "var(--accent)"}
+            className="mb-1 hidden shrink-0 sm:block"
+          />
         )}
       </div>
 
-      {footer && <div className="mt-3 border-t border-line-subtle pt-2.5">{footer}</div>}
+      {/* The footer is supporting detail; on a phone the headline plus the
+          delta is the whole point of a tile. */}
+      {footer && (
+        <div className="mt-3 hidden border-t border-line-subtle pt-2.5 sm:block">{footer}</div>
+      )}
     </>
   );
 

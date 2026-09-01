@@ -61,6 +61,7 @@ export function BudgetCard({ status }: { status: BudgetStatus }) {
         value={status.spent}
         max={status.budget}
         tone={tone}
+        label="Month-to-date spend against budget"
         marker={status.forecast}
         markerLabel={`Forecast ${formatCurrency(status.forecast)}`}
       />

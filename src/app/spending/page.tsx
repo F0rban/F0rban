@@ -107,7 +107,7 @@ export default function SpendingPage() {
         </div>
       ) : (
         <>
-          <div className="mt-5 grid gap-3 lg:grid-cols-4">
+          <div className="mt-5 grid min-w-0 gap-3 lg:grid-cols-4">
             <div className="flex flex-col rounded-xl border border-line bg-surface-1 p-4 shadow-xs">
               <StatLabel>Total, {RANGE_OPTIONS.find((r) => r.value === range)?.label}</StatLabel>
               <StatValue className="mt-1.5">
@@ -218,7 +218,7 @@ export default function SpendingPage() {
           </Card>
 
           {/* Breakdowns */}
-          <div className="mt-4 grid gap-4 lg:grid-cols-3">
+          <div className="mt-4 grid min-w-0 gap-4 lg:grid-cols-3">
             <Card>
               <CardHeader>
                 <CardTitle>By provider</CardTitle>

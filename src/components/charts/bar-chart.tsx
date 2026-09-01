@@ -38,7 +38,7 @@ export function BarChart({
   const barWidth = Math.max(4, Math.min(38, slot * 0.62));
 
   return (
-    <div ref={ref} className={cn("relative w-full", className)} style={{ height }}>
+    <div ref={ref} className={cn("relative w-full min-w-0", className)} style={{ height }}>
       {width > 0 && (
         <svg width={width} height={height} role="img" aria-label={ariaLabel ?? "Bar chart"}>
           {ticks(max, 4).map((value) => {

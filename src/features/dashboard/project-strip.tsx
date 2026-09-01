@@ -56,6 +56,7 @@ export function ProjectStrip({
                   max={Math.max(1, project.tasks.length)}
                   tone={done === project.tasks.length ? "positive" : "accent"}
                   size="sm"
+                  label={`${project.name} task progress`}
                 />
                 <p className="mt-1 text-right font-mono text-[10px] tabular-nums text-ink-4">
                   {Math.round((done / Math.max(1, project.tasks.length)) * 100)}%

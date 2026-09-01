@@ -127,7 +127,7 @@ export default function DashboardPage() {
       />
 
       {/* KPI row */}
-      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-5 grid grid-cols-2 gap-2.5 sm:gap-3 xl:grid-cols-4">
         {!ready || !data ? (
           <>
             <KpiSkeleton />
@@ -142,7 +142,7 @@ export default function DashboardPage() {
               value={formatCurrency(data.summary.monthToDate, { maximumFractionDigits: 0 })}
               delta={data.pace.delta}
               deltaInverted
-              sub="vs last month, same span"
+              sub="vs last month"
               spark={data.dailySpark}
               sparkColor={
                 data.budget.state === "over"
@@ -222,7 +222,7 @@ export default function DashboardPage() {
 
       {/* Main grid */}
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+        <div className="min-w-0 space-y-4 lg:col-span-2">
           <Card>
             <CardHeader>
               <div>
@@ -366,7 +366,7 @@ export default function DashboardPage() {
           </Card>
         </div>
 
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <QuickActions />
 
           {!ready || !data ? (

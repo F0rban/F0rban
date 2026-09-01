@@ -31,8 +31,9 @@ export function formatAxisMoney(value: number): string {
   const sign = value < 0 ? "-" : "";
   if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(abs >= 10_000_000 ? 0 : 1)}M`;
   if (abs >= 1_000) return `${sign}$${(abs / 1000).toFixed(abs >= 10_000 ? 0 : 1)}k`;
-  if (abs >= 10) return `${sign}$${Math.round(abs)}`;
   if (abs === 0) return "0";
+  // Keep the half-step visible: an axis tick at 12.5 must not read "$13".
+  if (abs >= 10) return `${sign}$${Number.isInteger(abs) ? abs : abs.toFixed(1)}`;
   return `${sign}$${abs.toFixed(abs < 1 ? 2 : 1)}`;
 }
 

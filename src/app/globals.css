@@ -26,40 +26,47 @@
   --line: oklch(0.892 0.005 95);
   --line-strong: oklch(0.828 0.007 95);
 
-  /* Text ramp */
+  /* Text ramp.
+     Every step clears WCAG AA (4.5:1) against the lightest surface it can sit
+     on, which is what caps the faintest step — a four-tone ramp on paper has
+     less room than it looks. Hierarchy comes from the spacing between steps,
+     not from letting the last one fade out. */
   --ink: oklch(0.235 0.009 265);
-  --ink-2: oklch(0.445 0.011 265);
-  --ink-3: oklch(0.568 0.011 265);
-  --ink-4: oklch(0.688 0.010 265);
+  --ink-2: oklch(0.395 0.011 265);
+  --ink-3: oklch(0.478 0.011 265);
+  --ink-4: oklch(0.515 0.010 265);
 
   /* Signal */
-  --accent: oklch(0.596 0.135 55);
-  --accent-hover: oklch(0.548 0.138 52);
+  --accent: oklch(0.492 0.134 50);
+  --accent-hover: oklch(0.442 0.130 48);
   --accent-ink: oklch(0.995 0.004 95);
   --accent-soft: oklch(0.949 0.037 72);
   --accent-line: oklch(0.842 0.079 66);
 
   /* Semantic */
-  --positive: oklch(0.541 0.104 178);
+  --positive: oklch(0.462 0.098 178);
   --positive-soft: oklch(0.944 0.033 178);
-  --warning: oklch(0.638 0.132 72);
+  --warning: oklch(0.512 0.118 62);
   --warning-soft: oklch(0.955 0.042 78);
-  --negative: oklch(0.564 0.176 22);
+  --negative: oklch(0.505 0.178 24);
   --negative-soft: oklch(0.951 0.031 22);
-  --info: oklch(0.548 0.126 250);
+  --info: oklch(0.478 0.128 250);
   --info-soft: oklch(0.949 0.033 250);
 
-  /* Categorical series — tuned for adjacent legibility, not rainbow. */
-  --series-1: oklch(0.606 0.135 55);
-  --series-2: oklch(0.552 0.098 195);
-  --series-3: oklch(0.520 0.128 268);
-  --series-4: oklch(0.588 0.152 18);
-  --series-5: oklch(0.596 0.115 145);
-  --series-6: oklch(0.560 0.108 232);
-  --series-7: oklch(0.560 0.128 318);
-  --series-8: oklch(0.606 0.052 85);
+  /* Categorical series — tuned for adjacent legibility, not rainbow.
+     These double as text on a 12% tint of themselves (project codes, category
+     chips), so their lightness is capped by that contrast requirement rather
+     than by how they look as a chart fill. */
+  --series-1: oklch(0.492 0.134 50);
+  --series-2: oklch(0.492 0.098 198);
+  --series-3: oklch(0.470 0.140 268);
+  --series-4: oklch(0.505 0.172 22);
+  --series-5: oklch(0.498 0.112 150);
+  --series-6: oklch(0.492 0.128 245);
+  --series-7: oklch(0.492 0.145 318);
+  --series-8: oklch(0.512 0.050 85);
 
-  --grid: oklch(0.905 0.004 95);
+  --grid: oklch(0.892 0.004 95);
 
   /* Elevation — light mode gets real, soft shadows. */
   --shadow-xs: 0 1px 2px oklch(0.28 0.01 265 / 0.05);
@@ -84,9 +91,9 @@
   --line-strong: oklch(0.378 0.013 265);
 
   --ink: oklch(0.962 0.003 265);
-  --ink-2: oklch(0.762 0.008 265);
-  --ink-3: oklch(0.638 0.010 265);
-  --ink-4: oklch(0.520 0.011 265);
+  --ink-2: oklch(0.828 0.008 265);
+  --ink-3: oklch(0.722 0.010 265);
+  --ink-4: oklch(0.632 0.011 265);
 
   --accent: oklch(0.788 0.135 68);
   --accent-hover: oklch(0.836 0.128 70);
@@ -112,7 +119,7 @@
   --series-7: oklch(0.722 0.118 318);
   --series-8: oklch(0.748 0.048 85);
 
-  --grid: oklch(0.268 0.009 265);
+  --grid: oklch(0.288 0.009 265);
 
   /* Elevation — dark mode leans on hairlines + a faint top highlight. */
   --shadow-xs: 0 1px 2px oklch(0 0 0 / 0.30);

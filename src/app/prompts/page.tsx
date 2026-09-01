@@ -34,6 +34,7 @@ import {
   PROMPT_CATEGORY_LABEL,
   PROMPT_CATEGORY_SERIES,
 } from "@/features/prompts/prompt-meta";
+import { useIsDesktop } from "@/hooks/use-media-query";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useWorkspaceStore } from "@/lib/store/workspace";
 import { useUiStore } from "@/lib/store/ui";
@@ -84,6 +85,7 @@ function PromptsPageInner() {
 
   const prompts = useMemo(() => workspace?.prompts ?? [], [workspace]);
   const now = useMemo(() => new Date(), []);
+  const isDesktop = useIsDesktop();
 
   const allTags = useMemo(() => {
     const counts = new Map<string, number>();
@@ -146,11 +148,13 @@ function PromptsPageInner() {
     }
     setSelectedId((current) => {
       if (current && prompts.some((p) => p.id === current)) return current;
-      return filtered[0]?.id ?? null;
+      // Below lg the detail replaces the list, so auto-selecting would skip
+      // the list entirely. On mobile you land on the list and drill in.
+      return isDesktop ? (filtered[0]?.id ?? null) : null;
     });
     // filtered is intentionally excluded — it changes on every keystroke.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params, prompts]);
+  }, [params, prompts, isDesktop]);
 
   const selected = prompts.find((p) => p.id === selectedId) ?? null;
 
@@ -216,13 +220,13 @@ function PromptsPageInner() {
       <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] xl:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
         {/* List */}
         <div className={cn("min-w-0", selected && "hidden lg:block")}>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
             <SearchField
               value={query}
               onChange={setQuery}
               placeholder="Search prompts and bodies…"
               resultCount={filtered.length}
-              className="basis-full"
+              className="w-full min-w-52 shrink-0 sm:basis-full"
             />
             <FilterMenu
               label="Category"

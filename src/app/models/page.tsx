@@ -194,13 +194,13 @@ function ModelsPageInner() {
 
       <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(360px,420px)] xl:grid-cols-[minmax(0,1fr)_460px]">
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
             <SearchField
               value={query}
               onChange={setQuery}
               placeholder="Search models…"
               resultCount={filtered.length}
-              className="min-w-40 basis-full sm:basis-52"
+              className="w-52 min-w-40 shrink-0 sm:basis-52"
             />
             <FilterMenu
               label="Provider"

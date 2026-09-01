@@ -214,6 +214,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 max={project.budget}
                 tone={overBudget ? "negative" : data.spent30 / project.budget > 0.8 ? "warning" : "accent"}
                 size="sm"
+                label="30-day spend against the project budget"
               />
               <p className="mt-1.5 text-[11px] text-ink-4">
                 of {formatCurrency(project.budget)} monthly budget
@@ -246,6 +247,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             max={Math.max(1, project.tasks.length)}
             tone={done === project.tasks.length ? "positive" : "accent"}
             size="sm"
+            label="Task progress"
           />
           <p className="mt-1.5 text-[11px] text-ink-4">
             {project.tasks.length - done} open
@@ -268,7 +270,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+        <div className="min-w-0 space-y-4 lg:col-span-2">
           {/* Objectives */}
           <Card>
             <CardHeader>
@@ -438,7 +440,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           </Card>
         </div>
 
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           {/* Providers */}
           {data.byProvider.length > 0 && (
             <Card>

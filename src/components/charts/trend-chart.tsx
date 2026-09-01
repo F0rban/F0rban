@@ -98,10 +98,10 @@ export function TrendChart({
     : 0;
 
   return (
-    <div className={cn("w-full", className)}>
+    <div className={cn("w-full min-w-0", className)}>
       <div
         ref={ref}
-        className="relative w-full"
+        className="relative w-full min-w-0"
         style={{ height }}
         onPointerLeave={() => setHover(null)}
         onPointerMove={(event) => {

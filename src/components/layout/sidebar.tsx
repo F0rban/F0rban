@@ -47,7 +47,13 @@ function BudgetMeter({ collapsed }: { collapsed: boolean }) {
           aria-label={`Month-to-date spend ${formatCurrency(status.spent)}`}
           className="mx-auto block w-8"
         >
-          <Progress value={status.spent} max={status.budget} tone={tone} size="sm" />
+          <Progress
+            value={status.spent}
+            max={status.budget}
+            tone={tone}
+            size="sm"
+            label="Month-to-date spend against budget"
+          />
         </Link>
       </Tooltip>
     );
@@ -78,6 +84,7 @@ function BudgetMeter({ collapsed }: { collapsed: boolean }) {
         max={status.budget}
         tone={tone}
         size="sm"
+        label="Month-to-date spend against budget"
         marker={status.forecast}
         markerLabel={`Forecast ${formatCurrency(status.forecast)}`}
       />

@@ -9,6 +9,8 @@ export function Progress({
   marker,
   markerLabel,
   size = "md",
+  label,
+  labelledBy,
 }: {
   value: number;
   max?: number;
@@ -17,6 +19,9 @@ export function Progress({
   marker?: number;
   markerLabel?: string;
   size?: "sm" | "md";
+  /** What the bar measures. Required unless `labelledBy` points at a label. */
+  label?: string;
+  labelledBy?: string;
 }) {
   const pct = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
   const markerPct = marker !== undefined && max > 0 ? Math.min(100, (marker / max) * 100) : null;
@@ -30,9 +35,12 @@ export function Progress({
   return (
     <div
       role="progressbar"
+      aria-label={labelledBy ? undefined : (label ?? "Progress")}
+      aria-labelledby={labelledBy}
       aria-valuenow={Math.round(pct)}
       aria-valuemin={0}
       aria-valuemax={100}
+      aria-valuetext={`${Math.round(pct)}%`}
       className={cn(
         "relative w-full overflow-hidden rounded-full bg-surface-3",
         size === "sm" ? "h-1" : "h-1.5",

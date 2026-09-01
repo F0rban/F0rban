@@ -197,13 +197,13 @@ function ProjectsPageInner() {
         }
       />
 
-      <div className="mt-5 flex flex-wrap items-center gap-2">
+      <div className="mt-5 flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar sm:flex-wrap sm:overflow-visible sm:pb-0">
         <SearchField
           value={query}
           onChange={setQuery}
           placeholder="Search projects…"
           resultCount={filtered.length}
-          className="min-w-48 basis-full sm:basis-64"
+          className="w-56 min-w-48 shrink-0 sm:basis-64"
         />
         <FilterMenu
           label="Status"

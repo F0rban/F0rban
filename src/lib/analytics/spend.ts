@@ -219,6 +219,9 @@ export function monthToDate(entries: SpendEntry[], now: Date = new Date()): numb
  * the 3rd it would always read "down 90%". This compares day 1..N of this month
  * to day 1..N of last month, which is the only honest early-month delta.
  */
+/** Minimum prior-period spend before a percentage comparison means anything. */
+export const PACE_FLOOR = 5;
+
 export function monthToDatePace(
   entries: SpendEntry[],
   now: Date = new Date(),
@@ -236,7 +239,12 @@ export function monthToDatePace(
       (e) => e.date.slice(0, 7) === prevMonth && Number(e.date.slice(8, 10)) <= cutoff,
     ),
   );
-  return { current, previous, delta: percentChange(current, previous) };
+  // A few dollars of base turns ordinary variation into a three-figure
+  // percentage — on the 2nd of the month everything looks like a crisis. Below
+  // this floor there is not enough history to compare, so report none and let
+  // the forecast carry the signal instead.
+  const delta = Math.abs(previous) < PACE_FLOOR ? null : percentChange(current, previous);
+  return { current, previous, delta };
 }
 
 /** Rolling window total — always populated, unlike month-to-date on the 1st. */

@@ -342,3 +342,13 @@ describe("model cost estimation", () => {
     expect(estimateLatency(model, 100)).toBe(1500);
   });
 });
+
+describe("monthToDatePace guards", () => {
+  it("reports no delta when the previous month's base is negligible", () => {
+    const entries = [
+      entry({ date: "2026-05-02", amount: 40 }),
+      entry({ date: "2026-04-02", amount: 0.4 }),
+    ];
+    expect(monthToDatePace(entries, NOW).delta).toBeNull();
+  });
+});

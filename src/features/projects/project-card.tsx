@@ -77,6 +77,7 @@ export function ProjectCard({
           max={Math.max(1, project.tasks.length)}
           tone={done === project.tasks.length ? "positive" : "accent"}
           size="sm"
+          label={`${project.name} task progress`}
         />
 
         <div className="mt-3 flex items-end justify-between gap-3 border-t border-line-subtle pt-3">

@@ -217,6 +217,7 @@ function WorkflowsPageInner() {
               <Progress
                 value={run.progress * 100}
                 tone={run.status === "complete" ? "positive" : "accent"}
+                label="Simulated run progress"
               />
               <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {[
