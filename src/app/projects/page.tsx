@@ -1,7 +1,8 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useInitialSearchParam } from "@/hooks/use-initial-search-param";
 import { FolderKanban, Plus } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
@@ -33,9 +34,10 @@ const SORTS: Array<{ value: SortKey; label: string }> = [
   { value: "name", label: "Name" },
 ];
 
-function ProjectsPageInner() {
+export default function ProjectsPage() {
   const router = useRouter();
-  const params = useSearchParams();
+  // `?new=` is read after mount so the route still prerenders.
+  const newParam = useInitialSearchParam("new");
   const { workspace, ready } = useWorkspace();
 
   const [query, setQuery] = useState("");
@@ -47,11 +49,11 @@ function ProjectsPageInner() {
   const projects = useMemo(() => workspace?.projects ?? [], [workspace]);
 
   useEffect(() => {
-    if (params.get("new")) {
+    if (newParam) {
       setFormOpen(true);
       router.replace("/projects");
     }
-  }, [params, router]);
+  }, [newParam, router]);
 
   // 30-day spend per project, computed once for the whole page.
   const spendByProject = useMemo(() => {
@@ -273,13 +275,5 @@ function ProjectsPageInner() {
         onCreated={(id) => router.push(`/projects/${id}`)}
       />
     </PageContainer>
-  );
-}
-
-export default function ProjectsPage() {
-  return (
-    <Suspense fallback={null}>
-      <ProjectsPageInner />
-    </Suspense>
   );
 }

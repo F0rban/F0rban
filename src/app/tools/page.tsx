@@ -1,7 +1,8 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useInitialSearchParam } from "@/hooks/use-initial-search-param";
 import { Boxes, LayoutGrid, List, Plus, Star } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
@@ -44,9 +45,11 @@ const SORTS: Array<{ value: SortKey; label: string }> = [
   { value: "name", label: "Name" },
 ];
 
-function ToolsPageInner() {
+export default function ToolsPage() {
   const router = useRouter();
-  const params = useSearchParams();
+  // Deep links (`?tool=`, `?new=`) are read after mount so the route prerenders.
+  const toolParam = useInitialSearchParam("tool");
+  const newParam = useInitialSearchParam("new");
   const { workspace, ready } = useWorkspace();
   const toggleFavorite = useWorkspaceStore((s) => s.toggleToolFavorite);
 
@@ -66,17 +69,18 @@ function ToolsPageInner() {
     [workspace],
   );
 
-  // Deep links from the palette and the dashboard land on a specific tool.
+  // Deep links from the palette and Today land on a specific tool.
   useEffect(() => {
-    const toolParam = params.get("tool");
     if (toolParam) setSelectedId(toolParam);
-    if (params.get("new")) setFormOpen(true);
-  }, [params]);
+  }, [toolParam]);
+  useEffect(() => {
+    if (newParam) setFormOpen(true);
+  }, [newParam]);
 
   const closeDetail = useCallback(() => {
     setSelectedId(null);
-    if (params.get("tool")) router.replace("/tools");
-  }, [params, router]);
+    if (toolParam) router.replace("/tools");
+  }, [toolParam, router]);
 
   const filtered = useMemo(() => {
     const list = tools.filter((tool) => {
@@ -379,13 +383,5 @@ function ToolsPageInner() {
       />
       <ToolForm open={formOpen} onOpenChange={setFormOpen} />
     </PageContainer>
-  );
-}
-
-export default function ToolsPage() {
-  return (
-    <Suspense fallback={null}>
-      <ToolsPageInner />
-    </Suspense>
   );
 }

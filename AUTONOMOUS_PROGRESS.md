@@ -5,7 +5,7 @@ Checkpoint file for unattended work. If you are a new session: read this, then
 
 ## Morning report (overnight session, 2026-09-01 → 02)
 
-Seven commits on `claude/ai-command-center-gelf0i`, each one green on
+Eight commits on `claude/ai-command-center-gelf0i`, each one green on
 typecheck, lint and the full suite before push. GitHub Pages redeploys on every
 push: https://f0rban.github.io/F0rban/.
 
@@ -126,7 +126,15 @@ left in place as secondary (not removed, not prioritised).
    (`src/lib/providers/{pricing,runner,registry}.ts`; six copies of the cost
    arithmetic collapsed into `priceRun`; entries carry `source`, judging screen
    labels manual costs "est."; documented in docs/architecture.md)
-7. Quality gate, screenshots, docs, push. — **in progress**
+7. Quality gate, screenshots, docs, push. — **done** (found and fixed: settled
+   verdicts without volumes vanished; example habits leaked into a fresh
+   record; static-export bailouts on the duel pages; `/F0rban.txt` prefetch
+   404 → `trailingSlash: true`)
+8. Remove the last static-export bailouts (Models, Prompts, Tools, Projects)
+   with `useInitialSearchParam`; no `Suspense` wrapper left in `src/app`. —
+   **done** (export verified: zero bailout markers in any page, clean console
+   and no failed requests on the four pages and their deep links, a11y 0,
+   responsive 0)
 
 ## Decisions taken
 
@@ -145,14 +153,12 @@ left in place as secondary (not removed, not prioritised).
 - **Static export + `useSearchParams`.** Calling `useSearchParams` during the
   static prerender bails the whole route out to client rendering: the exported
   HTML has an empty `<div id="main">` with `BAILOUT_TO_CLIENT_SIDE_RENDERING`,
-  so the first paint is emptier. Fixed for `/duels` and `/duels/new` with
-  `useInitialSearchParam` (reads the query after mount): their HTML carries the
-  page header again. **The bailout marker is still present on `/models` and
-  `/prompts`**, which use search params more deeply (`?model=`, `?prompt=`
-  selection sync); the same recipe applies — read on mount, write with
-  `router.replace` — but they are secondary pages and were left for daylight.
-  The export's console is clean on every route checked. Node/Vercel-style
-  hosting is unaffected.
+  so the first paint is emptier. **Resolved everywhere** (cycle 8): every page
+  that reads a query parameter now uses `useInitialSearchParam` (reads after
+  mount), no route in the export carries a bailout marker, and no page needs a
+  `Suspense` wrapper for it. The rule is in docs/architecture.md; the only
+  place `useSearchParams` still appears is the test double. Node/Vercel-style
+  hosting was never affected.
 - **Static export + `basePath` needs `trailingSlash: true`.** Without it the
   client prefetches the root route as `/F0rban.txt` (a 404 on every page load
   and a hard navigation when clicking Today), and a folder of dynamic pages such

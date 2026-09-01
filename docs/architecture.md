@@ -170,15 +170,16 @@ off real hydration, not a simulated delay.
 Detail routes set the top-bar breadcrumb and document title through the UI store,
 since a client route cannot use Next's static `metadata`.
 
-A page that only needs a query parameter for its *initial* state (`/duels?status=
-pending`, `/duels/new?task=…`) reads it after mount through
-`useInitialSearchParam` rather than `useSearchParams`. Calling the latter during
-the static prerender bails the whole route out to client-side rendering — the
-exported HTML then holds an empty shell for the page body and React logs a
-recoverable hydration error on load. Reading on mount costs one extra render and
-keeps the header and skeleton in the HTML. Models and Prompts still use
-`useSearchParams` for their selection sync and carry that bailout; the same
-recipe applies when they are next touched.
+Every page that needs a query parameter (`/duels?status=pending`,
+`/duels/new?task=…`, `/models?model=…`, `/prompts?prompt=…`, `/tools?tool=…`,
+`?new=1`) reads it after mount through `useInitialSearchParam` rather than
+`useSearchParams`. Calling the latter during the static prerender bails the
+whole route out to client-side rendering — the exported HTML then holds an
+empty shell for the page body and React logs a recoverable hydration error on
+load. Reading on mount costs one extra render and keeps the header and skeleton
+in the HTML; a page that auto-selects a record waits until the parameter has
+been read so a deep link is never overridden for a frame. No route in the
+export carries a bailout marker, and none needs a `Suspense` wrapper for it.
 
 ## Theming
 

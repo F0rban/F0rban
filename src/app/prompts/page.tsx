@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useInitialSearchParam } from "@/hooks/use-initial-search-param";
 import {
   ArrowLeft,
   Copy,
@@ -68,9 +69,11 @@ Requirements:
 
 Return only the result, with no preamble.`;
 
-function PromptsPageInner() {
+export default function PromptsPage() {
   const router = useRouter();
-  const params = useSearchParams();
+  // Deep links (`?prompt=`, `?new=`) are read after mount so the route prerenders.
+  const promptParam = useInitialSearchParam("prompt");
+  const newParam = useInitialSearchParam("new");
   const { workspace, ready } = useWorkspace();
   const createPrompt = useWorkspaceStore((s) => s.createPrompt);
   const duplicatePrompt = useWorkspaceStore((s) => s.duplicatePrompt);
@@ -148,12 +151,14 @@ function PromptsPageInner() {
 
   // Keep a valid selection as the list changes underneath.
   useEffect(() => {
-    const param = params.get("prompt");
-    if (param && prompts.some((p) => p.id === param)) {
-      setSelectedId(param);
+    // Until the query has been read, do not auto-select: a deep link would be
+    // overridden by the first item for a frame.
+    if (promptParam === undefined || newParam === undefined) return;
+    if (promptParam && prompts.some((p) => p.id === promptParam)) {
+      setSelectedId(promptParam);
       return;
     }
-    if (params.get("new") && prompts.length > 0) {
+    if (newParam && prompts.length > 0) {
       const id = createPrompt({
         title: "New prompt",
         description: "",
@@ -173,7 +178,7 @@ function PromptsPageInner() {
     });
     // filtered is intentionally excluded — it changes on every keystroke.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params, prompts, isDesktop]);
+  }, [promptParam, newParam, prompts, isDesktop]);
 
   const selected = prompts.find((p) => p.id === selectedId) ?? null;
 
@@ -537,13 +542,5 @@ function PromptsPageInner() {
         </div>
       </div>
     </PageContainer>
-  );
-}
-
-export default function PromptsPage() {
-  return (
-    <Suspense fallback={null}>
-      <PromptsPageInner />
-    </Suspense>
   );
 }

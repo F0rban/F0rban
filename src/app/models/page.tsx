@@ -1,7 +1,8 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useInitialSearchParam } from "@/hooks/use-initial-search-param";
 import { Cpu, Scale, Star, X } from "lucide-react";
 import { PageContainer, PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
@@ -45,9 +46,10 @@ const SORTS: Array<{ value: SortKey; label: string }> = [
   { value: "name", label: "Name" },
 ];
 
-function ModelsPageInner() {
+export default function ModelsPage() {
   const router = useRouter();
-  const params = useSearchParams();
+  // Deep links (`?model=`) are read after mount so the route still prerenders.
+  const modelParam = useInitialSearchParam("model");
   const { workspace, ready } = useWorkspace();
   const toggleFavorite = useWorkspaceStore((s) => s.toggleModelFavorite);
 
@@ -83,14 +85,13 @@ function ModelsPageInner() {
   }, [models, seeded]);
 
   useEffect(() => {
-    const modelParam = params.get("model");
     if (modelParam) setDetailId(modelParam);
-  }, [params]);
+  }, [modelParam]);
 
   const closeDetail = useCallback(() => {
     setDetailId(null);
-    if (params.get("model")) router.replace("/models");
-  }, [params, router]);
+    if (modelParam) router.replace("/models");
+  }, [modelParam, router]);
 
   const toggleCompare = (id: string) =>
     setCompareIds((prev) =>
@@ -352,13 +353,5 @@ function ModelsPageInner() {
         onOpenChange={(open) => !open && closeDetail()}
       />
     </PageContainer>
-  );
-}
-
-export default function ModelsPage() {
-  return (
-    <Suspense fallback={null}>
-      <ModelsPageInner />
-    </Suspense>
   );
 }
