@@ -54,7 +54,10 @@ amber, a token estimate, and copy-to-clipboard that records a real run.
 
 **Edit** reconciles variable definitions from the body as you type, flagging
 which placeholders are new and which will be dropped. **History** keeps every
-previous body with a note, and restoring one preserves what it replaced.
+previous body with a note and shows a real line diff against the current one —
+two bodies side by side tell you nothing about a prompt where one rule changed.
+
+![Prompt history diff](screenshots/prompt-history.png)
 
 ### Model Lab
 
@@ -98,7 +101,18 @@ so the estimate is real even though nothing is executed. Compute time is the
 critical path through the graph, not the sum of every step, so parallel branches
 are not double-counted.
 
+### Tools
+
+![Tools](screenshots/tools.png)
+
+Grid or table, with cost-per-use computed for every subscription and flagged
+above $1.50. The insight strip at the top sums the money sitting in
+barely-used tools, names the worst offender, and folds in trials about to
+convert — and only appears when there is something to say.
+
 ### Onboarding
+
+![Onboarding](screenshots/onboarding.png)
 
 Five steps, and every choice has a consequence: unpicked tools drop to
 *evaluating*, chosen models get starred so the Model Lab opens on them, and the
