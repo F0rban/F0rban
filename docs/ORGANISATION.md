@@ -181,15 +181,16 @@ README) sur github.com — `atelier-meridienne`, `tesson`, `bench` — puis lanc
 `SKIP_CREATE=1 bash scripts/migrer-projets.sh`.
 
 ### 4.2 Après la migration
-1. **PR #1** (`F0rban/F0rban`) : la fermer **sans fusionner**.
+1. **PR #1** (`F0rban/F0rban`) : ✔ fermée sans fusion (2 septembre 2026).
 2. **Bench → Pages** (optionnel) : dans `F0rban/bench`, Settings → Pages →
    Source « GitHub Actions », puis appliquer ce patch et pousser :
    - `.github/workflows/deploy-pages.yml` : `branches: [claude/ai-command-center-gelf0i]` → `branches: [main]`
      et `NEXT_PUBLIC_BASE_PATH: /F0rban` → `/bench`
    - `next.config.ts` : `basePath: "/F0rban"` → `basePath: "/bench"`
-3. **`F0rban/F0rban`** : créer `main` depuis la branche
-   `claude/audit-reorganisation-projets-25rtcw` et la définir comme branche par
-   défaut (Settings → General → Default branch). Le README s'affichera sur ton profil.
+3. **`F0rban/F0rban`** : ✔ `main` créée depuis la branche d'audit (documentation
+   seule, historique indépendant des sites). **Reste à faire à la main** : la
+   définir comme branche par défaut (Settings → General → Default branch → `main`).
+   Le README s'affichera alors sur ton profil.
 4. Quand les nouveaux dépôts sont vérifiés (site ouvert, tests lancés), les
    branches `claude/*` de `F0rban/F0rban` peuvent être supprimées. Pas avant.
 5. Dans Claude Code (web/mobile), les sessions existantes pointent encore sur
@@ -289,5 +290,5 @@ dans `tesson/main` par avance rapide. Tant que cette session reste ouverte sur
 **la fermer, et rouvrir les prochaines sessions Tesson sur `F0rban/tesson`.**
 Même règle pour la session « AI Command Center SaaS prototype » (Bench).
 
-Restant à faire à la main : § 4.2 (fermer PR #1 sans fusionner, branche `main`
-par défaut sur `F0rban/F0rban`, Pages pour Bench si souhaité).
+Restant à faire à la main : définir `main` comme branche par défaut de
+`F0rban/F0rban` (§ 4.2, point 3) ; Pages pour Bench si souhaité (§ 4.2, point 2).
