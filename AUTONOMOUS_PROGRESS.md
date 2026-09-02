@@ -183,14 +183,22 @@ and the `formatTime` / `activityBucket` date helpers that only it used.
 
 ## Next action
 
-Cycle 7 — final gate: `npm run typecheck && npm run lint && npm run test`,
-`npm run build` (normal) and `STATIC_EXPORT=1 NEXT_PUBLIC_BASE_PATH=/F0rban
-npm run build` (Pages), `npm run a11y`, `npm run responsive`, `npx knip`
-(remove anything dead), refresh `screenshots/` via `scripts/screenshot.mjs`,
-update README (Today/reveal/provider seam), add an "Evidence mode" section to
-docs/architecture.md, write the morning report in this file, push. Then, if
-time remains, Phase 8 user walkthroughs (USER 1–5) against the dev server and
-fix any friction found.
+The overnight plan is complete (cycles 1–8). If you are picking this up:
+
+1. **A first real `DuelRunner`.** Add a key field in Settings (kept in
+   `localStorage`, never in the workspace export), implement
+   `AnthropicRunner` in `src/lib/providers/` (`kind: "api"`, `supports` →
+   `anthropic`), call `registerRunner` when a key exists, flip
+   `CONNECTABLE[0].available`. The duel form already goes through
+   `runnerFor`; entries already carry `source: "api"`, so the judging screen
+   will label those costs as measured on its own.
+2. **Usage ingestion** so `TaskProfile.runsPerMonth` stops being typed: same
+   seam, read from the provider's usage endpoint into the profile.
+3. Only then: watch whether anyone runs a fifth duel.
+
+Keep the gate: `npm run typecheck && npm run lint && npm run test`, both
+builds, `npm run a11y` and `npm run responsive` against the export served like
+Pages (directory index + 301 without slash), `npx knip`.
 
 (Cycles 5 and 6 below are kept for reference — both done.)
 
