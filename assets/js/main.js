@@ -7,9 +7,9 @@
  *   2. la lumière : reflets et lampe suivent le curseur (une écriture par frame) ;
  *   3. le scroll lissé (Lenis, vendorisé) et la parallaxe du mur ;
  *   4. l'entête qui se pose une fois le mur passé, et la section courante ;
- *   5. les reveals ;
- *   6. le nuancier : changer d'émail recolore le mur d'aperçu ;
- *   7. le menu mobile.
+ *   5. le nuancier : changer d'émail recuit le mur d'aperçu ;
+ *   6. le menu mobile.
+ * Pas de reveal au défilement : le contenu est là quand on arrive dessus.
  */
 
 const reduitLeMouvement = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -168,25 +168,7 @@ if (liensNav.length && "IntersectionObserver" in window) {
 }
 
 /* ------------------------------------------------------------------ */
-/* 5. Reveals                                                          */
-/* ------------------------------------------------------------------ */
-const revelables = document.querySelectorAll("[data-reveal]");
-if (revelables.length && "IntersectionObserver" in window && !reduitLeMouvement) {
-  const io = new IntersectionObserver((entrees) => {
-    for (const e of entrees) {
-      if (e.isIntersecting) {
-        e.target.classList.add("est-revele");
-        io.unobserve(e.target);
-      }
-    }
-  }, { rootMargin: "0px 0px -10% 0px", threshold: 0.08 });
-  revelables.forEach((el) => io.observe(el));
-} else {
-  revelables.forEach((el) => el.classList.add("est-revele"));
-}
-
-/* ------------------------------------------------------------------ */
-/* 6. Nuancier : l'émail choisi recolore le mur d'aperçu               */
+/* 5. Nuancier : l'émail choisi recolore le mur d'aperçu               */
 /* ------------------------------------------------------------------ */
 const nuancier = document.querySelector("#nuancier-emaux");
 const murApercu = document.querySelector(".mur-apercu");
@@ -228,7 +210,7 @@ if (nuancier && murApercu) {
 }
 
 /* ------------------------------------------------------------------ */
-/* 7. Menu mobile                                                      */
+/* 6. Menu mobile                                                      */
 /* ------------------------------------------------------------------ */
 const boutonMenu = document.querySelector(".entete .bouton-menu");
 const menu = document.querySelector(".menu-mobile");

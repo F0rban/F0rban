@@ -41,35 +41,55 @@ le carreau le plus clair possible).
 
 ## 3. Le carreau
 
-Trois couches CSS par carreau, toutes physiques :
-1. reflet diffus d'une source en haut à gauche — position (`--hx`, `--hy`) et
-   éclat (`--g`) propres à chaque carreau, décalés par la lumière globale
-   (`--lx`, `--ly`, écrits par le curseur) ;
-2. arête supérieure qui prend la lumière rasante (dégradé linéaire de 18 %) ;
-3. bombé : plus clair au centre, plus dense et plus saturé sur les bords, plus
-   un liseré interne clair/sombre (`box-shadow: inset`).
+Un émail **satiné** sous un jour diffus — pas de spéculaire brillant : les
+petits reflets ronds répétés sur trois cents carreaux font « perles ». Cinq
+couches CSS par carreau, toutes physiques, du dessus au dessous :
+1. voile de lumière diagonal (dégradé linéaire à 150°, très faible) ;
+2. reflet très large et très doux — position (`--hx`, `--hy`) et éclat (`--g`)
+   propres à chaque carreau, le seul qui suive la lumière du curseur
+   (`--lx`, `--ly`) ;
+3. arête supérieure qui prend la lumière rasante (12 %) ;
+4. flaque d'émail plus dense et plus saturée en bas à droite ;
+5. bombé : plus clair au centre, plus dense sur les bords, plus un liseré
+   interne clair/sombre (`box-shadow: inset`).
 
 Plus une tuile de grain (PNG 256 px, `soft-light`) par mur, jamais par carreau.
 Écarts par carreau : teinte ±3,5°, saturation ±4 %, clarté ±3,5 % ; 8 % de
-« fonds de four » à écart double. Rayon 1,5 px. Joint 2–4 px.
+« fonds de four » à écart double ; le hero et l'appel poussent l'amplitude
+(×1,3 et ×1,25) pour que la promesse du titre se voie au premier regard.
+Rayon 1,5 px. Joint 2–4 px, **brun chaud `#221A15`**, jamais noir : un joint
+noir fait grille de tableur, un joint chaud fait mur posé.
 
 ## 4. Espace et rythme
 
 Conteneur 1400 px, marges `clamp(1.25rem, 4vw, 4.5rem)`, grille 12 colonnes.
-Sections `clamp(6rem, 13vw, 12rem)`. Rythme des fonds : émail → biscuit →
-biscuit-2 → tenmoku → biscuit → émail → tenmoku. Chaque section a un seul
-visuel fort ; le texte ne dépasse pas 60 caractères de mesure.
+Sections `clamp(6rem, 13vw, 12rem)`. Rythme des fonds : Vert Gottéron →
+biscuit → biscuit-2 → tenmoku → biscuit → **Bleu Sarine** → tenmoku. L'appel
+final change d'émail : il montre que le système recolore un mur en trois
+variables, et il évite de refermer la page sur le même vert que le hero.
+Chaque section a un seul visuel fort ; le texte ne dépasse pas 60 caractères
+de mesure.
+
+Hero : trois zones seulement — le cartel du mur en haut à droite (l'étiquette
+de musée), le bloc eyebrow + titre en bas à gauche, le pied (sous-texte + CTA)
+sur une même ligne de base. Pas de filet, pas d'indicateur de défilement. Le
+CTA de l'entête n'apparaît qu'une fois le mur passé.
+
+Murs : le premier à gauche (7 colonnes), le deuxième à droite (6 colonnes),
+le troisième en **frise pleine largeur** (88 baguettes sur deux rangs) avec le
+texte dessous en deux colonnes — pour casser l'alternance gauche/droite.
 
 ## 5. Composants
 
-- **Bouton** : un carreau plein (radius 2 px), flèche qui glisse de 4 px au
-  survol, fond qui passe au Vert Gottéron. Jamais d'ombre.
+- **Bouton** : un carreau plein (radius 2 px), sans flèche, sans ombre ; au
+  survol il s'émaille (fond Vert Gottéron, ou blanc s'il est en lait).
 - **Entête** : transparente sur le mur (texte lait, sans CTA), se pose sur le
   biscuit une fois le hero passé (flou, filet joint, CTA qui apparaît), passe
   en tenmoku sur les sections sombres.
 - **Nuancier** : liste typographique de boutons radio natifs ; le nom de
-  l'émail est le bouton. L'émail choisi : pastille à l'échelle, nom décalé,
-  filet à droite.
+  l'émail est le bouton. L'émail choisi : pastille à l'échelle cerclée d'un
+  filet, nom décalé et passé en `WONK 1`. En une colonne (≤ 900 px) l'ordre
+  devient titre → mur d'aperçu (rangées entières seulement) → liste.
 - **Fiche** : liste de définitions à deux colonnes, filets joint.
 - **Étapes** : quatre colonnes sur un joint, chacune illustrée par un état de
   la matière (nuancier, carreau trempé aux deux tiers, carreau cuit, carreaux
@@ -85,8 +105,9 @@ Doctrine : **rien ne bondit, tout cuit ou glisse.** Easing
   montent dans leur masque (500/620/740 ms) ; le pied de hero suit en fondu.
 - Curseur : reflets décalés de ±7 % et lampe douce (`screen`) sur le mur —
   pointeur fin seulement, une écriture par frame.
-- Scroll : Lenis (`lerp .1`), parallaxe du mur du hero à 0,28, reveals de
-  22 px en 800 ms, une seule fois.
+- Scroll : Lenis (`lerp .1`), parallaxe du mur du hero à 0,28. **Aucun reveal
+  au défilement** : le fondu-montée générique a été retiré, le contenu est là
+  quand on arrive dessus.
 - Nuancier : recuisson — 240 ms de biscuit, puis le nouvel émail en diagonale
   (45 ms par rang).
 - `prefers-reduced-motion` : tout est visible d'emblée, scroll natif, lampe et

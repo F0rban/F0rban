@@ -42,6 +42,7 @@ const gotteron = hsl2rgb(176, 62, 17);
 // Carreau le plus clair possible : fond de four (+7,7 %) + bombé (+4 %).
 const gotteronClair = hsl2rgb(176, 62, 17 + 7.7 + 4);
 const ocre = hsl2rgb(22, 66, 39);
+const sarineClair = hsl2rgb(220, 42, 32 + 7.7 * 1.1 + 5);
 const scrimHero = compose([10 / 255, 8 / 255, 6 / 255], 0.42, gotteronClair);
 
 console.log("— Fond biscuit —");
@@ -57,7 +58,9 @@ console.log("\n— Sur l'émail Vert Gottéron (hero, appel) — carreau le plus
 check("lait / gottéron clair (titre, courant)", lait, gotteronClair);
 check("eyebrow lait / gottéron clair (12 px capitales)", lait, gotteronClair);
 check("cartel lait à 78 % / gottéron clair + pénombre (12 px)", compose(lait, 0.78, scrimHero), scrimHero);
-check("appel-alt lait / gottéron clair (15 px)", lait, gotteronClair);
+console.log("\n— Sur l'émail Bleu Sarine (appel) — carreau le plus clair, sans la pénombre —");
+check("lait / sarine clair (titre, courant)", lait, sarineClair);
+check("appel-alt lait / sarine clair (15 px)", lait, sarineClair);
 check("eyebrow à 82 % / gottéron clair (information : réglage abandonné)", compose(lait, 0.82, gotteronClair), gotteronClair, 0);
 console.log("\n— Boutons —");
 check("lait sur encre (CTA sections claires)", lait, encre);

@@ -17,7 +17,7 @@
   --biscuit-2: #E5DCCB;
   --lait: #F7F2E8;
   --joint: #C9BDA8;         /* joint sur fond clair */
-  --joint-sombre: #120E0B;  /* joint des murs émaillés */
+  --joint-sombre: #221A15;  /* joint des murs émaillés : brun chaud, pas noir */
   --encre: #1B1411;
   --encre-2: #5E564C;       /* 6,0:1 sur biscuit */
   --tenmoku: #1B1411;
@@ -29,7 +29,7 @@
   --e-celadon: 152 20% 60%;
   --e-lait: 40 36% 91%;
   --e-ocre: 22 66% 39%;
-  --e-sarine: 222 56% 33%;
+  --e-sarine: 220 42% 32%;
   --e-engobe: 14 44% 71%;
   --e-cendre: 56 6% 54%;
   --e-tenmoku: 18 32% 9%;
@@ -199,10 +199,11 @@ legend { padding: 0; }
   margin: 0;
 }
 
-/* Boutons : un carreau plein, sans ombre. La flèche glisse, le carreau ne bondit pas. */
+/* Boutons : un carreau plein, sans ombre, sans flèche. Au survol, le carreau
+   s'émaille : il prend le Vert Gottéron (ou blanchit s'il est en lait). */
 .btn {
-  display: inline-flex; align-items: center; gap: .8em;
-  padding: 1em 1.45em;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 1.05em 1.6em;
   font: 500 var(--t-petit)/1 var(--f-sans);
   letter-spacing: .01em;
   color: var(--lait); background: var(--encre);
@@ -210,15 +211,6 @@ legend { padding: 0; }
   white-space: nowrap;
   transition: background var(--d-micro) var(--ease-micro), color var(--d-micro) var(--ease-micro);
 }
-.btn::after {
-  content: "";
-  width: .9em; height: .9em; flex: none;
-  background: currentColor;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M1 8h13M9 3l5 5-5 5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M1 8h13M9 3l5 5-5 5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
-  transition: transform 260ms var(--ease-micro);
-}
-.btn:hover::after, .btn:focus-visible::after { transform: translateX(4px); }
 .btn:hover { background: hsl(var(--e-gotteron)); }
 .btn-lait { color: var(--encre); background: var(--lait); }
 .btn-lait:hover { background: #fff; }
@@ -248,22 +240,30 @@ legend { padding: 0; }
   grid-column: span 2;
   aspect-ratio: var(--ratio);
   border-radius: var(--rayon);
-  /* Trois couches, toutes physiques : le reflet diffus d'une source en haut à
-     gauche, l'arête supérieure qui prend la lumière rasante, et le bombé de
-     l'émail (plus clair au centre, plus dense et plus saturé sur les bords). */
+  /* Cinq couches, toutes physiques, du dessus au dessous : un voile de lumière
+     diagonal (émail satiné sous un jour diffus), un reflet très large et très
+     doux propre à chaque carreau — le seul qui suive la lumière du curseur —,
+     l'arête supérieure qui prend la lumière rasante, la flaque d'émail plus
+     dense en bas à droite, et le bombé (plus clair au centre). */
   background:
-    radial-gradient(88% 46% at calc(var(--hx, 34%) + 4% + var(--lx)) calc(var(--hy, 26%) - 8% + var(--ly)),
-      hsl(var(--h) calc(var(--s) * .35) 99% / calc(var(--g, .2) * 1.1)) 0%,
-      hsl(var(--h) calc(var(--s) * .35) 99% / calc(var(--g, .2) * .35)) 45%,
-      transparent 80%),
-    linear-gradient(180deg, hsl(var(--h) var(--s) calc(var(--l) + 9%) / .35) 0%, transparent 18%),
-    radial-gradient(140% 120% at 50% 38%,
-      hsl(var(--h) var(--s) calc(var(--l) + 4%)) 0%,
-      hsl(var(--h) var(--s) var(--l)) 52%,
+    linear-gradient(150deg,
+      hsl(var(--h) calc(var(--s) * .3) 99% / calc(var(--g, .2) * .62)) 0%,
+      hsl(var(--h) calc(var(--s) * .3) 99% / calc(var(--g, .2) * .18)) 34%,
+      transparent 56%),
+    radial-gradient(120% 80% at calc(var(--hx, 34%) + var(--lx)) calc(var(--hy, 26%) + var(--ly)),
+      hsl(var(--h) calc(var(--s) * .3) 99% / calc(var(--g, .2) * .34)) 0%,
+      transparent 70%),
+    linear-gradient(180deg, hsl(var(--h) var(--s) calc(var(--l) + 10%) / .3) 0%, transparent 12%),
+    radial-gradient(75% 75% at 100% 100%,
+      hsl(var(--h) calc(var(--s) + 10%) calc(var(--l) - 8%)) 0%,
+      transparent 70%),
+    radial-gradient(130% 110% at 40% 30%,
+      hsl(var(--h) var(--s) calc(var(--l) + 5%)) 0%,
+      hsl(var(--h) var(--s) var(--l)) 55%,
       hsl(var(--h) calc(var(--s) + 8%) calc(var(--l) - 6%)) 100%);
   box-shadow:
-    inset 1px 1px 0 hsl(var(--h) var(--s) calc(var(--l) + 12%) / .5),
-    inset -1px -1px 0 hsl(var(--h) var(--s) calc(var(--l) - 9%) / .55);
+    inset 1px 1px 0 hsl(var(--h) var(--s) calc(var(--l) + 12%) / .45),
+    inset -1px -1px 0 hsl(var(--h) var(--s) calc(var(--l) - 9%) / .5);
 }
 /* Demi-carreau (coupé) des rangées décalées : même hauteur que ses voisins. */
 .mur i.demi { grid-column: span 1; aspect-ratio: calc(var(--ratio) / 2); }
@@ -290,12 +290,12 @@ legend { padding: 0; }
 [data-email="celadon"] { --gh: 152; --gs: 20%; --gl: 60%; }
 [data-email="lait"]    { --gh: 40;  --gs: 36%; --gl: 91%; }
 [data-email="ocre"]    { --gh: 22;  --gs: 66%; --gl: 39%; }
-[data-email="sarine"]  { --gh: 222; --gs: 56%; --gl: 33%; }
+[data-email="sarine"]  { --gh: 220; --gs: 42%; --gl: 32%; }
 [data-email="engobe"]  { --gh: 14;  --gs: 44%; --gl: 71%; }
 [data-email="cendre"]  { --gh: 56;  --gs: 6%;  --gl: 54%; }
 [data-email="tenmoku"] { --gh: 18;  --gs: 32%; --gl: 9%; }
 /* Émail alternatif d'une bande (rangée .alt) */
-[data-email-alt="sarine"] i.alt { --gh: 222; --gs: 56%; --gl: 33%; }
+[data-email-alt="sarine"] i.alt { --gh: 220; --gs: 42%; --gl: 32%; }
 
 /* ==== 5. LAYOUT ========================================================= */
 .conteneur {
@@ -415,46 +415,32 @@ legend { padding: 0; }
 }
 @media (hover: hover) and (pointer: fine) { .hero.a-lampe .hero-lampe { opacity: 1; } }
 
+/* Trois zones, rien d'autre : le cartel en haut à droite (l'étiquette du
+   mur), le bloc titre en bas à gauche, le pied (sous-texte + CTA) sur une
+   même ligne de base. Le mur occupe tout le reste. */
 .hero-contenu {
   position: relative;
   flex: 1;
   display: grid;
-  grid-template-rows: auto 1fr auto auto;
+  grid-template-rows: auto 1fr auto;
   width: min(100% - 2 * var(--marge), var(--conteneur));
   margin-inline: auto;
-  padding: calc(var(--entete-h) + 2.4rem) 0 2.2rem;
+  padding: calc(var(--entete-h) + 2.2rem) 0 2.8rem;
 }
-.hero-eyebrow { margin: 0; opacity: 1; }
-.hero h1 { align-self: end; margin: 2.4rem 0 2.2rem; }
+.hero-cartel {
+  justify-self: end; text-align: right;
+  margin: 0; max-width: 30ch;
+  font-size: var(--t-label); letter-spacing: .04em; line-height: 1.55;
+  color: rgba(247, 242, 232, .82);
+}
+.hero-titre { align-self: end; margin: 2rem 0 2.6rem; }
+.hero-eyebrow { margin: 0 0 1.5rem; opacity: 1; }
 .hero h1 .ligne { display: block; overflow: hidden; padding-bottom: .06em; margin-bottom: -.06em; }
 .hero h1 .ligne > span { display: block; }
 .hero-pied {
   display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem;
-  padding-top: 1.6rem;
-  border-top: 1px solid rgba(247, 242, 232, .28);
 }
 .hero-sous { max-width: 38ch; font-size: var(--t-courant); line-height: 1.5; margin: 0; }
-.hero-cartel {
-  margin: 1.7rem 0 0;
-  font-size: var(--t-label); letter-spacing: .04em; line-height: 1.5;
-  color: rgba(247, 242, 232, .78);
-  max-width: 56ch;
-}
-.hero-defiler {
-  position: absolute; right: var(--marge); bottom: 2.4rem;
-  width: 1px; height: 4.5rem; overflow: hidden;
-  background: rgba(247, 242, 232, .28);
-}
-.hero-defiler span {
-  position: absolute; inset: 0;
-  background: var(--lait);
-  transform: translateY(-100%);
-  animation: defiler 2.4s var(--ease) infinite;
-}
-@keyframes defiler {
-  0% { transform: translateY(-100%); }
-  55%, 100% { transform: translateY(100%); }
-}
 
 /* Cuisson : sous JS, les carreaux naissent en biscuit mat et prennent leur
    émail en diagonale, comme on ouvre un four. Sans JS, ils sont déjà cuits. */
@@ -466,7 +452,6 @@ legend { padding: 0; }
   transition: opacity 1100ms var(--ease) calc(var(--d, 0) * 26ms);
 }
 .a-js .mur-hero.est-cuit i::after { opacity: 0; }
-.a-js .mur-hero:not(.est-cuit) ~ .hero-lampe { opacity: 0; }
 
 /* --- 7.2 Manifeste ------------------------------------------------------ */
 .manifeste-texte { grid-column: 1 / span 5; align-self: center; }
@@ -526,7 +511,7 @@ legend { padding: 0; }
 .emaux-texte .titre { margin-bottom: 2.6rem; }
 .emaux-apercu { grid-column: 7 / -1; align-self: start; position: sticky; top: 6rem; }
 .emaux-note { grid-column: 1 / span 6; margin-top: -.5rem; max-width: 52ch; color: var(--encre-2); }
-.mur-apercu { border-radius: 3px; --joint-l: 4px; }
+.mur-apercu { --cols: 6; border-radius: 3px; --joint-l: 4px; }
 /* Recuisson : à chaque changement d'émail, les carreaux repassent par le
    biscuit (240 ms, ensemble) puis prennent le nouvel émail en diagonale. */
 .a-js .mur-apercu i::after {
@@ -572,11 +557,8 @@ legend { padding: 0; }
 }
 .pastille-code { font-size: var(--t-petit); color: var(--encre-2); font-variant-numeric: tabular-nums; }
 .pastille:hover .pastille-carreau, .pastille:has(input:checked) .pastille-carreau { transform: scale(1); }
+.pastille:has(input:checked) .pastille-carreau { outline: 1.5px solid var(--encre); outline-offset: 3px; }
 .pastille:has(input:checked) .pastille-nom { transform: translateX(.35rem); font-variation-settings: "opsz" 72, "SOFT" 100, "WONK" 1; }
-.pastille:has(input:checked)::after {
-  content: ""; position: absolute; right: 0; top: 50%; width: 1.6rem; height: 1px;
-  background: var(--encre); transform: translateX(calc(100% + 1rem));
-}
 .pastille:has(input:focus-visible) { outline: 2px solid var(--encre); outline-offset: 4px; border-radius: 2px; }
 
 /* --- 7.4 Murs (réalisations) ------------------------------------------- */
@@ -592,12 +574,18 @@ legend { padding: 0; }
 }
 .projet-mur { grid-column: 1 / span 7; }
 .projet-texte { grid-column: 9 / -1; padding-bottom: .4rem; }
-.projet-inverse .projet-mur { grid-column: 6 / -1; grid-row: 1; }
-.projet-inverse .projet-texte { grid-column: 1 / span 4; grid-row: 1; }
+.projet-inverse .projet-mur { grid-column: 7 / -1; grid-row: 1; }
+.projet-inverse .projet-texte { grid-column: 1 / span 5; grid-row: 1; }
 .projet-texte .soustitre { margin-bottom: .7rem; }
 .projet-texte p:last-child { color: var(--lait-2); }
 .mur-projet { border-radius: 3px; --joint-l: 3px; }
-/* La bande bleue (rangée .alt) émaille son joint aussi : un mur tenu par le même joint. */
+.mur-frise { --cols: 44; --ratio: 0.1667; --joint-l: 2px; }
+/* Le troisième mur est une frise : les baguettes courent sur toute la largeur,
+   le texte se range dessous en deux colonnes. */
+.projet-frise { align-items: start; }
+.projet-frise .projet-mur { grid-column: 1 / -1; }
+.projet-frise .projet-texte { grid-column: 1 / span 5; padding-bottom: 0; }
+.projet-frise .projet-recit { grid-column: 7 / -1; color: var(--lait-2); align-self: start; padding-top: 2.6rem; }
 
 /* --- 7.5 Méthode -------------------------------------------------------- */
 /* Quatre colonnes, quatre états de la matière : le nuancier, le carreau
@@ -609,8 +597,8 @@ legend { padding: 0; }
   column-gap: var(--gouttiere); row-gap: 3rem;
 }
 .etape { border-top: 1px solid var(--joint); padding-top: 1.5rem; }
-.etape-figure { height: 7rem; display: flex; align-items: flex-end; margin-bottom: 2.2rem; }
-.etape-visuel { --joint-l: 2px; width: 7rem; border-radius: 2px; }
+.etape-figure { height: 6.5rem; display: flex; align-items: flex-end; margin-bottom: 1.8rem; }
+.etape-visuel { --joint-l: 2px; width: 6.5rem; border-radius: 2px; }
 .etape-visuel i { transition: none; }
 .etape-nuancier { --cols: 3; }
 .etape-pose { --cols: 2; background: var(--joint); --joint-l: 4px; }
@@ -677,18 +665,10 @@ legend { padding: 0; }
 }
 
 /* ==== 8. MOTION ========================================================= */
-/* Reveals : un glissement bref, jamais de rebond. Sans JS, tout est visible. */
-.a-js [data-reveal] {
-  opacity: 0; transform: translateY(22px);
-  transition: opacity 800ms var(--ease), transform 800ms var(--ease);
-}
-.a-js [data-reveal="2"] { transition-delay: 120ms; }
-.a-js [data-reveal="3"] { transition-delay: 240ms; }
-.a-js [data-reveal].est-revele { opacity: 1; transform: none; }
-
-/* Entrée du hero : les lignes du titre montent dans leur masque, le reste suit. */
+/* Une seule chorégraphie, au chargement : le mur cuit, le titre monte dans
+   son masque, le reste suit. Pas de reveal au défilement : le contenu est là. */
 .a-js .hero h1 .ligne > span { transform: translateY(110%); transition: transform 1100ms var(--ease); }
-.a-js .hero .hero-eyebrow, .a-js .hero .hero-pied, .a-js .hero .hero-cartel, .a-js .hero-defiler { opacity: 0; transition: opacity 900ms var(--ease); }
+.a-js .hero .hero-eyebrow, .a-js .hero .hero-pied, .a-js .hero .hero-cartel { opacity: 0; transition: opacity 900ms var(--ease); }
 .a-js .hero.est-entre h1 .ligne > span { transform: none; }
 .a-js .hero.est-entre h1 .ligne:nth-child(1) > span { transition-delay: 500ms; }
 .a-js .hero.est-entre h1 .ligne:nth-child(2) > span { transition-delay: 620ms; }
@@ -696,16 +676,13 @@ legend { padding: 0; }
 .a-js .hero.est-entre .hero-eyebrow { opacity: 1; transition-delay: 900ms; }
 .a-js .hero.est-entre .hero-pied { opacity: 1; transition-delay: 1150ms; }
 .a-js .hero.est-entre .hero-cartel { opacity: 1; transition-delay: 1400ms; }
-.a-js .hero.est-entre .hero-defiler { opacity: 1; transition-delay: 1800ms; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: 1ms !important; transition-delay: 0ms !important; animation: none !important; }
   .a-js .mur-hero i::after { opacity: 0; }
-  .a-js [data-reveal] { opacity: 1; transform: none; }
   .a-js .hero h1 .ligne > span { transform: none; }
   .a-js .hero .hero-eyebrow, .a-js .hero .hero-pied, .a-js .hero .hero-cartel { opacity: 1; }
-  .hero-defiler span { transform: translateY(0); }
   .hero-lampe { display: none; }
   .mur-hero { will-change: auto; }
 }
@@ -732,21 +709,29 @@ legend { padding: 0; }
   .entete { gap: 1rem; }
 
   /* Hero tablette : le titre prend toute la largeur, le pied s'empile. */
-  .hero h1 { max-width: none; margin: 2.5rem 0 2rem; }
+  .hero-titre { margin: 2.5rem 0 2rem; }
   .hero-pied { flex-direction: column; align-items: flex-start; gap: 1.6rem; }
-  .hero-defiler { display: none; }
 
   .manifeste-texte, .specimen, .emaux-texte, .emaux-apercu, .emaux-note { grid-column: 1 / -1; }
   .specimen { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
   .specimen .carreau-specimen { max-width: none; }
   .fiche { margin-top: 0; }
-  .emaux-apercu { position: static; order: -1; }
-  .emaux-texte .titre { margin-bottom: 2rem; }
+  /* Émaux en une colonne : le titre d'abord, le mur ensuite, puis la liste. */
+  .emaux-texte { display: contents; }
+  .emaux-texte .eyebrow { grid-column: 1 / -1; order: 1; margin-bottom: 1.2rem; }
+  .emaux-texte .titre { grid-column: 1 / -1; order: 2; margin-bottom: 0; }
+  .emaux-apercu { position: static; order: 3; }
+  .nuancier { grid-column: 1 / -1; order: 4; }
+  .emaux-note { order: 5; margin-top: 0; }
+  .grille.grille-emaux { row-gap: 2rem; }
   .mur-apercu { --cols: 7; }
+  .mur-apercu i:nth-child(n + 29) { display: none; } /* 7 × 4 : rangées entières seulement */
 
   .projet, .projet-inverse { grid-template-columns: 1fr; row-gap: 1.4rem; }
-  .projet-mur, .projet-texte, .projet-inverse .projet-mur, .projet-inverse .projet-texte { grid-column: 1 / -1; grid-row: auto; }
+  .projet-mur, .projet-texte, .projet-inverse .projet-mur, .projet-inverse .projet-texte,
+  .projet-frise .projet-mur, .projet-frise .projet-texte, .projet-frise .projet-recit { grid-column: 1 / -1; grid-row: auto; }
   .projet-texte { padding-bottom: 0; }
+  .projet-frise .projet-recit { padding-top: 0; }
 
   .etapes { grid-template-columns: 1fr 1fr; row-gap: 2.5rem; }
 }
@@ -754,17 +739,20 @@ legend { padding: 0; }
 @media (max-width: 640px) {
   :root { --carreau: 62px; --joint-l: 2px; }
   .display { line-height: .92; letter-spacing: -0.02em; }
-  .hero-contenu { padding-top: calc(var(--entete-h) + 2.2rem); padding-bottom: 1.8rem; }
-  .hero h1 { margin: 2rem 0 1.6rem; }
-  .hero-pied { padding-top: 1.2rem; }
-  .hero-pied .btn { align-self: stretch; justify-content: space-between; }
-  .hero-cartel { margin-top: 1.6rem; }
+  /* Hero mobile : titre, pied, puis le cartel en dernier, à gauche. */
+  .hero-contenu { grid-template-rows: 1fr auto auto; padding-top: calc(var(--entete-h) + 1.6rem); padding-bottom: 1.8rem; }
+  .hero-cartel { order: 3; justify-self: start; text-align: left; max-width: 34ch; margin-top: 1.8rem; }
+  .hero-titre { margin: 2rem 0 1.8rem; }
+  .hero-pied .btn { align-self: stretch; }
+  .mur-hero { --carreau: 64px; }
 
   .specimen { grid-template-columns: 1fr; }
   .fiche div { grid-template-columns: 6rem 1fr; }
 
   .mur-apercu { --cols: 6; }
   .mur-apercu i:nth-child(n + 25) { display: none; } /* 6 × 4 : rangées entières seulement */
+  .mur-frise { --cols: 22; }
+  .mur-frise i:nth-child(n + 45) { display: none; } /* 22 × 2 baguettes */
   .pastille { grid-template-columns: 2.2rem 1fr auto; column-gap: .9rem; padding: .6rem 0; }
   .pastille-carreau { width: 2.2rem; }
   .pastille:has(input:checked)::after { display: none; }
@@ -778,7 +766,7 @@ legend { padding: 0; }
 
   .appel { min-height: 0; }
   .appel-contenu { text-align: left; align-items: flex-start; }
-  .appel .btn { align-self: stretch; justify-content: space-between; }
+  .appel .btn { align-self: stretch; }
 
   .pied-grille { grid-template-columns: 1fr; gap: 2.2rem; }
   .pied-bas { flex-direction: column; gap: .5rem; }

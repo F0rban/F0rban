@@ -68,7 +68,7 @@ Le JS n'ajoute que du comportement : la cuisson du mur au chargement (les
 carreaux naissent en biscuit et prennent leur émail en diagonale), la lumière
 qui suit le curseur (une écriture de variable par frame, sur `:root`), la
 recuisson du mur d'aperçu quand on change d'émail, l'entête qui se pose une
-fois le mur passé.
+fois le mur passé. Pas de reveal au défilement : le contenu est là.
 
 ## Vérifications
 
@@ -97,6 +97,9 @@ node tools/shoot.mjs http://127.0.0.1:4173 captures ""
   (flèches), menu mobile en `<dialog>` (Échap, retour du focus).
 - `prefers-reduced-motion` : aucune transition, scroll natif, tout visible
   d'emblée — le site reste entier, il ne bouge simplement plus.
+- Suite de régression : `node tools/regression.mjs` rejoue cuisson, entête,
+  nuancier (souris et clavier), skip-link, ancres, menu mobile, reduced
+  motion, débordements sur six largeurs, structure accessible, console.
 - Zéro requête tierce, zéro cookie. Deux fontes (≈150 Ko), Lenis (24 Ko),
   une tuile de grain (20 Ko). Le HTML porte les murs (≈120 Ko bruts, très
   compressibles : `gzip` le ramène à ≈22 Ko).

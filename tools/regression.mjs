@@ -107,10 +107,10 @@ const page = async (opts = {}) => {
   await p.waitForTimeout(300);
   const e = await p.evaluate(() => ({
     titre: getComputedStyle(document.querySelector(".hero h1 .ligne > span")).transform,
-    reveal: getComputedStyle(document.querySelector("[data-reveal]")).opacity,
+    pied: getComputedStyle(document.querySelector(".hero-pied")).opacity,
     carreau: getComputedStyle(document.querySelector(".mur-hero i"), "::after").opacity,
   }));
-  ok("reduced motion : titre, reveals et carreaux visibles sans attendre", e.titre === "none" && e.reveal === "1" && e.carreau === "0", JSON.stringify(e));
+  ok("reduced motion : titre, pied de hero et carreaux visibles sans attendre", e.titre === "none" && e.pied === "1" && e.carreau === "0", JSON.stringify(e));
   await ctx.close();
 }
 
