@@ -1,13 +1,16 @@
 {
-  "name": "atelier-meridienne",
+  "name": "tesson",
   "version": "1.0.0",
-  "description": "Site vitrine — Atelier Méridienne, gnomonique & fresque murale (projet d'étude fictif)",
+  "description": "Site vitrine one page — Tesson, manufacture fictive de carreaux de grès émaillés (Fribourg)",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npx http-server . -p 4173 -c-1 -g --silent",
-    "test": "node --test tests/gnomonique.test.mjs",
-    "compress": "find . -path ./node_modules -prune -o -type f \\( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.svg' -o -name '*.xml' \\) -print0 | xargs -0 gzip -9kf"
+    "dev": "npx http-server . -p 4173 -c-1 --silent",
+    "build": "node tools/genere-murs.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check:contrast": "node tools/contrast-check.mjs",
+    "check:regression": "node tools/regression.mjs",
+    "shoot": "node tools/shoot.mjs http://127.0.0.1:4173 captures"
   },
   "license": "MIT"
 }

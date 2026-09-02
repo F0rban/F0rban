@@ -3,59 +3,37 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Page introuvable — Atelier Méridienne</title>
-  <meta name="description" content="Ce mur est exposé plein nord : aucune heure ne s’y lit. Reprenez le sentier vers l’accueil, les créations ou la méthode.">
-  <!-- La 404 garde son noindex en toutes circonstances, usage réel compris. -->
+  <title>Page introuvable — Tesson</title>
+  <meta name="description" content="Il manque un carreau à ce mur. Retour à la manufacture.">
   <meta name="robots" content="noindex">
-  <meta property="og:type" content="website">
-  <meta property="og:locale" content="fr_FR">
-  <meta property="og:site_name" content="Atelier Méridienne">
-  <meta property="og:title" content="Cette heure n’est pas tracée">
-  <meta property="og:description" content="Rien ne se lit ici. Retour vers l’heure vraie.">
-  <meta name="twitter:card" content="summary">
-  <meta name="theme-color" content="#F5F0E6">
+  <meta name="theme-color" content="#1B1411">
   <!-- Page d'erreur servie à n'importe quelle profondeur d'URL : chemins absolus. -->
   <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
-  <link rel="preload" as="image" href="/assets/textures/grain-256.png">
   <link rel="stylesheet" href="/assets/css/fonts.css">
   <link rel="stylesheet" href="/assets/css/styles.css">
-  <script>document.documentElement.classList.add("a-js");</script>
+  <style>
+    body { background: var(--tenmoku); color: var(--lait); min-height: 100svh; display: grid; grid-template-rows: auto 1fr; }
+    .entete-404 { display: flex; align-items: center; min-height: var(--entete-h); padding: 0 var(--marge); }
+    .page-404 { display: grid; align-content: center; justify-items: start; gap: 1.6rem; padding: 3rem var(--marge) 5rem; }
+    .mur-404 { --cols: 3; --joint-l: 3px; width: min(100%, 22rem); border-radius: 3px; background: var(--tenmoku-2); }
+    .mur-404 i.manque { background: var(--tenmoku); box-shadow: inset 0 0 0 1px var(--tenmoku-2); }
+    .page-404 .titre { max-width: 12ch; }
+    .page-404 p { color: var(--lait-2); max-width: 40ch; }
+    .btn-lait:focus-visible { outline-color: var(--lait); }
+  </style>
 </head>
 <body>
-  <a class="skip-link" href="#contenu">Aller au contenu</a>
-
-  <header class="entete">
-    <div class="conteneur entete-barre">
-      <a class="marque" href="/" aria-label="Atelier Méridienne — accueil">
-        <span class="marque-nom">Atelier Méridienne</span>
-        <span class="marque-base mono-label">Gnomonique &amp; fresque — Queyras</span>
-      </a>
-    </div>
+  <header class="entete-404">
+    <a class="marque" href="/" aria-label="Tesson — accueil">Tesson</a>
   </header>
-
-  <main id="contenu" class="page-seule">
-    <div class="conteneur">
-      <p class="mono-label eyebrow">Erreur 404 — azimut inconnu</p>
-      <h1 class="t-display porte-ombre" data-ombre="Cette heure n’est pas tracée.">Cette heure n’est pas tracée.</h1>
-      <p style="margin-top: var(--esp-4);">La page que vous cherchez n’existe pas — ou l’ombre l’a quittée. Sur un cadran, quand l’ombre sort du tracé, on ne corrige pas l’ombre : on revient aux lignes connues.</p>
-      <ul class="liste-liens">
-        <li><a class="lien-fleche" href="/">Revenir à l’accueil — l’heure vraie s’y affiche →</a></li>
-        <li><a class="lien-fleche" href="/creations/">Voir les créations →</a></li>
-        <li><a class="lien-fleche" href="/contact/">Demander une étude — dès 900 € →</a></li>
-      </ul>
-      <p class="mono-label t-seconde" style="margin-top: var(--esp-5);"><span lang="la">Sine sole sileo</span> — sans soleil, je me tais.</p>
+  <main class="page-404" id="contenu">
+    <div class="mur mur-404" data-email="gotteron" aria-hidden="true">
+      <i style="--dh:-1.2;--ds:0%;--dl:-0.8%;--hx:30%;--hy:22%;--g:.2"></i><i style="--dh:1.4;--ds:1%;--dl:1.2%;--hx:38%;--hy:26%;--g:.24"></i><i style="--dh:0.6;--ds:-1%;--dl:2.4%;--hx:34%;--hy:30%;--g:.18"></i><i style="--dh:-0.4;--ds:2%;--dl:-1.6%;--hx:28%;--hy:20%;--g:.22"></i><i class="manque"></i><i style="--dh:0.9;--ds:0%;--dl:0.4%;--hx:36%;--hy:24%;--g:.21"></i>
     </div>
+    <p class="eyebrow" style="margin:0">Erreur 404</p>
+    <h1 class="titre">Il manque un carreau à ce mur.</h1>
+    <p>La page que vous cherchez n’existe pas, ou n’existe plus. Le reste du mur tient très bien.</p>
+    <a class="btn btn-lait" href="/">Retour à la manufacture</a>
   </main>
-
-  <footer class="pied">
-    <div class="conteneur">
-      <div class="pied-bas mono-label" style="border-top: 0; margin-top: 0;">
-        <span>Site fictif — projet d’étude · <a href="/mentions/">Mentions</a></span>
-        <span>© <span data-annee>2026</span> — Typographies Fraunces &amp; Spline Sans Mono</span>
-      </div>
-    </div>
-  </footer>
-
-  <script type="module" src="/assets/js/main.js"></script>
 </body>
 </html>

@@ -1,78 +1,72 @@
 /* ==========================================================================
-   ATELIER MÉRIDIENNE — feuille de style unique
-   Transcription exécutable de docs/brand/visual-bible.md.
-   Principe : le site est un mur de chaux au soleil. Tout ce qui est clair est
-   enduit, tout ce qui est sombre est peint, tout ce qui est doré est éclairé.
+   TESSON — feuille de style unique
+   Principe : la page est un mur. Ce qui est clair est du biscuit (terre non
+   émaillée), ce qui est coloré est de l'émail, ce qui sépare est un joint.
+   Aucune ombre portée, aucun dégradé décoratif : les seuls dégradés sont
+   ceux de l'émail (profondeur, reflet), et ils ont une raison physique.
 
    Sommaire
-   1. Tokens (palette validée WCAG — voir visual-bible §1.4, tout couple
-      non listé là-bas est interdit)
-   2. Base (reset, fond de chaux, grain, focus, sélection)
-   3. Typographie (7 styles nommés, aucun style orphelin)
-   4. Layout (conteneur, grille, sections, filets d'horizon)
-   5. Système d'ombre solaire --sun-angle (pivots inventoriés par page)
-   6. Composants (header, footer, boutons, liens, cartes, tableaux,
-      formulaires, glossaire, fil d'Ariane)
-   7. Pages (accueil, savoir-faire, créations, atelier, méthode, contact, 404)
-   8. Motion & reduced-motion
+   1. Tokens   2. Base   3. Typographie   4. Murs (le composant central)
+   5. Layout   6. Entête & menu   7. Sections   8. Motion & reduced-motion
    ========================================================================== */
 
 /* ==== 1. TOKENS ========================================================= */
 :root {
-  /* Jour */
-  --chaux: #F5F0E6;
-  --chaux-creuse: #EDE6D6;
-  --bistre: #1C1A17;
-  --ocre-lumiere: #C8951F;   /* DÉCORATIF SEULEMENT (2,37:1) */
-  --ocre-encre: #715208;     /* CTA, liens — 6,34:1 sur chaux */
-  --sang: #A63D2F;           /* 5,55:1 sur chaux : AA texte */
-  --sang-encre: #8F3325;     /* réserve 6,92:1 */
-  --bleu-charrette: #35566B; /* 6,86:1 sur chaux : AA texte */
-  --gris-ombre: #7A756B;     /* DÉCORATIF SEULEMENT (4,03:1) */
-  --encre-seconde: #5C5648;  /* textes secondaires 6,42:1 */
+  /* Terres */
+  --biscuit: #EFE8DB;
+  --biscuit-2: #E5DCCB;
+  --lait: #F7F2E8;
+  --joint: #C9BDA8;         /* joint sur fond clair */
+  --joint-sombre: #120E0B;  /* joint des murs émaillés */
+  --encre: #1B1411;
+  --encre-2: #5E564C;       /* 6,0:1 sur biscuit */
+  --tenmoku: #1B1411;
+  --tenmoku-2: #26201B;
+  --lait-2: #B9B0A4;        /* texte secondaire sur tenmoku, 8,2:1 */
 
-  /* Nuit (footer, hero nocturne) */
-  --nuit: #14161A;
-  --nuit-elevee: #1C1F25;
-  --ocre-desat: #B08A3E;
-  --ocre-nuit: #D4AF5E;      /* 8,70:1 sur nuit */
-  --sang-nuit: #DC7B66;      /* 6,09:1 */
-  --bleu-nuit: #8FB0C4;      /* 7,91:1 */
-  --bleu-nuit-filet: #4A7086;/* 3,40:1 ≥ 3:1 UI */
-  --encre-seconde-nuit: #B5AE9F; /* 8,21:1 */
+  /* Émaux — teinte saturation clarté, posés sur les conteneurs */
+  --e-gotteron: 176 62% 17%;
+  --e-celadon: 152 20% 60%;
+  --e-lait: 40 36% 91%;
+  --e-ocre: 22 66% 39%;
+  --e-sarine: 222 56% 33%;
+  --e-engobe: 14 44% 71%;
+  --e-cendre: 56 6% 54%;
+  --e-tenmoku: 18 32% 9%;
 
-  /* Échelle typographique (visual-bible §2.1) */
-  --t-display: clamp(2.75rem, 1.29rem + 6.48vw, 7.125rem);
-  --t-titre: clamp(2rem, 1.33rem + 2.96vw, 4rem);
-  --t-soustitre: clamp(1.5rem, 1.25rem + 1.11vw, 2.25rem);
-  --t-devise: clamp(1.375rem, 1.17rem + 0.93vw, 2rem);
-  --t-courant: clamp(1.0625rem, 1.04rem + 0.12vw, 1.145rem);
+  /* Typographie */
+  --f-serif: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --f-sans: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --t-display: clamp(3.2rem, 0.9rem + 8.3vw, 10.5rem);
+  --t-titre: clamp(2.1rem, 1.25rem + 3.4vw, 4.6rem);
+  --t-titre-appel: clamp(2.4rem, 1.2rem + 5vw, 6.2rem);
+  --t-soustitre: clamp(1.35rem, 1.15rem + 0.8vw, 1.9rem);
+  --t-nom: clamp(1.45rem, 1.2rem + 1vw, 2.1rem);
+  --t-courant: clamp(1.0625rem, 1.02rem + 0.2vw, 1.1875rem);
+  --t-courant-grand: clamp(1.25rem, 1.05rem + 0.8vw, 1.7rem);
   --t-petit: 0.9375rem;
-  --t-mono-data: clamp(0.875rem, 0.85rem + 0.12vw, 0.9375rem);
-  --t-mono-label: 0.75rem;
+  --t-label: 0.75rem;
 
-  --f-serif: "Fraunces", Georgia, serif;
-  --f-mono: "Spline Sans Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* Espace */
+  --marge: clamp(1.25rem, 4vw, 4.5rem);
+  --gouttiere: clamp(1rem, 2.5vw, 2.5rem);
+  --section: clamp(6rem, 13vw, 12rem);
+  --conteneur: 1400px;
+  --entete-h: 5rem;
 
-  /* Espace (unité 8 px, suite ~Fibonacci) */
-  --esp-1: 8px; --esp-2: 16px; --esp-3: 24px; --esp-4: 40px;
-  --esp-5: 64px; --esp-6: 104px; --esp-7: clamp(112px, 16vh, 168px);
-  --gouttiere: clamp(16px, 2.5vw, 32px);
-  --marge: clamp(20px, 5vw, 72px);
-  --mesure: 62ch;
+  /* Carreaux */
+  --carreau: clamp(58px, 7.4vw, 118px);
+  --joint-l: 3px;
+  --rayon: 1.5px;
 
-  /* Filets */
-  --filet-fin: 1px; --filet-trace: 1.5px; --filet-peint: 3px;
-
-  /* Motion (visual-bible §8.1) */
-  --ease-ombre: cubic-bezier(0.65, 0, 0.35, 1);
+  /* Motion */
+  --ease: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-micro: cubic-bezier(0.33, 1, 0.68, 1);
-  --ease-instrument: cubic-bezier(0.4, 0, 0.2, 1);
-  --d-reveal: 850ms; --d-micro: 200ms;
+  --d-micro: 220ms;
 
-  /* Ombre solaire : angle en degrés SANS unité (−52 → +52), écrit par main.js.
-     Défaut : +31 (≈ 15 h solaires), l'état figé de reduced-motion. */
-  --sun-angle: 31;
+  /* Lumière (écrite par main.js, une fois par frame) */
+  --lx: 0%;
+  --ly: 0%;
 
   color-scheme: light;
 }
@@ -81,903 +75,711 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
-  scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
-
-/* Les ombres skewées des h1 débordent par construction : on les rogne sans
-   créer de conteneur de défilement (clip, jamais hidden). */
+/* Lenis pilote le défilement : le lissage natif doit s'effacer (sinon les deux
+   se disputent chaque frame). Sans JS, le lissage natif reste. */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-stopped { overflow: hidden; }
 html, body { overflow-x: clip; }
 
 body {
   margin: 0;
-  font-family: var(--f-serif);
+  font-family: var(--f-sans);
   font-size: var(--t-courant);
+  line-height: 1.55;
   font-weight: 400;
-  font-optical-sizing: none;
-  font-variation-settings: "opsz" 14, "SOFT" 0, "WONK" 0;
-  line-height: 1.6;
-  letter-spacing: 0.002em;
-  color: var(--bistre);
-  background-color: var(--chaux);
-  /* Nuages de taloche : trois radial-gradients quasi invisibles isolément. */
-  background-image:
-    radial-gradient(120% 90% at 15% 8%, rgba(200, 149, 31, 0.05), transparent 60%),
-    radial-gradient(140% 100% at 85% 30%, rgba(122, 117, 107, 0.06), transparent 55%),
-    radial-gradient(100% 120% at 50% 100%, rgba(53, 86, 107, 0.04), transparent 65%);
-  min-height: 100vh;
+  color: var(--encre);
+  background: var(--biscuit);
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Grain d'enduit : un seul calque fixe pleine page, inerte, au-dessus de tout. */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-  pointer-events: none;
-  background: url(../textures/grain-256.png) repeat 0 0 / 256px 256px;
-}
+img, svg { display: block; max-width: 100%; }
+p { margin: 0 0 1em; max-width: 60ch; }
+p:last-child { margin-bottom: 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+h1, h2, h3 { margin: 0; font-weight: 500; }
+a { color: inherit; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+legend { padding: 0; }
 
-::selection { background: var(--ocre-lumiere); color: var(--bistre); }
+::selection { background: hsl(var(--e-gotteron)); color: var(--lait); }
 
 :focus-visible {
-  outline: 2px solid var(--bleu-charrette);
-  outline-offset: 3px;
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+  border-radius: 2px;
 }
-/* Sur le mur nocturne, le bleu-charrette tombe à 2,32:1 : focus en bleu-nuit. */
-.pied :focus-visible { outline-color: var(--bleu-nuit); }
+:focus:not(:focus-visible) { outline: none; }
 
 .skip-link {
-  position: absolute;
-  left: var(--esp-2);
-  top: -100px;
-  z-index: 1001;
-  padding: 10px 18px;
-  background: var(--bistre);
-  color: var(--chaux);
-  font-family: var(--f-mono);
-  font-size: var(--t-mono-label);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition: top var(--d-micro) var(--ease-micro);
+  position: absolute; left: var(--marge); top: -100%;
+  z-index: 100; padding: .75rem 1rem;
+  background: var(--encre); color: var(--lait);
+  font: 500 var(--t-petit) var(--f-sans); text-decoration: none;
 }
-.skip-link:focus-visible { top: var(--esp-2); }
+.skip-link:focus { top: .75rem; }
 
-img, svg { max-width: 100%; height: auto; }
+.visuellement-cache {
+  position: absolute !important; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
 
-/* L'attribut hidden gagne toujours — même contre un display de classe. */
-[hidden] { display: none !important; }
+/* Séparateur typographique · dans les lignes de spécifications */
+.sep::before { content: "\00B7"; margin: 0 .55em; opacity: .55; }
 
 /* ==== 3. TYPOGRAPHIE ==================================================== */
-.t-display {
+.display {
   font-family: var(--f-serif);
   font-size: var(--t-display);
-  font-weight: 560;
-  font-optical-sizing: none;
-  font-variation-settings: "opsz" 144, "SOFT" 0, "WONK" 1;
-  line-height: 0.98;
-  letter-spacing: -0.015em;
-  margin: 0;
-  text-wrap: balance;
-}
-
-.t-titre {
-  font-family: var(--f-serif);
-  font-size: var(--t-titre);
-  font-weight: 540;
-  font-optical-sizing: none;
-  font-variation-settings: "opsz" 72, "SOFT" 0, "WONK" 0;
-  line-height: 1.05;
-  letter-spacing: -0.01em;
-  margin: 0 0 var(--esp-3);
-  text-wrap: balance;
-}
-
-.t-soustitre {
-  font-family: var(--f-serif);
-  font-size: var(--t-soustitre);
-  font-weight: 500;
-  font-optical-sizing: none;
-  font-variation-settings: "opsz" 40, "SOFT" 0, "WONK" 0;
-  line-height: 1.2;
-  margin: 0 0 var(--esp-2);
-}
-
-.t-devise {
-  font-family: var(--f-serif);
-  font-style: italic;
-  font-size: var(--t-devise);
-  font-weight: 480;
-  font-optical-sizing: none;
-  font-variation-settings: "opsz" 40, "SOFT" 50, "WONK" 0;
-  line-height: 1.25;
-  max-width: 38ch;
-}
-
-.romain {
-  font-variant-caps: all-small-caps;
-  letter-spacing: 0.08em;
-}
-
-.mono-label {
-  font-family: var(--f-mono);
-  font-size: var(--t-mono-label);
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-variation-settings: normal;
-}
-
-.mono-data {
-  font-family: var(--f-mono);
-  font-size: var(--t-mono-data);
-  font-weight: 400;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.01em;
-  font-variation-settings: normal;
-}
-
-p { max-width: var(--mesure); margin: 0 0 var(--esp-3); }
-.t-petit { font-size: var(--t-petit); }
-.t-seconde { color: var(--encre-seconde); }
-
-/* Typo interne des SVG générés */
-.svg-romain text, text.svg-romain {
-  font-family: var(--f-serif);
-  font-variant-caps: all-small-caps;
-  letter-spacing: 0.08em;
-  font-weight: 500;
-}
-.svg-mono, .svg-mono text { font-family: var(--f-mono); letter-spacing: 0.1em; }
-
-/* ==== 4. LAYOUT ========================================================= */
-.conteneur {
-  max-width: 1200px;
-  margin-inline: auto;
-  padding-inline: var(--marge);
-}
-
-.section { padding-block: var(--esp-7) 0; }
-.section > .conteneur > :last-child { margin-bottom: 0; }
-.section-pied { padding-bottom: var(--esp-7); }
-
-/* Filet d'horizon : la ligne qui sépare chaque section. */
-.filet-horizon {
-  border: 0;
-  border-top: var(--filet-fin) solid var(--bleu-charrette);
-  margin: var(--esp-7) 0 0;
-  opacity: 0.55;
-}
-
-.grille {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: var(--gouttiere);
-  align-items: start;
-}
-.col-5 { grid-column: span 5; }
-.col-6 { grid-column: span 6; }
-.col-7 { grid-column: span 7; }
-.col-12 { grid-column: 1 / -1; }
-
-@media (max-width: 900px) {
-  .grille { grid-template-columns: 1fr; }
-  .col-5, .col-6, .col-7 { grid-column: 1 / -1; }
-}
-
-.eyebrow {
-  color: var(--encre-seconde);
-  display: block;
-  margin-bottom: var(--esp-2);
-}
-
-/* ==== 5. SYSTÈME D'OMBRE SOLAIRE ======================================= */
-/* Chaque page inventorie ses pivots en tête de sa section §7 (max 5–6).
-   Technique : transforms uniquement, origine explicite « au gnomon ».
-   INTERDITS : box-shadow animé, filter animé, feTurbulence live. */
-
-/* Ombre portée d'un titre display : le texte se duplique en ocre-lumière
-   et se couche selon l'heure. attr(data-ombre) = même texte, décoratif. */
-.porte-ombre { position: relative; }
-.porte-ombre::after {
-  content: attr(data-ombre);
-  /* Syntaxe de texte alternatif vide : l'ombre est décorative, elle ne doit
-     pas entrer dans le nom accessible du titre (sinon lu deux fois). */
-  content: attr(data-ombre) / "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  color: var(--ocre-lumiere);
-  opacity: 0.32;
-  /* Skew borné : au-delà de ±8° le fantôme d'un titre haut se détache du texte. */
-  transform: translate(0.035em, 0.05em) skewX(clamp(-8deg, calc(var(--sun-angle) * -0.5deg), 8deg));
-  transform-origin: bottom left;
-  pointer-events: none;
-  will-change: transform;
-}
-
-/* Gnomon décoratif de marge : un trait vertical dont l'ombre pivote. */
-.gnomon-marge {
-  position: relative;
-  width: var(--filet-peint);
-  height: 72px;
-  background: var(--bistre);
-}
-.gnomon-marge::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: var(--filet-trace);
-  height: 64px;
-  background: var(--ocre-lumiere);
-  opacity: 0.55;
-  transform-origin: top center;
-  transform: rotate(calc(180deg - var(--sun-angle) * 1deg));
-  will-change: transform;
-}
-
-/* L'ombre du style du cadran héros et des planches (SVG) est pilotée
-   par main.js/cadran.js sur l'attribut style (rotate), même variable. */
-
-/* ==== 6. COMPOSANTS ===================================================== */
-
-/* --- Header --------------------------------------------------------- */
-.entete {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: color-mix(in srgb, var(--chaux) 94%, transparent);
-  border-bottom: var(--filet-fin) solid color-mix(in srgb, var(--bleu-charrette) 45%, transparent);
-}
-.entete-barre {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--esp-3);
-  padding-block: 14px;
-}
-.marque {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  text-decoration: none;
-  color: var(--bistre);
-}
-.marque-nom {
-  font-family: var(--f-serif);
-  font-size: 1.25rem;
-  font-weight: 560;
-  font-variation-settings: "opsz" 40, "SOFT" 0, "WONK" 1;
-  line-height: 1;
-  white-space: nowrap;
-}
-.marque-base { color: var(--encre-seconde); font-size: 0.6875rem; white-space: nowrap; }
-@media (max-width: 479px) { .marque-base { display: none; } }
-
-.nav-principale ul {
-  display: flex;
-  gap: var(--esp-3);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.nav-principale a {
-  font-family: var(--f-mono);
-  font-size: var(--t-mono-label);
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-decoration: none;
-  white-space: nowrap;
-  color: var(--bleu-charrette);
-  padding-block: 6px;
-  border-bottom: var(--filet-peint) solid transparent;
-  transition: color var(--d-micro) var(--ease-micro);
-}
-.nav-principale a:hover { color: var(--bistre); }
-.nav-principale a[aria-current="page"] {
-  color: var(--bistre);
-  border-bottom-color: var(--ocre-lumiere);
-}
-
-.bouton-menu {
-  display: none;
-  background: none;
-  border: var(--filet-trace) solid var(--bistre);
-  padding: 9px 14px;
-  font-family: var(--f-mono);
-  font-size: var(--t-mono-label);
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--bistre);
-  cursor: pointer;
-}
-
-/* 1024–1279 px : la nav reste, le CTA descend dans la page (hero + footer). */
-@media (max-width: 1279px) {
-  .entete .btn { display: none; }
-}
-@media (max-width: 1023px) {
-  .nav-principale { display: none; }
-  .bouton-menu { display: inline-block; }
-}
-
-/* Nav mobile : un contrevent qui glisse. */
-.nav-mobile {
-  border: 0;
-  padding: 0;
-  width: 100vw;
-  height: 100dvh;
-  max-width: none;
-  max-height: none;
-  background: var(--chaux);
-  color: var(--bistre);
-}
-.nav-mobile::backdrop { background: rgba(28, 26, 23, 0.35); }
-.nav-mobile-inner {
-  display: flex;
-  flex-direction: column;
-  gap: var(--esp-4);
-  padding: var(--esp-4) var(--marge) var(--esp-5);
-  min-height: 100%;
-}
-.nav-mobile-haut { display: flex; justify-content: space-between; align-items: center; }
-.nav-mobile ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--esp-3); }
-.nav-mobile ul a {
-  font-family: var(--f-serif);
-  font-size: var(--t-soustitre);
-  font-weight: 540;
-  font-variation-settings: "opsz" 72, "SOFT" 0, "WONK" 0;
-  color: var(--bistre);
-  text-decoration: none;
-}
-.nav-mobile ul a[aria-current="page"] { color: var(--ocre-encre); }
-
-/* --- Boutons --------------------------------------------------------- */
-.btn {
-  display: inline-block;
-  padding: 14px 28px;
-  font-family: var(--f-mono);
-  font-size: var(--t-mono-label);
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-decoration: none;
-  white-space: nowrap;
-  cursor: pointer;
-  border: 0;
-  position: relative;
-  transition: background-color var(--d-micro) var(--ease-micro),
-              color var(--d-micro) var(--ease-micro);
-}
-.btn-plein {
-  background: var(--ocre-encre);
-  color: var(--chaux);
-  border-bottom: var(--filet-peint) solid var(--bistre); /* le socle du gnomon */
-}
-.btn-plein::after { /* le seul bouton du site qui possède une ombre */
-  content: "";
-  position: absolute;
-  left: 8px;
-  bottom: calc(-1 * var(--filet-peint) - 2px);
-  width: 36%;
-  height: 2px;
-  background: var(--ocre-lumiere);
-  transform-origin: left center;
-  transform: rotate(calc(var(--sun-angle) * 0.06deg));
-  transition: width var(--d-micro) var(--ease-micro);
-}
-.btn-plein:hover { background: var(--bistre); }
-.btn-plein:hover::after { width: 62%; }
-.btn-fantome {
-  background: transparent;
-  color: var(--bistre);
-  border: var(--filet-trace) solid var(--bistre);
-}
-.btn-fantome:hover { background: var(--chaux-creuse); }
-
-/* --- Liens ----------------------------------------------------------- */
-a { color: var(--ocre-encre); }
-.corps a, p a {
-  color: var(--ocre-encre);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-thickness: 1px;
-  transition: text-decoration-thickness var(--d-micro) var(--ease-micro);
-}
-.corps a:hover, p a:hover { text-decoration-thickness: 3px; }
-
-.lien-fleche {
-  display: inline-block;
-  font-family: var(--f-mono);
-  font-size: var(--t-mono-data);
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  color: var(--ocre-encre);
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  text-decoration-thickness: 1px;
-  transition: text-decoration-thickness var(--d-micro) var(--ease-micro);
-}
-.lien-fleche:hover { text-decoration-thickness: 3px; }
-
-/* --- Cartes-planches -------------------------------------------------- */
-.carte-planche {
-  background: var(--chaux-creuse);
-  background-image: radial-gradient(120% 90% at 15% 8%, rgba(200, 149, 31, 0.05), transparent 60%);
-  border: var(--filet-trace) solid var(--bleu-charrette);
-  outline: var(--filet-fin) solid var(--gris-ombre);
-  outline-offset: 4px;
-  padding: var(--esp-3);
-  transition: transform var(--d-micro) var(--ease-micro);
-}
-a.carte-planche { display: block; text-decoration: none; color: var(--bistre); }
-a.carte-planche:hover { transform: translate(2px, -2px); }
-
-/* --- Tableaux de specs ------------------------------------------------ */
-.table-specs { width: 100%; border-collapse: collapse; }
-.table-specs caption {
-  text-align: left;
-  margin-bottom: var(--esp-2);
-  font-size: var(--t-petit);
-  color: var(--encre-seconde);
-}
-.table-specs th {
-  font-family: var(--f-mono);
-  font-size: var(--t-mono-label);
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-align: left;
-  padding: 10px 12px 10px 0;
-  border-bottom: var(--filet-trace) solid var(--bleu-charrette);
-}
-.table-specs td {
-  font-family: var(--f-mono);
-  font-size: var(--t-mono-data);
-  font-variant-numeric: tabular-nums;
-  padding: 10px 12px 10px 0;
-  border-bottom: var(--filet-fin) solid color-mix(in srgb, var(--bleu-charrette) 35%, transparent);
-}
-.table-specs td.nombre, .table-specs th.nombre { text-align: right; padding-right: 0; }
-.defilement-x { overflow-x: auto; }
-
-/* --- Listes mono ------------------------------------------------------ */
-.liste-mono { list-style: none; margin: 0 0 var(--esp-3); padding: 0; display: grid; gap: 6px; }
-.liste-mono li { color: var(--encre-seconde); }
-
-/* --- Formulaires ------------------------------------------------------ */
-.champ { display: grid; gap: 8px; margin-bottom: var(--esp-3); }
-.champ label {
-  font-family: var(--f-mono);
-  font-size: var(--t-mono-label);
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--bistre);
-}
-.champ input, .champ select, .champ textarea {
-  font-family: var(--f-serif);
-  font-size: var(--t-courant);
-  font-variation-settings: "opsz" 14, "SOFT" 0, "WONK" 0;
-  color: var(--bistre);
-  background: var(--chaux);
-  border: var(--filet-trace) solid var(--bleu-charrette);
-  border-radius: 0;
-  padding: 12px 14px;
-  width: 100%;
-}
-.champ input::placeholder, .champ textarea::placeholder { color: var(--encre-seconde); opacity: 1; }
-.champ input:focus-visible, .champ select:focus-visible, .champ textarea:focus-visible {
-  border-color: var(--ocre-encre);
-  outline: 2px solid var(--bleu-charrette);
-  outline-offset: 2px;
-}
-.champ-erreur {
-  display: none;
-  color: var(--sang);
-  font-size: var(--t-petit);
-  border-left: var(--filet-peint) solid var(--sang);
-  padding-left: 10px;
-}
-.champ.est-invalide input, .champ.est-invalide select, .champ.est-invalide textarea { border-color: var(--sang); }
-.champ.est-invalide .champ-erreur { display: block; }
-.champ-note { font-size: var(--t-petit); color: var(--encre-seconde); margin: 0; }
-.champ-consentement { display: flex; gap: 12px; align-items: flex-start; }
-.champ-consentement input { width: auto; margin-top: 4px; accent-color: var(--ocre-encre); }
-.champ-consentement label { text-transform: none; letter-spacing: 0; font-family: var(--f-serif); font-size: var(--t-petit); font-weight: 400; }
-
-.form-succes {
-  border: var(--filet-trace) solid var(--bleu-charrette);
-  padding: var(--esp-4);
-  background: var(--chaux-creuse);
-}
-
-/* --- Glossaire inline (dfn + tooltip accessible) ---------------------- */
-.glose, .glose-lien, dfn[data-glose] {
-  font-style: normal;
-  text-decoration: underline dotted 1px;
-  text-underline-offset: 3px;
-  color: var(--ocre-encre);
-  text-decoration: underline dotted 1px;
-  text-underline-offset: 3px;
-  cursor: help;
-  position: relative;
-}
-.infobulle {
-  position: absolute;
-  z-index: 200;
-  max-width: 34ch;
-  background: var(--bistre);
-  color: var(--chaux);
-  border: var(--filet-fin) solid var(--gris-ombre);
-  padding: 12px 14px;
-  font-size: var(--t-petit);
-  font-style: normal;
-  line-height: 1.5;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 160ms var(--ease-micro), transform 160ms var(--ease-micro), visibility 160ms;
-  transform: translateY(4px);
-}
-.infobulle.est-visible { opacity: 1; visibility: visible; transform: translateY(0); }
-.infobulle .mono-label { display: block; color: var(--ocre-nuit); margin-bottom: 4px; }
-
-/* --- Fil d'Ariane ----------------------------------------------------- */
-.ariane { margin-top: var(--esp-3); }
-.ariane ol { display: flex; gap: 8px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap; }
-.ariane li {
-  font-family: var(--f-mono);
-  font-size: var(--t-mono-label);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--encre-seconde);
-}
-.ariane li + li::before { content: "›"; margin-right: 8px; color: var(--gris-ombre); }
-.ariane a { color: var(--bleu-charrette); text-decoration: none; }
-.ariane a:hover { text-decoration: underline; }
-
-/* --- Footer : le mur nocturne ---------------------------------------- */
-.pied {
-  margin-top: var(--esp-7);
-  background: var(--nuit);
-  background-image:
-    radial-gradient(120% 90% at 15% 8%, rgba(176, 138, 62, 0.05), transparent 60%),
-    radial-gradient(100% 120% at 50% 100%, rgba(74, 112, 134, 0.06), transparent 65%);
-  color: var(--chaux);
-  padding-block: var(--esp-6) var(--esp-4);
-}
-.pied-grille {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr;
-  gap: var(--esp-5);
-  align-items: start;
-}
-@media (max-width: 900px) { .pied-grille { grid-template-columns: 1fr; gap: var(--esp-4); } }
-.pied h2 { font-size: var(--t-soustitre); margin: 0 0 var(--esp-2); font-weight: 540; font-variation-settings: "opsz" 72, "SOFT" 0, "WONK" 0; }
-.pied .t-devise { color: var(--encre-seconde-nuit); }
-.pied ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.pied a { color: var(--bleu-nuit); text-decoration: none; }
-.pied a:hover { text-decoration: underline; text-underline-offset: 3px; }
-.pied .btn-plein { background: var(--ocre-nuit); color: var(--nuit); border-bottom-color: var(--ocre-desat); }
-.pied .btn-plein:hover { background: var(--chaux); }
-.pied .mono-label { color: var(--encre-seconde-nuit); }
-.pied .mono-data { color: var(--encre-seconde-nuit); }
-.pied-bas {
-  margin-top: var(--esp-5);
-  padding-top: var(--esp-3);
-  border-top: var(--filet-fin) solid var(--bleu-nuit-filet);
-  display: grid;
-  gap: 8px;
-}
-.analemme-footer { width: 120px; height: auto; margin-bottom: var(--esp-2); }
-
-/* ==== 7. PAGES ========================================================== */
-
-/* --- 7.1 Accueil ------------------------------------------------------
-   PIVOTS : (1) #cadran-ombre [JS temps réel — PAS --sun-angle],
-   (2) h1 .porte-ombre::after, (3) .gnomon-marge::after (manifeste),
-   (4) .btn-plein::after du CTA final. Total : 4. */
-.hero { padding-block: var(--esp-5) var(--esp-6); }
-.hero-grille {
-  display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: var(--esp-5) var(--esp-4);
-  align-items: center;
-}
-@media (max-width: 900px) { .hero-grille { grid-template-columns: 1fr; } }
-.hero-titre .t-display { margin-block: var(--esp-3); }
-.hero-sous {
-  font-size: var(--t-soustitre);
   font-weight: 460;
   font-optical-sizing: none;
-  font-variation-settings: "opsz" 40, "SOFT" 20, "WONK" 0;
+  font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 0;
+  line-height: .9;
+  letter-spacing: -0.028em;
+  text-wrap: balance;
+}
+.titre {
+  font-family: var(--f-serif);
+  font-size: var(--t-titre);
+  font-weight: 440;
+  font-optical-sizing: none;
+  font-variation-settings: "opsz" 96, "SOFT" 100, "WONK" 0;
+  line-height: .98;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+  max-width: 14ch;
+}
+.soustitre {
+  font-family: var(--f-serif);
+  font-size: var(--t-soustitre);
+  font-weight: 480;
+  font-optical-sizing: none;
+  font-variation-settings: "opsz" 40, "SOFT" 80, "WONK" 0;
+  line-height: 1.12;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+.courant-grand {
+  font-size: var(--t-courant-grand);
   line-height: 1.35;
-  max-width: 46ch;
+  letter-spacing: -0.008em;
+  max-width: 30ch;
 }
-.hero-actions { display: flex; gap: var(--esp-2); flex-wrap: wrap; margin-top: var(--esp-4); align-items: center; }
-
-.cadran-cadre { position: relative; }
-.cadran-cadre .cadran-svg { display: block; width: 100%; aspect-ratio: 760 / 600; }
-/* Bascule nocturne : même boîte, calques permutés, jamais la hauteur. */
-.cadran-cadre.est-nuit { background: var(--nuit); }
-.cadran-cadre.est-nuit .cadran-svg { filter: none; }
-/* Sur le mur de nuit, les textes du cadran passent en encre de nuit
-   (le CSS l'emporte sur les attributs de présentation SVG). */
-.cadran-cadre.est-nuit .cadran-svg text { fill: var(--encre-seconde-nuit); }
-.cadran-etiquettes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px var(--esp-3);
-  margin-top: var(--esp-2);
-  color: var(--encre-seconde);
-}
-.cadran-etiquettes [data-live] { min-width: 26ch; }
-.cadran-legende { font-size: var(--t-petit); color: var(--encre-seconde); margin-top: var(--esp-2); }
-.cadran-outils { display: flex; flex-wrap: wrap; gap: var(--esp-2); margin-top: var(--esp-2); align-items: baseline; }
-.cadran-outils .champ-note { max-width: 40ch; }
-.lien-discret {
-  background: none; border: 0; padding: 0; cursor: pointer;
-  font-family: var(--f-mono); font-size: var(--t-mono-label); font-weight: 500;
-  letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--bleu-charrette); text-decoration: underline; text-underline-offset: 3px;
-}
-.lien-discret:hover { color: var(--bistre); }
-
-.manifeste-mono { display: grid; gap: 6px; margin-top: var(--esp-4); }
-
-.vitrines { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gouttiere); margin-block: var(--esp-4); }
-@media (max-width: 900px) { .vitrines { grid-template-columns: 1fr; } }
-.vitrine h3 { font-size: var(--t-soustitre); margin: 0 0 var(--esp-1); font-weight: 540; font-variation-settings: "opsz" 72, "SOFT" 0, "WONK" 0; }
-.vitrine .mono-data { color: var(--encre-seconde); display: block; margin-bottom: var(--esp-2); }
-.vitrine p { margin-bottom: 0; font-size: var(--t-petit); }
-
-.parcours-jalons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--esp-2) var(--esp-3);
-  padding: 0;
-  margin: var(--esp-4) 0;
-  list-style: none;
-}
-.parcours-jalons li { color: var(--bleu-charrette); }
-.parcours-jalons li::after { content: "→"; margin-left: var(--esp-3); color: var(--gris-ombre); }
-.parcours-jalons li:last-child::after { content: ""; }
-
-.cta-final { text-align: left; }
-.cta-final .mono-label { display: block; color: var(--encre-seconde); margin-block: var(--esp-3) var(--esp-2); }
-
-/* --- 7.2 Savoir-faire --------------------------------------------------
-   PIVOTS : (1) h1 .porte-ombre::after, (2) .gnomon-marge::after,
-   (3) ombre du geste actif (barre latérale), (4) CTA. Total : 4. */
-.gestes { display: grid; gap: var(--esp-6); margin-top: var(--esp-5); }
-.geste {
-  display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: var(--esp-4);
-  align-items: start;
-}
-@media (max-width: 900px) { .geste { grid-template-columns: 1fr; } }
-.geste-numero {
-  font-family: var(--f-mono);
-  font-size: var(--t-mono-label);
+.eyebrow {
+  font-size: var(--t-label);
   font-weight: 500;
-  letter-spacing: 0.14em;
-  color: var(--encre-seconde);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  margin: 0 0 1.6rem;
+  opacity: .82;
+}
+.spec {
+  font-size: var(--t-petit);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .01em;
+  color: var(--lait-2);
+  margin-bottom: 1.1rem;
+}
+.marque {
+  font-family: var(--f-serif);
+  font-size: 1.45rem;
+  font-weight: 560;
+  font-optical-sizing: none;
+  font-variation-settings: "opsz" 40, "SOFT" 100, "WONK" 0;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  line-height: 1;
+  margin: 0;
+}
+
+/* Boutons : un carreau plein, sans ombre. La flèche glisse, le carreau ne bondit pas. */
+.btn {
+  display: inline-flex; align-items: center; gap: .8em;
+  padding: 1em 1.45em;
+  font: 500 var(--t-petit)/1 var(--f-sans);
+  letter-spacing: .01em;
+  color: var(--lait); background: var(--encre);
+  text-decoration: none; border-radius: 2px;
+  white-space: nowrap;
+  transition: background var(--d-micro) var(--ease-micro), color var(--d-micro) var(--ease-micro);
+}
+.btn::after {
+  content: "";
+  width: .9em; height: .9em; flex: none;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M1 8h13M9 3l5 5-5 5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M1 8h13M9 3l5 5-5 5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform 260ms var(--ease-micro);
+}
+.btn:hover::after, .btn:focus-visible::after { transform: translateX(4px); }
+.btn:hover { background: hsl(var(--e-gotteron)); }
+.btn-lait { color: var(--encre); background: var(--lait); }
+.btn-lait:hover { background: #fff; }
+
+/* ==== 4. MURS =========================================================== */
+/* Le conteneur porte l'émail (--gh/--gs/--gl) ; chaque carreau porte ses
+   écarts (--dh/--ds/--dl), la place de son reflet (--hx/--hy) et son éclat
+   (--g). Tout est calculé en CSS : recolorer un mur = changer trois variables. */
+.mur {
+  --cols: 8;
+  --ratio: 1;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(calc(var(--cols) * 2), minmax(0, 1fr));
+  gap: var(--joint-l);
+  padding: var(--joint-l);
+  background: var(--joint-sombre);
+  overflow: hidden;
+  contain: paint;
+}
+.mur i {
+  --h: calc(var(--gh) + var(--dh, 0));
+  --s: calc(var(--gs) + var(--ds, 0%));
+  --l: calc(var(--gl) + var(--dl, 0%));
+  position: relative;
   display: block;
-  margin-bottom: var(--esp-2);
+  grid-column: span 2;
+  aspect-ratio: var(--ratio);
+  border-radius: var(--rayon);
+  /* Trois couches, toutes physiques : le reflet diffus d'une source en haut à
+     gauche, l'arête supérieure qui prend la lumière rasante, et le bombé de
+     l'émail (plus clair au centre, plus dense et plus saturé sur les bords). */
+  background:
+    radial-gradient(88% 46% at calc(var(--hx, 34%) + 4% + var(--lx)) calc(var(--hy, 26%) - 8% + var(--ly)),
+      hsl(var(--h) calc(var(--s) * .35) 99% / calc(var(--g, .2) * 1.1)) 0%,
+      hsl(var(--h) calc(var(--s) * .35) 99% / calc(var(--g, .2) * .35)) 45%,
+      transparent 80%),
+    linear-gradient(180deg, hsl(var(--h) var(--s) calc(var(--l) + 9%) / .35) 0%, transparent 18%),
+    radial-gradient(140% 120% at 50% 38%,
+      hsl(var(--h) var(--s) calc(var(--l) + 4%)) 0%,
+      hsl(var(--h) var(--s) var(--l)) 52%,
+      hsl(var(--h) calc(var(--s) + 8%) calc(var(--l) - 6%)) 100%);
+  box-shadow:
+    inset 1px 1px 0 hsl(var(--h) var(--s) calc(var(--l) + 12%) / .5),
+    inset -1px -1px 0 hsl(var(--h) var(--s) calc(var(--l) - 9%) / .55);
 }
-.geste h3 { margin: 0 0 var(--esp-2); }
-.geste-legende { display: block; margin-top: var(--esp-2); color: var(--encre-seconde); }
-.geste-figure { border-left: var(--filet-trace) solid var(--bleu-charrette); padding-left: var(--esp-3); }
-.geste-figure svg { width: 100%; height: auto; }
+/* Demi-carreau (coupé) des rangées décalées : même hauteur que ses voisins. */
+.mur i.demi { grid-column: span 1; aspect-ratio: calc(var(--ratio) / 2); }
 
-.simulateur {
-  border: var(--filet-trace) solid var(--bleu-charrette);
-  outline: var(--filet-fin) solid var(--gris-ombre);
-  outline-offset: 4px;
-  background: var(--chaux-creuse);
-  padding: var(--esp-4);
-  margin-top: var(--esp-4);
-}
-.simulateur-grille { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--esp-4); align-items: start; }
-@media (max-width: 900px) { .simulateur-grille { grid-template-columns: 1fr; } }
-.simulateur svg { width: 100%; height: auto; display: block; }
-.simulateur-lectures { display: grid; gap: 10px; margin-top: var(--esp-3); }
-.simulateur-lectures .valeur { color: var(--sang); }
-.curseur-bloc { display: grid; gap: 10px; margin-block: var(--esp-3); }
-input[type="range"].curseur {
-  width: 100%;
-  appearance: none;
-  height: 2px;
-  background: var(--bleu-charrette);
-  outline-offset: 6px;
-}
-input[type="range"].curseur::-webkit-slider-thumb {
-  appearance: none;
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  background: var(--ocre-encre);
-  border: 2px solid var(--chaux);
-  cursor: ew-resize;
-}
-input[type="range"].curseur::-moz-range-thumb {
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  background: var(--ocre-encre);
-  border: 2px solid var(--chaux);
-  cursor: ew-resize;
+/* Grain du grès : la tuile précalculée, une seule couche par mur. */
+.mur::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: url(../textures/grain-256.png) repeat 0 0 / 256px 256px;
+  mix-blend-mode: soft-light;
+  opacity: .9;
+  pointer-events: none;
 }
 
-.honnetete {
-  border-left: var(--filet-peint) solid var(--sang);
-  padding-left: var(--esp-3);
-}
-.honnetete .mono-label { color: var(--sang); }
-
-.glossaire dl { margin: 0; display: grid; gap: var(--esp-3); grid-template-columns: repeat(2, 1fr); }
-@media (max-width: 900px) { .glossaire dl { grid-template-columns: 1fr; } }
-.glossaire dt { font-weight: 560; font-variation-settings: "opsz" 40, "SOFT" 0, "WONK" 0; }
-.glossaire dt .mono-label { color: var(--encre-seconde); margin-left: 8px; }
-.glossaire dd { margin: 4px 0 0; font-size: var(--t-petit); max-width: 52ch; }
-.glossaire-entree { break-inside: avoid; }
-
-/* --- 7.3 Créations -----------------------------------------------------
-   PIVOTS : (1) h1 .porte-ombre::after, (2) ombre du style de la planche
-   survolée (SVG, rotation lente), (3) CTA. Total : 3. */
-.fiches { display: grid; gap: var(--esp-7); margin-top: var(--esp-5); }
-.fiche {
-  display: grid;
-  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-  gap: var(--esp-4);
-  align-items: start;
-}
-.fiche:nth-child(even) { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
-.fiche:nth-child(even) .fiche-planche { order: 2; }
-@media (max-width: 900px) {
-  .fiche, .fiche:nth-child(even) { grid-template-columns: 1fr; }
-  .fiche:nth-child(even) .fiche-planche { order: 0; }
-}
-.fiche-planche {
-  background: var(--chaux-creuse);
-  border: var(--filet-trace) solid var(--bleu-charrette);
-  outline: var(--filet-fin) solid var(--gris-ombre);
-  outline-offset: 4px;
-  padding: var(--esp-2);
-}
-.fiche-planche svg { display: block; width: 100%; height: auto; }
-.fiche h2 { margin-bottom: var(--esp-1); }
-.fiche-typologie { display: block; color: var(--encre-seconde); margin-bottom: var(--esp-3); }
-.fiche-devise { margin: var(--esp-3) 0 var(--esp-1); }
-.fiche-traduction { display: block; color: var(--encre-seconde); margin-bottom: var(--esp-3); }
-.fiche-specs { display: grid; gap: 5px; margin-block: var(--esp-3); padding: 0; list-style: none; color: var(--encre-seconde); }
-
-/* --- 7.4 L'Atelier -----------------------------------------------------
-   PIVOTS : (1) h1, (2) gnomon de marge du récit, (3) CTA. Total : 3. */
-.recit { max-width: var(--mesure); }
-.recit-mono { display: grid; gap: 6px; margin-top: var(--esp-4); color: var(--encre-seconde); }
-.doctrine { font-weight: 600; }
-
-.mains { display: grid; grid-template-columns: 1fr 1fr; gap: var(--esp-5); margin-top: var(--esp-5); }
-@media (max-width: 900px) { .mains { grid-template-columns: 1fr; } }
-.main-portrait h3 { margin: 0 0 4px; }
-.main-portrait .mono-label { display: block; color: var(--encre-seconde); margin-bottom: var(--esp-2); }
-.mains-ligne { margin-top: var(--esp-4); font-style: italic; }
-
-.carnet { display: grid; gap: var(--esp-4); margin-top: var(--esp-4); }
-.carnet-extrait {
-  border-left: var(--filet-trace) solid var(--bleu-charrette);
-  padding-left: var(--esp-3);
-}
-.carnet-extrait .mono-label { display: block; color: var(--encre-seconde); margin-bottom: var(--esp-2); }
-.carnet-extrait p { font-style: italic; margin-bottom: 0; }
-
-/* --- 7.5 Méthode & tarifs ---------------------------------------------
-   PIVOTS : (1) h1, (2) CTA. Total : 2 — page de confiance, pas de spectacle. */
-.etapes { counter-reset: etape; display: grid; gap: var(--esp-5); margin-top: var(--esp-5); }
-.etape {
-  display: grid;
-  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
-  gap: var(--esp-3) var(--esp-4);
-}
-@media (max-width: 900px) { .etape { grid-template-columns: 1fr; } }
-.etape-entete .mono-label { color: var(--encre-seconde); display: block; margin-bottom: var(--esp-1); }
-.etape h3 { margin: 0; }
-.etape-livrable { display: block; margin-top: var(--esp-2); color: var(--bleu-charrette); }
-
-.demarches { display: grid; grid-template-columns: 1fr 1fr; gap: var(--esp-4) var(--esp-5); margin-top: var(--esp-4); }
-@media (max-width: 900px) { .demarches { grid-template-columns: 1fr; } }
-.demarches h3 { margin: 0 0 var(--esp-2); }
-.demarches p { margin-bottom: 0; font-size: var(--t-petit); }
-
-.prix { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gouttiere); margin-top: var(--esp-4); }
-@media (max-width: 900px) { .prix { grid-template-columns: 1fr; } }
-.prix-carte {
-  border: var(--filet-trace) solid var(--bleu-charrette);
-  outline: var(--filet-fin) solid var(--gris-ombre);
-  outline-offset: 4px;
-  background: var(--chaux-creuse);
-  padding: var(--esp-3);
-  display: grid;
-  gap: var(--esp-2);
+/* Murs « libres » : ils remplissent leur boîte, quel que soit l'écran. */
+.mur-libre {
+  grid-template-columns: repeat(auto-fill, minmax(var(--carreau), 1fr));
   align-content: start;
 }
-.prix-carte h3 { margin: 0; font-size: var(--t-soustitre); }
-.prix-carte .mono-label { color: var(--encre-seconde); }
-.prix-carte p { font-size: var(--t-petit); margin: 0; }
-.prix-montant { color: var(--ocre-encre); font-weight: 500; }
-.prix-note { margin-top: var(--esp-3); font-size: var(--t-petit); color: var(--encre-seconde); }
+.mur-libre i { grid-column: auto; }
 
-.faq { display: grid; gap: var(--esp-4); margin-top: var(--esp-4); max-width: var(--mesure); }
-.faq h3 { margin: 0 0 var(--esp-1); font-size: 1.25rem; font-weight: 560; font-variation-settings: "opsz" 40, "SOFT" 0, "WONK" 0; }
-.faq p { margin-bottom: 0; }
+/* Émaux */
+.mur[data-email="gotteron"], [data-email="gotteron"] { --gh: 176; --gs: 62%; --gl: 17%; }
+[data-email="celadon"] { --gh: 152; --gs: 20%; --gl: 60%; }
+[data-email="lait"]    { --gh: 40;  --gs: 36%; --gl: 91%; }
+[data-email="ocre"]    { --gh: 22;  --gs: 66%; --gl: 39%; }
+[data-email="sarine"]  { --gh: 222; --gs: 56%; --gl: 33%; }
+[data-email="engobe"]  { --gh: 14;  --gs: 44%; --gl: 71%; }
+[data-email="cendre"]  { --gh: 56;  --gs: 6%;  --gl: 54%; }
+[data-email="tenmoku"] { --gh: 18;  --gs: 32%; --gl: 9%; }
+/* Émail alternatif d'une bande (rangée .alt) */
+[data-email-alt="sarine"] i.alt { --gh: 222; --gs: 56%; --gl: 33%; }
 
-/* --- 7.6 Contact -------------------------------------------------------
-   PIVOTS : (1) h1, (2) bouton d'envoi. Total : 2 — quasi statique. */
-.contact-grille { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: var(--esp-6); margin-top: var(--esp-5); }
-@media (max-width: 900px) { .contact-grille { grid-template-columns: 1fr; } }
-.contact-coordonnees { display: grid; gap: 6px; margin-block: var(--esp-3); }
-.mention-fictive {
-  border: var(--filet-trace) solid var(--sang);
-  padding: var(--esp-3);
-  margin-top: var(--esp-4);
-  font-size: var(--t-petit);
-  max-width: 52ch;
+/* ==== 5. LAYOUT ========================================================= */
+.conteneur {
+  width: min(100% - 2 * var(--marge), var(--conteneur));
+  margin-inline: auto;
 }
-.mention-fictive strong { color: var(--sang); }
+.grille {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gouttiere);
+  row-gap: 3rem;
+}
+.section {
+  padding-block: var(--section);
+  scroll-margin-top: 3.9rem; /* = hauteur de l'entête posée */
+}
 
-/* --- 7.7 404 & Mentions ----------------------------------------------- */
-.page-seule { min-height: 60vh; padding-block: var(--esp-6); }
-.page-seule .liste-liens { list-style: none; padding: 0; display: grid; gap: var(--esp-2); margin-top: var(--esp-4); }
+/* ==== 6. ENTÊTE & MENU ================================================== */
+.entete {
+  position: fixed; inset: 0 0 auto 0; z-index: 50;
+  display: flex; align-items: center; gap: 2.5rem;
+  min-height: var(--entete-h);
+  padding: 0 var(--marge);
+  color: var(--lait);
+  transition: background 380ms var(--ease), color 380ms var(--ease), min-height 380ms var(--ease), box-shadow 380ms var(--ease);
+}
+.entete .marque { margin-right: auto; }
+.nav ul { display: flex; gap: 2.1rem; }
+.nav a {
+  position: relative;
+  font-size: var(--t-petit); font-weight: 500; letter-spacing: .01em;
+  text-decoration: none; padding: .35rem 0;
+}
+.nav a::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+  height: 1.5px; background: currentColor;
+  transform: scaleX(0); transform-origin: right;
+  transition: transform 300ms var(--ease);
+}
+.nav a:hover::after, .nav a[aria-current="true"]::after { transform: scaleX(1); transform-origin: left; }
+.entete .btn { padding: .8em 1.2em; }
+/* Le CTA de l'entête n'apparaît qu'une fois le mur passé : dans le hero, il
+   est déjà là, en bas à droite — pas deux fois la même porte sur un écran. */
+.entete-cta {
+  color: var(--encre); background: var(--lait);
+  opacity: 0; visibility: hidden; transform: translateY(-4px);
+  transition: opacity 320ms var(--ease), transform 320ms var(--ease), visibility 0s 320ms, background var(--d-micro) var(--ease-micro), color var(--d-micro) var(--ease-micro);
+}
+.entete.est-posee .entete-cta { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+.bouton-menu {
+  display: none;
+  font-size: var(--t-petit); font-weight: 500; letter-spacing: .01em;
+  padding: .55rem .9rem; border: 1.5px solid currentColor; border-radius: 2px;
+}
+
+/* Une fois le mur passé, l'entête se pose sur le biscuit. */
+.entete.est-posee {
+  --entete-h: 3.9rem;
+  color: var(--encre);
+  background: color-mix(in srgb, var(--biscuit) 88%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  box-shadow: 0 1px 0 var(--joint);
+}
+.entete.est-posee .entete-cta { color: var(--lait); background: var(--encre); }
+.entete.est-posee .entete-cta:hover { background: hsl(var(--e-gotteron)); }
+.entete.est-sombre { color: var(--lait); background: color-mix(in srgb, var(--tenmoku) 84%, transparent); box-shadow: 0 1px 0 var(--tenmoku-2); }
+.entete.est-sombre .entete-cta { color: var(--encre); background: var(--lait); }
+
+.menu-mobile {
+  inset: 0; width: 100vw; height: 100dvh; max-width: none; max-height: none;
+  margin: 0; padding: 1.1rem var(--marge) 2rem; border: 0;
+  background: var(--tenmoku); color: var(--lait);
+  display: none; flex-direction: column;
+}
+.menu-mobile[open] { display: flex; }
+.menu-mobile::backdrop { background: transparent; }
+.menu-mobile-haut { display: flex; align-items: center; justify-content: space-between; min-height: 3rem; }
+.menu-mobile nav { margin: auto 0; }
+.menu-mobile nav a {
+  display: block; padding: .55rem 0;
+  font-family: var(--f-serif); font-size: clamp(2.4rem, 11vw, 3.6rem); font-weight: 440;
+  font-optical-sizing: none; font-variation-settings: "opsz" 96, "SOFT" 100, "WONK" 0;
+  letter-spacing: -0.025em; line-height: 1; text-decoration: none;
+  border-bottom: 1px solid var(--tenmoku-2);
+}
+.menu-mobile nav li:last-child a { border: 0; }
+.menu-mobile-pied { color: var(--lait-2); font-size: var(--t-petit); margin: 0; }
+
+/* ==== 7. SECTIONS ======================================================= */
+
+/* --- 7.1 Hero : le mur ------------------------------------------------- */
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex; flex-direction: column;
+  color: var(--lait);
+  isolation: isolate;
+}
+.mur-hero {
+  position: absolute; inset: 0; z-index: -2;
+  --joint-l: 3px;
+  will-change: transform;
+}
+/* Pénombre basse : le petit texte du pied de hero reste lisible sur les reflets. */
+.hero::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(to top, rgba(10, 8, 6, .42) 0%, rgba(10, 8, 6, .18) 26%, transparent 48%);
+}
+/* La lampe : une lumière douce qui suit le curseur sur le mur (pointeur fin seulement). */
+.hero-lampe {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(34rem circle at var(--mx, 50%) var(--my, 40%), rgba(255, 246, 228, .11), transparent 70%);
+  mix-blend-mode: screen;
+  transition: opacity 600ms var(--ease);
+}
+@media (hover: hover) and (pointer: fine) { .hero.a-lampe .hero-lampe { opacity: 1; } }
+
+.hero-contenu {
+  position: relative;
+  flex: 1;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  width: min(100% - 2 * var(--marge), var(--conteneur));
+  margin-inline: auto;
+  padding: calc(var(--entete-h) + 2.4rem) 0 2.2rem;
+}
+.hero-eyebrow { margin: 0; opacity: 1; }
+.hero h1 { align-self: end; margin: 2.4rem 0 2.2rem; }
+.hero h1 .ligne { display: block; overflow: hidden; padding-bottom: .06em; margin-bottom: -.06em; }
+.hero h1 .ligne > span { display: block; }
+.hero-pied {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 2rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid rgba(247, 242, 232, .28);
+}
+.hero-sous { max-width: 38ch; font-size: var(--t-courant); line-height: 1.5; margin: 0; }
+.hero-cartel {
+  margin: 1.7rem 0 0;
+  font-size: var(--t-label); letter-spacing: .04em; line-height: 1.5;
+  color: rgba(247, 242, 232, .78);
+  max-width: 56ch;
+}
+.hero-defiler {
+  position: absolute; right: var(--marge); bottom: 2.4rem;
+  width: 1px; height: 4.5rem; overflow: hidden;
+  background: rgba(247, 242, 232, .28);
+}
+.hero-defiler span {
+  position: absolute; inset: 0;
+  background: var(--lait);
+  transform: translateY(-100%);
+  animation: defiler 2.4s var(--ease) infinite;
+}
+@keyframes defiler {
+  0% { transform: translateY(-100%); }
+  55%, 100% { transform: translateY(100%); }
+}
+
+/* Cuisson : sous JS, les carreaux naissent en biscuit mat et prennent leur
+   émail en diagonale, comme on ouvre un four. Sans JS, ils sont déjà cuits. */
+.a-js .mur-hero i::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: var(--biscuit-2);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .06);
+  opacity: 1;
+  transition: opacity 1100ms var(--ease) calc(var(--d, 0) * 26ms);
+}
+.a-js .mur-hero.est-cuit i::after { opacity: 0; }
+.a-js .mur-hero:not(.est-cuit) ~ .hero-lampe { opacity: 0; }
+
+/* --- 7.2 Manifeste ------------------------------------------------------ */
+.manifeste-texte { grid-column: 1 / span 5; align-self: center; }
+.manifeste-texte .titre { margin-bottom: 2.2rem; }
+.manifeste-texte .courant-grand { margin-bottom: 1.4rem; }
+.specimen { grid-column: 7 / -1; margin: 0; }
+.carreau-specimen {
+  --h: var(--gh); --s: var(--gs); --l: var(--gl);
+  position: relative;
+  aspect-ratio: 1;
+  max-width: 560px;
+  border-radius: 3px;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 120% at 50% 45%,
+      hsl(var(--h) var(--s) calc(var(--l) + 4%)) 0%,
+      hsl(var(--h) var(--s) var(--l)) 52%,
+      hsl(var(--h) calc(var(--s) + 6%) calc(var(--l) - 6%)) 100%);
+  box-shadow:
+    inset 2px 2px 0 hsl(var(--h) var(--s) calc(var(--l) + 14%) / .55),
+    inset -2px -2px 0 hsl(var(--h) var(--s) calc(var(--l) - 9%) / .6);
+}
+/* Le reflet d'une fenêtre dans l'émail brillant : deux battants, flous. */
+.carreau-specimen::before {
+  content: ""; position: absolute;
+  left: 14%; top: 12%; width: 30%; height: 34%;
+  border-radius: 6px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, .46) 0 44%, transparent 44% 56%, rgba(255, 255, 255, .34) 56%);
+  filter: blur(7px);
+  transform: skewY(-5deg) rotate(-3deg) translate(calc(var(--lx) * .6), calc(var(--ly) * .6));
+  opacity: .9;
+  pointer-events: none;
+}
+.carreau-specimen::after {
+  content: ""; position: absolute; inset: 0;
+  background: url(../textures/grain-256.png) repeat 0 0 / 256px 256px;
+  mix-blend-mode: soft-light; opacity: .9; pointer-events: none;
+}
+.craquele { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .85; }
+
+.fiche {
+  margin: 1.6rem 0 0; max-width: 560px;
+  border-top: 1px solid var(--joint);
+}
+.fiche div {
+  display: grid; grid-template-columns: 7.5rem 1fr; gap: 1rem;
+  padding: .7rem 0; border-bottom: 1px solid var(--joint);
+  font-size: var(--t-petit);
+}
+.fiche dt { color: var(--encre-2); font-weight: 500; letter-spacing: .02em; }
+.fiche dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+/* --- 7.3 Émaux ---------------------------------------------------------- */
+.emaux { background: var(--biscuit-2); }
+.emaux-texte { grid-column: 1 / span 5; }
+.emaux-texte .titre { margin-bottom: 2.6rem; }
+.emaux-apercu { grid-column: 7 / -1; align-self: start; position: sticky; top: 6rem; }
+.emaux-note { grid-column: 1 / span 6; margin-top: -.5rem; max-width: 52ch; color: var(--encre-2); }
+.mur-apercu { border-radius: 3px; --joint-l: 4px; }
+/* Recuisson : à chaque changement d'émail, les carreaux repassent par le
+   biscuit (240 ms, ensemble) puis prennent le nouvel émail en diagonale. */
+.a-js .mur-apercu i::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: var(--biscuit-2);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .06);
+  opacity: 0;
+  transition: opacity 900ms var(--ease) calc(var(--d, 0) * 45ms);
+}
+.a-js .mur-apercu.est-cru i::after { opacity: 1; transition: opacity 240ms var(--ease) 0ms; }
+.emaux-legende {
+  display: grid; grid-template-columns: auto 1fr; column-gap: .6rem; align-items: baseline;
+  margin: 1.2rem 0 0; font-size: var(--t-petit); max-width: none;
+}
+.emaux-legende strong { font-family: var(--f-serif); font-size: 1.25rem; font-weight: 520; font-optical-sizing: none; font-variation-settings: "opsz" 40, "SOFT" 100, "WONK" 0; letter-spacing: -0.01em; }
+.emaux-legende [data-email-code] { color: var(--encre-2); font-variant-numeric: tabular-nums; }
+.emaux-legende [data-email-desc] { grid-column: 1 / -1; color: var(--encre-2); margin-top: .35rem; max-width: 50ch; }
+
+/* Le nuancier : une liste typographique, chaque nom est son propre bouton. */
+.nuancier { display: block; border-top: 1px solid var(--joint); }
+.pastille {
+  position: relative;
+  display: grid; grid-template-columns: 2.6rem 1fr auto; align-items: center; column-gap: 1.1rem;
+  padding: .75rem 0; border-bottom: 1px solid var(--joint);
+  cursor: pointer;
+}
+.pastille input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+.pastille-carreau {
+  --h: var(--gh); --s: var(--gs); --l: var(--gl);
+  width: 2.6rem; aspect-ratio: 1; border-radius: 2px;
+  background:
+    radial-gradient(60% 45% at 34% 26%, hsl(var(--h) calc(var(--s) * .5) 99% / .34), transparent 100%),
+    radial-gradient(130% 130% at 50% 45%, hsl(var(--h) var(--s) calc(var(--l) + 3%)) 0%, hsl(var(--h) calc(var(--s) + 6%) calc(var(--l) - 5%)) 100%);
+  box-shadow: inset 1px 1px 0 hsl(var(--h) var(--s) calc(var(--l) + 12%) / .5), inset -1px -1px 0 hsl(var(--h) var(--s) calc(var(--l) - 9%) / .55);
+  transform: scale(.78);
+  transition: transform 320ms var(--ease);
+}
+.pastille-nom {
+  font-family: var(--f-serif); font-size: var(--t-nom); font-weight: 420;
+  font-optical-sizing: none; font-variation-settings: "opsz" 72, "SOFT" 100, "WONK" 0;
+  letter-spacing: -0.018em; line-height: 1.05;
+  transition: transform 320ms var(--ease), color 320ms var(--ease);
+}
+.pastille-code { font-size: var(--t-petit); color: var(--encre-2); font-variant-numeric: tabular-nums; }
+.pastille:hover .pastille-carreau, .pastille:has(input:checked) .pastille-carreau { transform: scale(1); }
+.pastille:has(input:checked) .pastille-nom { transform: translateX(.35rem); font-variation-settings: "opsz" 72, "SOFT" 100, "WONK" 1; }
+.pastille:has(input:checked)::after {
+  content: ""; position: absolute; right: 0; top: 50%; width: 1.6rem; height: 1px;
+  background: var(--encre); transform: translateX(calc(100% + 1rem));
+}
+.pastille:has(input:focus-visible) { outline: 2px solid var(--encre); outline-offset: 4px; border-radius: 2px; }
+
+/* --- 7.4 Murs (réalisations) ------------------------------------------- */
+.murs { background: var(--tenmoku); color: var(--lait); }
+.murs-tete { margin-bottom: clamp(3rem, 6vw, 5.5rem); }
+.murs .eyebrow { color: var(--lait-2); }
+.murs .titre { max-width: 16ch; }
+.projet {
+  display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gouttiere); row-gap: 1.6rem;
+  align-items: end;
+  padding-block: clamp(2rem, 4vw, 3.5rem);
+  border-top: 1px solid var(--tenmoku-2);
+}
+.projet-mur { grid-column: 1 / span 7; }
+.projet-texte { grid-column: 9 / -1; padding-bottom: .4rem; }
+.projet-inverse .projet-mur { grid-column: 6 / -1; grid-row: 1; }
+.projet-inverse .projet-texte { grid-column: 1 / span 4; grid-row: 1; }
+.projet-texte .soustitre { margin-bottom: .7rem; }
+.projet-texte p:last-child { color: var(--lait-2); }
+.mur-projet { border-radius: 3px; --joint-l: 3px; }
+/* La bande bleue (rangée .alt) émaille son joint aussi : un mur tenu par le même joint. */
+
+/* --- 7.5 Méthode -------------------------------------------------------- */
+/* Quatre colonnes, quatre états de la matière : le nuancier, le carreau
+   d'essai trempé à moitié, le carreau cuit, le carreau posé. Pas de cartes :
+   des colonnes sur un joint, comme une planche d'essai. */
+.methode-tete { margin-bottom: clamp(2.5rem, 5vw, 4.5rem); }
+.etapes {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: var(--gouttiere); row-gap: 3rem;
+}
+.etape { border-top: 1px solid var(--joint); padding-top: 1.5rem; }
+.etape-figure { height: 7rem; display: flex; align-items: flex-end; margin-bottom: 2.2rem; }
+.etape-visuel { --joint-l: 2px; width: 7rem; border-radius: 2px; }
+.etape-visuel i { transition: none; }
+.etape-nuancier { --cols: 3; }
+.etape-pose { --cols: 2; background: var(--joint); --joint-l: 4px; }
+/* Le carreau d'essai : trempé aux deux tiers, le haut reste biscuit. */
+.etape-essai i::after {
+  content: ""; position: absolute; inset: 0;
+  background: var(--biscuit-2);
+  clip-path: polygon(0 0, 100% 0, 100% 34%, 0 42%);
+}
+.etape-num {
+  display: block; margin-bottom: .5rem;
+  font-family: var(--f-serif); font-size: 1.9rem; font-weight: 380;
+  font-optical-sizing: none; font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+  letter-spacing: -0.03em; line-height: 1;
+  color: hsl(var(--e-gotteron));
+}
+.etape .soustitre { margin-bottom: .6rem; }
+.etape p { font-size: var(--t-petit); color: var(--encre-2); line-height: 1.5; max-width: 30ch; }
+
+/* --- 7.6 Appel : le nuancier ------------------------------------------- */
+.appel {
+  position: relative; isolation: isolate;
+  min-height: 88svh;
+  display: grid; place-items: center;
+  color: var(--lait);
+  padding-block: clamp(5rem, 10vw, 9rem);
+}
+.mur-appel {
+  position: absolute; inset: 0; z-index: -1;
+  --carreau: clamp(34px, 4.6vw, 72px);
+  --joint-l: 2px;
+}
+/* Une pénombre douce derrière le texte : le mur reste, la lecture aussi. */
+.appel::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(60% 70% at 50% 50%, rgba(10, 8, 6, .34), transparent 100%);
+}
+.appel-contenu {
+  width: min(100% - 2 * var(--marge), 44rem);
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center;
+}
+.appel .eyebrow { opacity: 1; }
+.titre-appel { font-size: var(--t-titre-appel); max-width: 12ch; margin-bottom: 1.8rem; }
+.appel .courant-grand { max-width: 34ch; margin-bottom: 2.4rem; }
+.appel-alt { margin-top: 1.6rem; font-size: var(--t-petit); color: var(--lait); }
+
+/* --- 7.7 Pied ----------------------------------------------------------- */
+.pied { background: var(--tenmoku); color: var(--lait); padding-block: 4.5rem 2rem; }
+.pied-grille {
+  display: grid; grid-template-columns: 1.2fr .8fr 1.4fr; gap: 3rem;
+  padding-bottom: 3rem; border-bottom: 1px solid var(--tenmoku-2);
+}
+.pied .marque { margin-bottom: 1.2rem; }
+.pied-adresse { color: var(--lait-2); font-size: var(--t-petit); line-height: 1.6; }
+.pied-adresse a { color: var(--lait); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.pied nav ul { display: grid; gap: .5rem; }
+.pied nav a { text-decoration: none; font-size: var(--t-petit); }
+.pied nav a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.pied-note { color: var(--lait-2); font-size: var(--t-petit); line-height: 1.6; max-width: 46ch; justify-self: end; }
+.pied-bas {
+  display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  padding-top: 1.4rem; font-size: var(--t-label); letter-spacing: .05em; color: var(--lait-2);
+}
 
 /* ==== 8. MOTION ========================================================= */
-/* États initiaux des reveals — appliqués SEULEMENT si le JS est là
-   (html.a-js) pour ne jamais servir une page vide sans JavaScript. */
-html.a-js [data-reveal] {
-  opacity: 0;
-  clip-path: polygon(-14% 0, 100% 0, 114% 100%, 0 100%);
+/* Reveals : un glissement bref, jamais de rebond. Sans JS, tout est visible. */
+.a-js [data-reveal] {
+  opacity: 0; transform: translateY(22px);
+  transition: opacity 800ms var(--ease), transform 800ms var(--ease);
 }
-html.a-js [data-reveal].est-revele {
-  opacity: 1;
-  clip-path: polygon(-14% -20%, 114% -20%, 114% 120%, -14% 120%);
-  transition: opacity var(--d-reveal) var(--ease-ombre),
-              clip-path var(--d-reveal) var(--ease-ombre);
-}
-html.a-js [data-reveal="2"].est-revele { transition-delay: 90ms; }
-html.a-js [data-reveal="3"].est-revele { transition-delay: 180ms; }
-html.a-js [data-reveal="4"].est-revele { transition-delay: 270ms; }
+.a-js [data-reveal="2"] { transition-delay: 120ms; }
+.a-js [data-reveal="3"] { transition-delay: 240ms; }
+.a-js [data-reveal].est-revele { opacity: 1; transform: none; }
+
+/* Entrée du hero : les lignes du titre montent dans leur masque, le reste suit. */
+.a-js .hero h1 .ligne > span { transform: translateY(110%); transition: transform 1100ms var(--ease); }
+.a-js .hero .hero-eyebrow, .a-js .hero .hero-pied, .a-js .hero .hero-cartel, .a-js .hero-defiler { opacity: 0; transition: opacity 900ms var(--ease); }
+.a-js .hero.est-entre h1 .ligne > span { transform: none; }
+.a-js .hero.est-entre h1 .ligne:nth-child(1) > span { transition-delay: 500ms; }
+.a-js .hero.est-entre h1 .ligne:nth-child(2) > span { transition-delay: 620ms; }
+.a-js .hero.est-entre h1 .ligne:nth-child(3) > span { transition-delay: 740ms; }
+.a-js .hero.est-entre .hero-eyebrow { opacity: 1; transition-delay: 900ms; }
+.a-js .hero.est-entre .hero-pied { opacity: 1; transition-delay: 1150ms; }
+.a-js .hero.est-entre .hero-cartel { opacity: 1; transition-delay: 1400ms; }
+.a-js .hero.est-entre .hero-defiler { opacity: 1; transition-delay: 1800ms; }
 
 @media (prefers-reduced-motion: reduce) {
-  :root { --sun-angle: 31; }
   html { scroll-behavior: auto; }
-  html.a-js [data-reveal] { opacity: 1; clip-path: none; transition: none; }
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+  *, *::before, *::after { transition-duration: 1ms !important; transition-delay: 0ms !important; animation: none !important; }
+  .a-js .mur-hero i::after { opacity: 0; }
+  .a-js [data-reveal] { opacity: 1; transform: none; }
+  .a-js .hero h1 .ligne > span { transform: none; }
+  .a-js .hero .hero-eyebrow, .a-js .hero .hero-pied, .a-js .hero .hero-cartel { opacity: 1; }
+  .hero-defiler span { transform: translateY(0); }
+  .hero-lampe { display: none; }
+  .mur-hero { will-change: auto; }
+}
+
+/* ==== 9. RESPONSIVE ===================================================== */
+@media (max-width: 1100px) {
+  .manifeste-texte { grid-column: 1 / span 6; }
+  .specimen { grid-column: 7 / -1; }
+  .emaux-texte { grid-column: 1 / span 6; }
+  .emaux-apercu { grid-column: 7 / -1; }
+  .emaux-note { grid-column: 1 / span 8; }
+  .projet-mur { grid-column: 1 / span 7; }
+  .projet-texte { grid-column: 8 / -1; }
+  .projet-inverse .projet-mur { grid-column: 6 / -1; }
+  .projet-inverse .projet-texte { grid-column: 1 / span 5; }
+  .pied-grille { grid-template-columns: 1fr 1fr; }
+  .pied-note { grid-column: 1 / -1; justify-self: start; }
 }
 
 @media (max-width: 900px) {
-  body { background-attachment: scroll; }
-  .section { padding-block: var(--esp-6) 0; }
+  :root { --entete-h: 4.2rem; --section: clamp(5rem, 14vw, 8rem); }
+  .nav, .entete-cta { display: none; }
+  .bouton-menu { display: inline-block; }
+  .entete { gap: 1rem; }
+
+  /* Hero tablette : le titre prend toute la largeur, le pied s'empile. */
+  .hero h1 { max-width: none; margin: 2.5rem 0 2rem; }
+  .hero-pied { flex-direction: column; align-items: flex-start; gap: 1.6rem; }
+  .hero-defiler { display: none; }
+
+  .manifeste-texte, .specimen, .emaux-texte, .emaux-apercu, .emaux-note { grid-column: 1 / -1; }
+  .specimen { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+  .specimen .carreau-specimen { max-width: none; }
+  .fiche { margin-top: 0; }
+  .emaux-apercu { position: static; order: -1; }
+  .emaux-texte .titre { margin-bottom: 2rem; }
+  .mur-apercu { --cols: 7; }
+
+  .projet, .projet-inverse { grid-template-columns: 1fr; row-gap: 1.4rem; }
+  .projet-mur, .projet-texte, .projet-inverse .projet-mur, .projet-inverse .projet-texte { grid-column: 1 / -1; grid-row: auto; }
+  .projet-texte { padding-bottom: 0; }
+
+  .etapes { grid-template-columns: 1fr 1fr; row-gap: 2.5rem; }
 }
 
-@media (max-width: 639px) {
-  /* Un CTA long ne doit ni déborder ni se tronquer sur petit écran. */
-  .btn { white-space: normal; text-align: center; }
-  /* Le graphe du simulateur garde une taille d'instrument : défilement interne. */
-  .simulateur-defile { overflow-x: auto; }
-  .simulateur-defile svg { min-width: 480px; }
-}
+@media (max-width: 640px) {
+  :root { --carreau: 62px; --joint-l: 2px; }
+  .display { line-height: .92; letter-spacing: -0.02em; }
+  .hero-contenu { padding-top: calc(var(--entete-h) + 2.2rem); padding-bottom: 1.8rem; }
+  .hero h1 { margin: 2rem 0 1.6rem; }
+  .hero-pied { padding-top: 1.2rem; }
+  .hero-pied .btn { align-self: stretch; justify-content: space-between; }
+  .hero-cartel { margin-top: 1.6rem; }
 
-/* Impression : le grain et les ombres ne s'impriment pas. */
-@media print {
-  body::after { display: none; }
-  .entete, .pied, .skip-link { display: none; }
+  .specimen { grid-template-columns: 1fr; }
+  .fiche div { grid-template-columns: 6rem 1fr; }
+
+  .mur-apercu { --cols: 6; }
+  .mur-apercu i:nth-child(n + 25) { display: none; } /* 6 × 4 : rangées entières seulement */
+  .pastille { grid-template-columns: 2.2rem 1fr auto; column-gap: .9rem; padding: .6rem 0; }
+  .pastille-carreau { width: 2.2rem; }
+  .pastille:has(input:checked)::after { display: none; }
+  .pastille:has(input:checked) .pastille-nom { transform: none; }
+
+  .etapes { grid-template-columns: 1fr; row-gap: 1.6rem; }
+  .etape { display: grid; grid-template-columns: 5.5rem 1fr; column-gap: 1.2rem; padding-top: 1.2rem; }
+  .etape-figure { height: auto; align-items: flex-start; margin: .25rem 0 0; grid-row: 1 / span 3; }
+  .etape-visuel { width: 5.5rem; }
+  .etape p { max-width: none; }
+
+  .appel { min-height: 0; }
+  .appel-contenu { text-align: left; align-items: flex-start; }
+  .appel .btn { align-self: stretch; justify-content: space-between; }
+
+  .pied-grille { grid-template-columns: 1fr; gap: 2.2rem; }
+  .pied-bas { flex-direction: column; gap: .5rem; }
 }

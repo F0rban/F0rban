@@ -1,219 +1,252 @@
 /**
- * main.js — bootstrap commun à toutes les pages.
+ * main.js — comportements de la page Tesson.
  *
- * Rôles : scroll lissé (Lenis), variable globale --sun-angle pilotée au scroll
- * (UNE écriture par frame, gsap.quickSetter), reveals au clip-path oblique,
- * navigation mobile, infobulles du glossaire, formulaire de contact.
- *
- * Doctrine motion (visual-bible §8) : rien ne bondit, tout pivote ou glisse
- * comme une ombre. prefers-reduced-motion : scroll natif, ombres figées à +31°,
- * les instruments restent fonctionnels.
- *
- * Dépendance globale (vendorisée, chargée avant ce module) : window.Lenis.
- * (GSAP a été retiré : Lenis seul suffit à lisser le scroll et à écrire
- * --sun-angle — 46 Ko gzip économisés par page.)
+ * Tout est amélioration progressive : sans JavaScript, les murs sont cuits,
+ * le contenu est visible, les ancres fonctionnent. Ici on ajoute :
+ *   1. la cuisson du mur du hero (les carreaux prennent leur émail en diagonale) ;
+ *   2. la lumière : reflets et lampe suivent le curseur (une écriture par frame) ;
+ *   3. le scroll lissé (Lenis, vendorisé) et la parallaxe du mur ;
+ *   4. l'entête qui se pose une fois le mur passé, et la section courante ;
+ *   5. les reveals ;
+ *   6. le nuancier : changer d'émail recolore le mur d'aperçu ;
+ *   7. le menu mobile.
  */
 
 const reduitLeMouvement = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const pointeurFin = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+const racine = document.documentElement;
+const hero = document.querySelector(".hero");
+const murHero = document.querySelector(".mur-hero");
 
 /* ------------------------------------------------------------------ */
-/* Scroll lissé + ombre solaire globale                                */
+/* 1. Cuisson du mur du hero                                           */
 /* ------------------------------------------------------------------ */
+if (murHero) {
+  const carreaux = murHero.querySelectorAll("i");
+  const compteColonnes = () => getComputedStyle(murHero).gridTemplateColumns.split(" ").length || 1;
+  const poseDelais = () => {
+    const cols = compteColonnes();
+    carreaux.forEach((c, i) => {
+      const r = Math.floor(i / cols);
+      const k = i % cols;
+      // Diagonale depuis le coin haut-gauche, légèrement chahutée : un four
+      // ne cuit jamais tout à fait uniformément.
+      c.style.setProperty("--d", String(r + k + ((i * 7) % 3)));
+    });
+  };
+  poseDelais();
+  // L'état « cru » doit avoir été calculé une fois avant le changement de
+  // classe, sinon le navigateur ne voit aucune transition à jouer.
+  const premierCarreau = carreaux[0];
+  if (premierCarreau) void getComputedStyle(premierCarreau, "::after").opacity;
+  hero.querySelectorAll("h1 .ligne > span").forEach((s) => void getComputedStyle(s).transform);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    murHero.classList.add("est-cuit");
+    hero.classList.add("est-entre");
+  }));
+  let timerRedim;
+  window.addEventListener("resize", () => {
+    clearTimeout(timerRedim);
+    timerRedim = setTimeout(poseDelais, 200);
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* 2. Lumière : reflets (--lx/--ly) et lampe (--mx/--my)               */
+/* ------------------------------------------------------------------ */
+if (pointeurFin && !reduitLeMouvement && hero) {
+  let cible = null;
+  let prevu = false;
+  const applique = () => {
+    prevu = false;
+    if (!cible) return;
+    const { x, y } = cible;
+    const w = window.innerWidth || 1;
+    const h = window.innerHeight || 1;
+    racine.style.setProperty("--lx", `${((x / w - 0.5) * 14).toFixed(2)}%`);
+    racine.style.setProperty("--ly", `${((y / h - 0.5) * 10).toFixed(2)}%`);
+    const r = hero.getBoundingClientRect();
+    hero.style.setProperty("--mx", `${(x - r.left).toFixed(0)}px`);
+    hero.style.setProperty("--my", `${(y - r.top).toFixed(0)}px`);
+  };
+  window.addEventListener("pointermove", (e) => {
+    cible = { x: e.clientX, y: e.clientY };
+    if (!prevu) { prevu = true; requestAnimationFrame(applique); }
+  }, { passive: true });
+  hero.addEventListener("pointerenter", () => hero.classList.add("a-lampe"));
+  hero.addEventListener("pointerleave", () => hero.classList.remove("a-lampe"));
+}
+
+/* ------------------------------------------------------------------ */
+/* 3. Scroll lissé + parallaxe du mur                                  */
+/* ------------------------------------------------------------------ */
+let lenis = null;
 if (!reduitLeMouvement && window.Lenis) {
-  const lenis = new window.Lenis({ lerp: 0.095 });
+  lenis = new window.Lenis({ lerp: 0.1 });
   requestAnimationFrame(function raf(t) {
     lenis.raf(t);
     requestAnimationFrame(raf);
   });
+}
 
-  // Le scroll EST la journée : -52° en haut de page (matin), +52° au footer
-  // (couchant). Le lissage vient de Lenis lui-même (e.scroll est la valeur
-  // interpolée) : une seule écriture par frame de scroll, sur :root.
-  const racine = document.documentElement;
-  lenis.on("scroll", (e) => {
-    const limite = e.limit || 1;
-    racine.style.setProperty("--sun-angle", String(-52 + 104 * Math.min(1, e.scroll / limite)));
+const surScroll = (y) => {
+  if (murHero && !reduitLeMouvement) {
+    const limite = hero.offsetHeight;
+    if (y <= limite) murHero.style.transform = `translate3d(0, ${(y * 0.28).toFixed(1)}px, 0)`;
+  }
+  poseEntete(y);
+};
+
+if (lenis) {
+  lenis.on("scroll", (e) => surScroll(e.scroll));
+} else {
+  let prevu = false;
+  window.addEventListener("scroll", () => {
+    if (prevu) return;
+    prevu = true;
+    requestAnimationFrame(() => { prevu = false; surScroll(window.scrollY); });
+  }, { passive: true });
+}
+
+/* Ancres : lissage Lenis, mais le contrat natif est préservé (hash + focus).
+   Le décalage sous l'entête vient du seul `scroll-margin-top` des sections,
+   que Lenis lit comme le navigateur. */
+document.querySelectorAll('a[href^="#"]').forEach((a) => {
+  a.addEventListener("click", (e) => {
+    const id = a.getAttribute("href");
+    if (id === "#") return;
+    const cible = document.querySelector(id);
+    if (!cible) return;
+    e.preventDefault();
+    document.querySelector(".menu-mobile[open]")?.close();
+    if (lenis) lenis.scrollTo(cible);
+    else cible.scrollIntoView({ behavior: reduitLeMouvement ? "auto" : "smooth" });
+    if (!cible.hasAttribute("tabindex")) cible.setAttribute("tabindex", "-1");
+    cible.focus({ preventScroll: true });
+    history.pushState(null, "", id);
   });
+});
 
-  // Liens d'ancre internes : Lenis garde le lissage, mais on préserve le
-  // contrat natif — le hash change et le focus suit (skip-link compris).
-  document.querySelectorAll('a[href^="#"]').forEach((a) => {
-    a.addEventListener("click", (e) => {
-      const cible = document.querySelector(a.getAttribute("href"));
-      if (!cible) return;
-      e.preventDefault();
-      lenis.scrollTo(cible, { offset: -80 });
-      if (!cible.hasAttribute("tabindex")) cible.setAttribute("tabindex", "-1");
-      cible.focus({ preventScroll: true });
-      history.pushState(null, "", a.getAttribute("href"));
+/* ------------------------------------------------------------------ */
+/* 4. Entête : posée après le mur, sombre sur les sections sombres     */
+/* ------------------------------------------------------------------ */
+const entete = document.querySelector(".entete");
+const sectionsSombres = [...document.querySelectorAll(".murs, .appel, .pied")];
+function poseEntete(y) {
+  if (!entete || !hero) return;
+  const posee = y > hero.offsetHeight - 120;
+  entete.classList.toggle("est-posee", posee);
+  if (posee) {
+    const h = entete.offsetHeight;
+    const sombre = sectionsSombres.some((s) => {
+      const r = s.getBoundingClientRect();
+      return r.top <= h && r.bottom > h;
     });
-  });
+    entete.classList.toggle("est-sombre", sombre);
+  } else {
+    entete.classList.remove("est-sombre");
+  }
+}
+poseEntete(window.scrollY);
+
+/* Section courante dans la navigation */
+const liensNav = [...document.querySelectorAll(".nav a")];
+if (liensNav.length && "IntersectionObserver" in window) {
+  const parId = new Map(liensNav.map((a) => [a.getAttribute("href").slice(1), a]));
+  const visibles = new Map();
+  const io = new IntersectionObserver((entrees) => {
+    for (const e of entrees) visibles.set(e.target.id, e.isIntersecting ? e.intersectionRatio : 0);
+    let meilleur = null;
+    for (const [id, ratio] of visibles) if (ratio > 0 && (!meilleur || ratio > visibles.get(meilleur))) meilleur = id;
+    liensNav.forEach((a) => a.removeAttribute("aria-current"));
+    if (meilleur) parId.get(meilleur)?.setAttribute("aria-current", "true");
+  }, { rootMargin: "-35% 0px -45% 0px", threshold: [0, 0.2, 0.5, 0.8] });
+  for (const id of parId.keys()) {
+    const s = document.getElementById(id);
+    if (s) io.observe(s);
+  }
 }
 
 /* ------------------------------------------------------------------ */
-/* Reveals — l'ombre se retire (clip-path oblique, CSS fait le tween)  */
+/* 5. Reveals                                                          */
 /* ------------------------------------------------------------------ */
 const revelables = document.querySelectorAll("[data-reveal]");
-if (revelables.length) {
-  const io = new IntersectionObserver(
-    (entrees) => {
-      for (const e of entrees) {
-        if (e.isIntersecting) {
-          e.target.classList.add("est-revele");
-          io.unobserve(e.target);
-        }
+if (revelables.length && "IntersectionObserver" in window && !reduitLeMouvement) {
+  const io = new IntersectionObserver((entrees) => {
+    for (const e of entrees) {
+      if (e.isIntersecting) {
+        e.target.classList.add("est-revele");
+        io.unobserve(e.target);
       }
-    },
-    { rootMargin: "0px 0px -12% 0px", threshold: 0.05 }
-  );
-  revelables.forEach((el) => io.observe(el));
-}
-
-/* ------------------------------------------------------------------ */
-/* Navigation mobile — le contrevent                                   */
-/* ------------------------------------------------------------------ */
-const boutonMenu = document.querySelector(".bouton-menu");
-const navMobile = document.querySelector(".nav-mobile");
-if (boutonMenu && navMobile) {
-  boutonMenu.addEventListener("click", () => navMobile.showModal());
-  navMobile.querySelector(".nav-mobile-fermer")?.addEventListener("click", () => navMobile.close());
-  navMobile.addEventListener("click", (e) => {
-    // Clic sur le fond du dialog (hors contenu) ou sur un lien : on ferme.
-    if (e.target === navMobile || e.target.closest("a")) navMobile.close();
-  });
-}
-
-/* ------------------------------------------------------------------ */
-/* Glossaire inline — une seule infobulle partagée, hover ET focus     */
-/* ------------------------------------------------------------------ */
-const gloses = document.querySelectorAll("[data-glose]");
-if (gloses.length) {
-  const bulle = document.createElement("div");
-  bulle.className = "infobulle";
-  bulle.id = "infobulle-glossaire";
-  bulle.setAttribute("role", "tooltip");
-  document.body.appendChild(bulle);
-  let cibleCourante = null;
-  let timerFermeture = null;
-
-  const montre = (el) => {
-    clearTimeout(timerFermeture);
-    cibleCourante = el;
-    const terme = el.getAttribute("data-terme") || el.textContent.trim();
-    bulle.innerHTML = "";
-    const label = document.createElement("span");
-    label.className = "mono-label";
-    label.textContent = terme;
-    bulle.appendChild(label);
-    bulle.appendChild(document.createTextNode(el.getAttribute("data-glose")));
-    const r = el.getBoundingClientRect();
-    bulle.style.left = "0px";
-    bulle.style.top = "0px";
-    bulle.classList.add("est-visible");
-    const b = bulle.getBoundingClientRect();
-    let x = r.left + window.scrollX;
-    x = Math.min(x, window.scrollX + document.documentElement.clientWidth - b.width - 12);
-    const y = r.bottom + window.scrollY + 8;
-    bulle.style.left = `${Math.max(x, window.scrollX + 12)}px`;
-    bulle.style.top = `${y}px`;
-    el.setAttribute("aria-describedby", "infobulle-glossaire");
-  };
-  const cache = () => {
-    bulle.classList.remove("est-visible");
-    cibleCourante?.removeAttribute("aria-describedby");
-    cibleCourante = null;
-  };
-  // WCAG 1.4.13 : la bulle doit être survolable — fermeture différée,
-  // annulée si le pointeur entre dans la bulle.
-  const cacheDoucement = () => {
-    clearTimeout(timerFermeture);
-    timerFermeture = setTimeout(cache, 180);
-  };
-  bulle.addEventListener("mouseenter", () => clearTimeout(timerFermeture));
-  bulle.addEventListener("mouseleave", cacheDoucement);
-
-  const tactile = window.matchMedia("(hover: none)").matches;
-  gloses.forEach((el) => {
-    if (el.tagName !== "A" && el.tabIndex < 0) el.tabIndex = 0;
-    el.classList.add("glose");
-    el.addEventListener("mouseenter", () => montre(el));
-    el.addEventListener("mouseleave", cacheDoucement);
-    el.addEventListener("focus", () => montre(el));
-    el.addEventListener("blur", cacheDoucement);
-    if (tactile) {
-      // Écran tactile : premier tap = glose (on retient la navigation),
-      // second tap = suivre le lien éventuel.
-      el.addEventListener("click", (e) => {
-        if (cibleCourante !== el) {
-          e.preventDefault();
-          montre(el);
-        }
-      });
     }
-  });
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") cache();
-  });
-  window.addEventListener("scroll", () => { if (cibleCourante) cache(); }, { passive: true });
+  }, { rootMargin: "0px 0px -10% 0px", threshold: 0.08 });
+  revelables.forEach((el) => io.observe(el));
+} else {
+  revelables.forEach((el) => el.classList.add("est-revele"));
 }
 
 /* ------------------------------------------------------------------ */
-/* Année courante du footer                                            */
+/* 6. Nuancier : l'émail choisi recolore le mur d'aperçu               */
+/* ------------------------------------------------------------------ */
+const nuancier = document.querySelector("#nuancier-emaux");
+const murApercu = document.querySelector(".mur-apercu");
+if (nuancier && murApercu) {
+  const nom = document.querySelector("[data-email-nom]");
+  const code = document.querySelector("[data-email-code]");
+  const desc = document.querySelector("[data-email-desc]");
+  const carreaux = murApercu.querySelectorAll("i");
+  const poseDelais = () => {
+    const cols = getComputedStyle(murApercu).gridTemplateColumns.split(" ").length / 2 || 1;
+    carreaux.forEach((c, i) => c.style.setProperty("--d", String(Math.floor(i / cols) + (i % cols))));
+  };
+  poseDelais();
+  window.addEventListener("resize", poseDelais);
+
+  let timer = null;
+  const applique = (input) => {
+    murApercu.dataset.email = input.value;
+    murApercu.style.setProperty("--gh", input.dataset.h);
+    murApercu.style.setProperty("--gs", `${input.dataset.s}%`);
+    murApercu.style.setProperty("--gl", `${input.dataset.l}%`);
+    const label = input.closest(".pastille");
+    if (nom) nom.textContent = label.querySelector(".pastille-nom").textContent;
+    if (code) code.textContent = label.querySelector(".pastille-code").textContent;
+    if (desc) desc.textContent = input.dataset.desc || "";
+  };
+  nuancier.addEventListener("change", (e) => {
+    const input = e.target;
+    if (!(input instanceof HTMLInputElement) || input.name !== "email") return;
+    if (reduitLeMouvement) { applique(input); return; }
+    // Recuisson : le mur redevient cru, change d'émail, puis recuit en diagonale.
+    clearTimeout(timer);
+    murApercu.classList.add("est-cru");
+    timer = setTimeout(() => {
+      applique(input);
+      requestAnimationFrame(() => murApercu.classList.remove("est-cru"));
+    }, 260);
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* 7. Menu mobile                                                      */
+/* ------------------------------------------------------------------ */
+const boutonMenu = document.querySelector(".entete .bouton-menu");
+const menu = document.querySelector(".menu-mobile");
+if (boutonMenu && menu) {
+  boutonMenu.addEventListener("click", () => {
+    menu.showModal();
+    lenis?.stop();
+  });
+  menu.addEventListener("close", () => {
+    lenis?.start();
+    boutonMenu.focus();
+  });
+  menu.querySelector("[data-fermer]")?.addEventListener("click", () => menu.close());
+}
+
+/* ------------------------------------------------------------------ */
+/* Année du pied                                                       */
 /* ------------------------------------------------------------------ */
 document.querySelectorAll("[data-annee]").forEach((el) => {
   el.textContent = String(new Date().getFullYear());
 });
-
-/* ------------------------------------------------------------------ */
-/* Formulaire de contact — démonstration honnête (rien n'est envoyé)   */
-/* ------------------------------------------------------------------ */
-const form = document.querySelector("#form-etude");
-if (form) {
-  const valide = (champ) => {
-    const bloc = champ.closest(".champ");
-    if (!bloc) return true;
-    let ok = champ.checkValidity();
-    // required accepte des espaces : un champ texte requis vide de sens est invalide.
-    if (ok && champ.required && typeof champ.value === "string" && champ.value.trim() === "") ok = false;
-    if (champ.id === "champ-message" && champ.value.trim().length > 0 && champ.value.trim().length < 2) ok = false;
-    bloc.classList.toggle("est-invalide", !ok);
-    champ.setAttribute("aria-invalid", ok ? "false" : "true");
-    return ok;
-  };
-
-  form.querySelectorAll("input, select, textarea").forEach((champ) => {
-    champ.addEventListener("blur", () => valide(champ));
-    champ.addEventListener("input", () => {
-      if (champ.closest(".champ")?.classList.contains("est-invalide")) valide(champ);
-    });
-  });
-
-  // Message doux si le mur est orienté nord (jamais bloquant).
-  const orientation = form.querySelector("#champ-orientation");
-  const noteNord = form.querySelector("#note-nord");
-  if (orientation && noteNord) {
-    orientation.addEventListener("change", () => {
-      noteNord.hidden = orientation.value !== "nord";
-    });
-  }
-
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    let toutValide = true;
-    form.querySelectorAll("input, select, textarea").forEach((champ) => {
-      if (!valide(champ)) toutValide = false;
-    });
-    if (!toutValide) {
-      form.querySelector(".champ.est-invalide input, .champ.est-invalide select, .champ.est-invalide textarea")?.focus();
-      return;
-    }
-    // Site fictif : aucune donnée ne quitte le navigateur. On montre l'état
-    // de succès tel qu'il serait — c'est un prototype de parcours, pas un envoi.
-    form.hidden = true;
-    const succes = document.querySelector("#form-succes");
-    if (succes) {
-      succes.hidden = false;
-      succes.focus();
-    }
-  });
-}

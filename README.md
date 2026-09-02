@@ -1,105 +1,102 @@
-# Atelier Méridienne
+# Tesson
 
-**Site vitrine fictif — projet d'étude en design & développement web.**
+**Site vitrine one page — pièce de portfolio. Entreprise fictive.**
 
-> Nous peignons l'heure vraie.
+> Aucun carreau ne ressemble au suivant.
 
-Atelier Méridienne est un atelier imaginaire de **gnomonique et de fresque
-murale** à Molines-en-Queyras (Hautes-Alpes) : conception, calcul, peinture
-a fresco et restauration de cadrans solaires muraux. L'entreprise, ses
-fondateurs et ses réalisations n'existent pas ; le Queyras, ses cadrans
-peints et le métier, eux, sont réels.
+Tesson est une manufacture imaginaire de **carreaux de grès émaillés à la
+main**, installée en Basse-Ville de Fribourg. L'entreprise, ses émaux, ses
+chantiers et ses prix n'existent pas ; le métier (émaillage, cuisson en
+réduction à 1 280 °C, tressaillage, calepinage) est réel.
 
-**L'argument central du site : le site EST un instrument.** Le cadran de la
-page d'accueil est un vrai cadran vertical déclinant, calculé dans le
-navigateur par un moteur gnomonique maison (équations Meeus/NOAA, géométrie
-vectorielle du cadran déclinant, 27 tests automatisés). L'ombre dorée que
-vous voyez est à sa vraie place pour l'instant, le lieu et le mur. Les cinq
-planches de la page Créations sont dessinées par le même moteur : les heures
-annoncées dans les textes et les heures tracées coïncident par construction.
+**Le parti pris : pas une photo.** Les visuels du site — le mur du hero, le
+carreau spécimen et sa craquelure, le nuancier, les trois réalisations, la
+planche d'essai de la méthode — sont dessinés par le code. Chaque carreau
+reçoit ses propres écarts de teinte, de saturation, de clarté et de reflet,
+tirés d'un générateur déterministe : le site montre littéralement ce qu'il
+affirme. Recolorer un mur revient à changer trois variables CSS ; les
+carreaux font le reste.
 
 ## Démarrer
 
 ```bash
-npm run dev        # sert le site sur http://localhost:4173
-npm test           # 27 tests du moteur gnomonique (node --test)
+npm run dev          # sert le site sur http://localhost:4173
+npm test             # tests du générateur de murs (node --test)
+npm run build        # régénère les murs et la craquelure dans index.html
 ```
 
-Aucune étape de build : le site est du HTML/CSS/JS statique servi tel quel.
-La seule dépendance runtime (Lenis, pour le scroll lissé) est vendorisée
-dans `assets/vendor/` ; les fontes variables (Fraunces, Spline Sans Mono)
-sont auto-hébergées et instanciées aux seuls axes utilisés (fonttools).
-Pour servir compressé : `npm run compress` génère les `.gz` (non versionnés),
-servis par `npm run dev` (`http-server -g`).
+Aucune étape de build obligatoire : HTML, CSS et JS sont servis tels quels.
+`npm run build` n'est nécessaire qu'après modification des marqueurs
+`<!-- mur:… -->` ou du générateur (`tools/lib/murs.mjs`) — il est idempotent.
 
 ## Structure
 
 ```
-/                        pages (répertoires-slug : /savoir-faire/, /creations/…)
-├── assets/
-│   ├── css/             fonts.css (auto-hébergement) + styles.css (design system)
-│   ├── js/              gnomonique.js (moteur), main.js, cadran.js, simulateur.js
-│   ├── vendor/          lenis (minifié, version figée)
-│   ├── fonts/           woff2 variables auto-hébergés
-│   ├── img/generated/   SVG générés par le moteur (cadran héros, 5 planches)
-│   ├── textures/        grain d'enduit (tuile PNG précalculée, seed 1841)
-│   └── og/              images Open Graph 1200×630 (générées)
-├── docs/                specs : concept, visual bible, SEO, moteur gnomonique
-├── tests/               tests du moteur (node:test)
-└── tools/               générateurs & outillage (voir ci-dessous)
+index.html               la page (murs injectés entre marqueurs, statiques)
+404.html                 page d'erreur (chemins absolus)
+assets/
+├── css/styles.css       design system : tokens, murs, sections, motion
+├── css/fonts.css        Fraunces + Instrument Sans, auto-hébergées
+├── js/main.js           cuisson du hero, lumière, Lenis, entête, nuancier, menu
+├── fonts/               deux woff2 variables (sous-ensemble latin)
+├── img/                 favicon, image Open Graph générée
+├── textures/            tuile de grain (PNG précalculée, seed 1841)
+└── vendor/              lenis.min.js (scroll lissé, version figée)
+tools/
+├── lib/murs.mjs         générateur : PRNG, carreaux, murs, craquelure
+├── genere-murs.mjs      injecte les murs dans index.html
+├── genere-og.mjs        rend assets/img/og.jpg via Chromium
+├── contrast-check.mjs   preuve WCAG des couples texte/fond utilisés
+├── regression.mjs       suite navigateur (Playwright) : états, a11y, débordements
+├── shoot.mjs            captures desktop + mobile
+└── grain-tile.mjs       régénère la tuile de grain
+tests/murs.test.mjs      déterminisme et bornes du générateur
+docs/                    concept et visual bible
 ```
 
-## Outillage (`tools/`)
+## Comment un mur est fait
 
-| Script | Rôle |
-|---|---|
-| `genere-svg.mjs` | dessine le cadran héros, les 5 planches et l'analemme du footer **avec le moteur** ; vérifie que les heures tracées correspondent aux specs des textes |
-| `injecte-svg.mjs` | injecte les SVG générés dans les pages (marqueurs `<!-- svg:nom -->`), idempotent |
-| `typographie.mjs` | micro-typographie française (insécables, apostrophes) appliquée par script, idempotent |
-| `genere-og.mjs` | rend les images OG via Chromium (site servi en local requis) |
-| `contrast-check.mjs` | preuve WCAG de la palette (tous les couples autorisés) |
-| `grain-tile.mjs` | régénère la tuile de grain d'enduit (reproductible, seed 1841) |
-| `derive-calc.mjs` | le calcul du récit fondateur : 4° d'erreur → dérive de 6,4 à 16,2 min |
-| `shoot.mjs` | captures d'écran desktop + mobile de toutes les pages |
-| `regression.mjs` | suite de non-régression navigateur (instrument, formulaires, débordements, a11y) |
+Un mur est un conteneur `.mur` qui porte son émail en HSL (`--gh`, `--gs`,
+`--gl`) et une grille de `<i>` vides. Chaque `<i>` porte ses écarts
+(`--dh`, `--ds`, `--dl`), la position de son reflet (`--hx`, `--hy`) et son
+éclat (`--g`). Le CSS compose trois couches par carreau — reflet diffus,
+arête éclairée, bombé de l'émail — plus une tuile de grain par mur. Les murs
+sont générés une fois pour toutes dans le HTML : la page fonctionne sans
+JavaScript et sans décalage de mise en page.
 
-Chaîne de régénération après modification du moteur ou des planches :
+Le JS n'ajoute que du comportement : la cuisson du mur au chargement (les
+carreaux naissent en biscuit et prennent leur émail en diagonale), la lumière
+qui suit le curseur (une écriture de variable par frame, sur `:root`), la
+recuisson du mur d'aperçu quand on change d'émail, l'entête qui se pose une
+fois le mur passé.
+
+## Vérifications
 
 ```bash
-node tools/genere-svg.mjs && node tools/injecte-svg.mjs && node tools/typographie.mjs
+npm test                                   # 7 tests du générateur
+node tools/contrast-check.mjs              # tous les couples passent (AA)
+node tools/regression.mjs                  # site servi requis, « TOUT PASSE »
+node tools/shoot.mjs http://127.0.0.1:4173 captures ""
 ```
-
-## Documentation
-
-- `docs/brand/concept.md` — le concept lock (positionnement, ton, éthique de la fiction)
-- `docs/brand/visual-bible.md` — palette prouvée WCAG, typographie, espace, motion, style SVG
-- `docs/brand/prompts-images.md` — kit de prompts IA (Midjourney/Flux) pour une éventuelle production photo, aligné sur la DA
-- `docs/gnomonique-spec.md` — les équations, conventions de signes, sources
-- `docs/seo.md` — stratégie, balisage, JSON-LD, stratégie noindex
-- `docs/architecture.md` — décisions techniques et guide contributeur
 
 ## Éthique de la fiction
 
-- Aucun faux label, aucune certification, aucune statistique inventée,
-  aucun témoignage nommé.
-- Mention « Site fictif — projet d'étude » dans le footer et sur la page
-  Contact ; page `/mentions/` dédiée.
-- `meta robots noindex` sur toutes les pages (commentaire explicatif dans
-  chaque `<head>`) : un faux artisan ne doit pas polluer les résultats
-  locaux du vrai Queyras. Le dispositif de retrait est documenté.
-- Le numéro de téléphone utilise la tranche 04 65 71 réservée par l'ARCEP
-  aux œuvres de fiction.
-- Le formulaire de contact n'envoie rien : aucune donnée ne quitte le
-  navigateur (et la page le dit).
+- Aucun faux label, aucune certification, aucun témoignage, aucune
+  statistique. Les trois « murs » sont des récits plausibles, sans client
+  nommé.
+- Le pied de page dit que la manufacture est fictive et que les murs sont
+  dessinés par le code ; la page est en `noindex` (commentaire explicatif dans
+  le `<head>`), le domaine n'est pas déposé.
+- Aucun formulaire : le CTA est un `mailto:` vers une adresse fictive.
 
 ## Accessibilité & performance
 
-- Palette validée par calcul (WCAG 2.1 AA) — voir `tools/contrast-check.mjs`
-  et `docs/brand/visual-bible.md` §1.
-- `prefers-reduced-motion` : scroll natif, ombres figées à 15 h solaires,
-  les instruments restent fonctionnels.
-- Zéro requête tierce, zéro cookie, zéro traceur. SVG héros inline rendu
-  sans JavaScript (le JS ne fait qu'orienter l'ombre à l'heure réelle).
-- Fontes préchargées avec `font-display: swap` ; grain servi en fichier
-  (jamais de feTurbulence live) ; animations en transform/clip-path
-  uniquement, une écriture de variable par frame.
+- Contrastes prouvés par calcul, textes semi-transparents compris,
+  carreau le plus clair compris (`tools/contrast-check.mjs`).
+- Navigation clavier complète : skip-link, nuancier en boutons radio natifs
+  (flèches), menu mobile en `<dialog>` (Échap, retour du focus).
+- `prefers-reduced-motion` : aucune transition, scroll natif, tout visible
+  d'emblée — le site reste entier, il ne bouge simplement plus.
+- Zéro requête tierce, zéro cookie. Deux fontes (≈150 Ko), Lenis (24 Ko),
+  une tuile de grain (20 Ko). Le HTML porte les murs (≈120 Ko bruts, très
+  compressibles : `gzip` le ramène à ≈22 Ko).

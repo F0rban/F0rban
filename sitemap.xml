@@ -1,34 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Atelier Méridienne — sitemap.
-     Site fictif actuellement en noindex : ce fichier est inerte tant que la
-     balise meta robots n'est pas retirée. Il est prêt pour un éventuel usage
-     réel (déclaration dans la Search Console après retrait du noindex).
-     lastmod à mettre à jour à chaque modification substantielle de contenu.
-     changefreq/priority omis : les moteurs modernes les ignorent,
-     seul lastmod fait foi. -->
+<!-- Tesson — site one page. Inerte tant que la balise meta robots noindex
+     n'est pas retirée ; prêt pour un éventuel usage réel. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://atelier-meridienne.fr/</loc>
-    <lastmod>2026-09-01</lastmod>
-  </url>
-  <url>
-    <loc>https://atelier-meridienne.fr/savoir-faire/</loc>
-    <lastmod>2026-09-01</lastmod>
-  </url>
-  <url>
-    <loc>https://atelier-meridienne.fr/creations/</loc>
-    <lastmod>2026-09-01</lastmod>
-  </url>
-  <url>
-    <loc>https://atelier-meridienne.fr/atelier/</loc>
-    <lastmod>2026-09-01</lastmod>
-  </url>
-  <url>
-    <loc>https://atelier-meridienne.fr/methode-tarifs/</loc>
-    <lastmod>2026-09-01</lastmod>
-  </url>
-  <url>
-    <loc>https://atelier-meridienne.fr/contact/</loc>
-    <lastmod>2026-09-01</lastmod>
+    <loc>https://manufacture-tesson.ch/</loc>
+    <lastmod>2026-09-02</lastmod>
   </url>
 </urlset>
