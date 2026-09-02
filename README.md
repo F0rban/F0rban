@@ -16,12 +16,14 @@ la carte des projets et les règles d'organisation :
 | AGENCY OS | système central réutilisable | `F0rban/agency-os` (à pousser depuis le Mac) |
 | Atelier Sillage | site client | `F0rban/atelier-sillage` (à pousser depuis le Mac) |
 | Altis Étanchéité | site client | `F0rban/altis-etancheite` (à pousser depuis le Mac) |
-| Atelier Méridienne | site fictif | `F0rban/atelier-meridienne` (après migration) |
-| Tesson | site fictif | `F0rban/tesson` (après migration) |
-| Bench (ex AI Command Center) | prototype | `F0rban/bench` (après migration) |
+| Atelier Méridienne | site fictif | `F0rban/atelier-meridienne` ✔ migré |
+| Tesson | site fictif | `F0rban/tesson` ✔ migré |
+| Bench (ex AI Command Center) | prototype | `F0rban/bench` ✔ migré |
 | Memova | application | `F0rban/memova` (à pousser depuis le Mac) |
 
-Tant que la migration n'est pas faite, Méridienne, Tesson et Bench restent
-respectivement sur les branches `claude/premium-showcase-website-tm8yd1`,
-`claude/premium-showcase-website-co0cyh` et `claude/ai-command-center-gelf0i`
-de ce dépôt. **Ne pas fusionner la PR #1** (elle écraserait Méridienne par Tesson).
+Méridienne, Tesson et Bench ont été migrés le 2 septembre 2026 (historique
+complet, SHA vérifiés, voir `docs/ORGANISATION.md` § 9). Leurs branches
+d'origine (`claude/premium-showcase-website-tm8yd1`, `claude/premium-showcase-website-co0cyh`,
+`claude/ai-command-center-gelf0i`) restent ici comme sauvegarde.
+**Ne pas fusionner la PR #1** (elle écraserait Méridienne par Tesson) : la fermer.
+Ouvrir toute nouvelle session Claude Code sur le dépôt du projet, jamais sur celui-ci.

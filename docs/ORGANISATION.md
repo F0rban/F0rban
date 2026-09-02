@@ -152,10 +152,9 @@ teste et se construit seul.
   (`claude/audit-reorganisation-projets-25rtcw`) qui ne contient aucun code de site.
 
 ### Pas fait, et pourquoi
-- **Les trois dépôts cibles n'ont pas été créés** : l'intégration GitHub de
-  Claude Code n'a pas le droit de créer des dépôts (`403 Resource not accessible
-  by integration`). Rien n'a donc été déplacé. Les trois branches de
-  `F0rban/F0rban` sont intactes.
+- **Création des dépôts** : refusée à l'intégration GitHub de Claude Code
+  (`403 Resource not accessible by integration`). Les trois dépôts ont été créés
+  à la main, puis la migration a été exécutée depuis la session (voir § 9).
 - **Rien n'a été supprimé** (branches, PR, fichiers) : règle absolue de la mission.
 - **Bench / GitHub Pages** : pas modifié. Après migration, la preview vivra à
   `https://f0rban.github.io/bench/` et non plus `/F0rban/` ; cela demande un
@@ -260,8 +259,35 @@ de pousser (chaque site dans son dossier, chaque dossier son dépôt).
 | Le système, les templates, les skills | `F0rban/agency-os` (à créer depuis ton Mac) |
 | Atelier Sillage | `F0rban/atelier-sillage` (à créer depuis ton Mac) |
 | Altis Étanchéité | `F0rban/altis-etancheite` (à créer depuis ton Mac) |
-| Atelier Méridienne | `F0rban/atelier-meridienne` (après migration ; en attendant : `F0rban/F0rban` branche `claude/premium-showcase-website-tm8yd1`) |
-| Tesson | `F0rban/tesson` (après migration ; en attendant : `F0rban/F0rban` branche `claude/premium-showcase-website-co0cyh`) |
-| Bench / AI Command Center | `F0rban/bench` (après migration ; en attendant : `F0rban/F0rban` branche `claude/ai-command-center-gelf0i`) |
+| Atelier Méridienne | `F0rban/atelier-meridienne` ✔ migré |
+| Tesson | `F0rban/tesson` ✔ migré |
+| Bench / AI Command Center | `F0rban/bench` ✔ migré |
 | Memova | `F0rban/memova` (à créer depuis ton Mac) |
 | Cette carte des projets | `F0rban/F0rban` |
+
+---
+
+## 9. État après migration (2 septembre 2026, 15 h UTC)
+
+Migration exécutée par push direct (sans force), historique complet, arbre
+vérifié identique à la source par clone frais, tests relancés dans chaque clone.
+
+| Dépôt | `main` = | Commits | Fichiers | Tests |
+|---|---|---|---|---|
+| `F0rban/atelier-meridienne` | `393b425` (= `claude/premium-showcase-website-tm8yd1`) | 5 | 62 | 27/27 |
+| `F0rban/tesson` | `f3df112` (= `claude/premium-showcase-website-co0cyh`) | 7 | 27 | 7/7 |
+| `F0rban/bench` | `1c288ae` (= `claude/ai-command-center-gelf0i`) | 40 | 178 | typecheck OK, 357/357 |
+
+`F0rban/F0rban` : aucune branche supprimée ni modifiée par la migration ; PR #1
+toujours ouverte, non fusionnée.
+
+**Point d'attention — Tesson.** Pendant la migration, la session Claude Code
+« Site vitrine premium one-page » (encore ouverte, rattachée à `F0rban/F0rban`)
+a poussé un commit supplémentaire (`f3df112`, passe design). Il a été repris
+dans `tesson/main` par avance rapide. Tant que cette session reste ouverte sur
+`F0rban/F0rban`, tout nouveau travail Tesson atterrira dans l'ancien dépôt :
+**la fermer, et rouvrir les prochaines sessions Tesson sur `F0rban/tesson`.**
+Même règle pour la session « AI Command Center SaaS prototype » (Bench).
+
+Restant à faire à la main : § 4.2 (fermer PR #1 sans fusionner, branche `main`
+par défaut sur `F0rban/F0rban`, Pages pour Bench si souhaité).
